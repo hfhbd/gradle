@@ -6,7 +6,7 @@ This release features [1](), [2](), ... [n](), and more.
 Include only their name, impactful features should be called out separately below.
  [Some person](https://github.com/some-person)
 
- THiS LIST SHOULD BE ALPHABETIZED BY [PERSON NAME] - the docs:updateContributorsInReleaseNotes task will enforce this ordering, which is case-insensitive.
+ THIS LIST SHOULD BE ALPHABETIZED BY [PERSON NAME] - the docs:updateContributorsInReleaseNotes task will enforce this ordering, which is case-insensitive.
 -->
 We would like to thank the following community members for their contributions to this release of Gradle:
 
@@ -16,7 +16,7 @@ Be sure to check out the [Public Roadmap](https://blog.gradle.org/roadmap-announ
 
 Switch your build to use Gradle @version@ by updating your wrapper:
 
-`./gradlew wrapper --gradle-version=@version@`
+`./gradlew :wrapper --gradle-version=@version@`
 
 See the [Gradle 8.x upgrade guide](userguide/upgrading_version_8.html#changes_@baseVersion@) to learn about deprecations, breaking changes, and other considerations when upgrading to Gradle @version@.
 
