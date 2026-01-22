@@ -145,6 +145,10 @@ and try out a change in behavior manually.
 - Install: `./gradlew install -Pgradle_installPath=/any/path`
 - Use: `/any/path/bin/gradle taskName`.
 
+You can also install the wrapper locally (to test/have IDE support).
+- Create wrapper: `./gradlew binDistributionZip srcDistributionZip`
+- Override the gradle.properties to: `distributionUrl=file:///path/to/checkout/gradle/packaging/distributions-full/build/distributions/gradle-VERSION-bin.zip`
+
 It's also a good idea to run `./gradlew sanityCheck` before submitting your change because this will help catch code style issues.
 
 > **NOTE:** Do **NOT** run `gradle build` on the local development environment,
@@ -217,8 +221,6 @@ When creating a new file, please make sure to add a header as defined below.
 ### Submitting Your Change
 
 After you submit your pull request, a Gradle developer will review it. It is normal for this to take several iterations, so don't get discouraged by change requests. They ensure the high quality that we all enjoy.
-
-If you need to check on [CI](http://builds.gradle.org/) status as an external contributor, you can click "Log in as guest".
 
 ## Useful tips
 
@@ -304,7 +306,8 @@ If you have multiple changes to accept (and you're sure they ought to be accepte
 This button will cause a Javascript alert dialog to appear asking you to type a reason for accepting the changes, e.g. "Added new API for Gradle 8.x".
 
 Clicking okay on the dialog will cause a copy of the `accepted-public-api-changes.json` containing your (properly sorted) addition to be downloaded.
-You can then replace the existing file with this new downloaded version. 
+You can then replace the existing file with this new downloaded version.
+
 ### Java Toolchain
 
 The Gradle build uses [Java Toolchain](https://docs.gradle.org/current/userguide/toolchains.html) support to compile and execute tests across multiple versions of Java.
