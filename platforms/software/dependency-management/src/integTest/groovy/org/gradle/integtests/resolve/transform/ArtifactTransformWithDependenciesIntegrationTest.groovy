@@ -1378,7 +1378,11 @@ abstract class ClasspathTransform implements TransformAction<TransformParameters
                 transformStep2('slf4j-api-1.7.25.jar'),
                 transformStep2('hamcrest-core-1.3.jar'),
                 transformStep2('junit-4.11.jar': ['hamcrest-core-1.3.jar'])
+                // no transforms for lib.jar
             )
+        } else {
+            // no transformations at all
+            assertTransformationsExecuted()
         }
     }
 
