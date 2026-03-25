@@ -31,7 +31,7 @@ import java.util.Locale;
  */
 public class Amount<Q> implements Comparable<Amount<Q>> {
     // decimalFormat is not thread safe - synchronize access to the instance
-    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#.###", new DecimalFormatSymbols(Locale.US));
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#.###", new DecimalFormatSymbols(Locale.ENGLISH));
     private final BigDecimal value;
     private final Units<Q> units;
     private final BigDecimal normalised;

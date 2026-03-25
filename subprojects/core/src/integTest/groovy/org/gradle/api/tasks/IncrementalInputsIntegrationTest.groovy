@@ -821,7 +821,7 @@ class IncrementalInputsIntegrationTest extends AbstractIntegrationSpec {
     void executesNonIncrementally(List<String> rebuiltFiles = ['file0.txt', 'file1.txt', 'file2.txt']) {
         executesIncrementalTask(
             incremental: false,
-            (rebuildChangeType.name().toLowerCase(Locale.US)): rebuiltFiles
+            (rebuildChangeType.name().toLowerCase(Locale.ROOT)): rebuiltFiles
         )
     }
 

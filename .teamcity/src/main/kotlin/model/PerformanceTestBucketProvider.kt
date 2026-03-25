@@ -26,7 +26,6 @@ import jetbrains.buildServer.configs.kotlin.BuildSteps
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
 import java.io.File
 import java.util.LinkedList
-import java.util.Locale
 
 interface PerformanceTestBucketProvider {
     fun createPerformanceTestsFor(
@@ -86,7 +85,7 @@ class StatisticsBasedPerformanceTestBucketProvider(
                     duration.entries
                         .filter { (key, _) -> key != "testProject" }
                         .map { (osString, timeInMs) ->
-                            val os = Os.valueOf(osString.uppercase(Locale.US))
+                            val os = Os.valueOf(osString.uppercase())
                             val performanceTestDuration = PerformanceTestDuration(scenario, (timeInMs as Number).toInt())
                             os to (testProject to performanceTestDuration)
                         }
@@ -112,7 +111,7 @@ class StatisticsBasedPerformanceTestBucketProvider(
                                 performanceTestType to
                                     value
                                         .map {
-                                            Os.valueOf(it.uppercase(Locale.US))
+                                            Os.valueOf(it.uppercase())
                                         }.toSet()
                             }.toMap()
                     PerformanceTestGroup(testProject, coverage)

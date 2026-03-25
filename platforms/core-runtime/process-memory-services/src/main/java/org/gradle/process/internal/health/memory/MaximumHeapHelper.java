@@ -79,6 +79,6 @@ public class MaximumHeapHelper {
 
     @VisibleForTesting
     boolean isServerJvm() {
-        return !System.getProperty("java.vm.name").toLowerCase(Locale.US).contains("client");
+        return !System.getProperty("java.vm.name").toLowerCase(Locale.ROOT).contains("client");
     }
 }

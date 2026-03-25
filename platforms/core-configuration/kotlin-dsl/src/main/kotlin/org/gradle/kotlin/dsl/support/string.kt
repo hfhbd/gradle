@@ -17,7 +17,6 @@
 package org.gradle.kotlin.dsl.support
 
 import org.gradle.util.internal.TextUtil.convertLineSeparatorsToUnix
-import java.util.Locale
 
 
 fun String.normaliseLineSeparators(): String =
@@ -25,4 +24,4 @@ fun String.normaliseLineSeparators(): String =
 
 
 fun String.uppercaseFirstChar(): String =
-    replaceFirstChar { it.uppercase(Locale.US) }
+    replaceFirstChar { it.uppercase() }

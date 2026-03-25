@@ -50,7 +50,7 @@ public class NameUtil {
     public static String camelToUpperUnderscoreCase(String camelCase) {
         String[] split = UPPER_CASE.split(camelCase);
         for (int i = 0; i < split.length; i++) {
-            split[i] = split[i].toUpperCase(Locale.US);
+            split[i] = split[i].toUpperCase(Locale.ROOT);
         }
         return String.join("_", split);
     }

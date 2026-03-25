@@ -65,7 +65,6 @@ import org.gradle.internal.concurrent.Stoppable
 import org.gradle.internal.configuration.inputs.InstrumentedInputs
 import org.gradle.internal.configuration.problems.StructuredMessage
 import org.gradle.internal.extensions.core.get
-import org.gradle.internal.extensions.stdlib.toDefaultLowerCase
 import org.gradle.internal.extensions.stdlib.uncheckedCast
 import org.gradle.internal.model.CalculatedValueContainerFactory
 import org.gradle.internal.operations.BuildOperationRunner
@@ -506,7 +505,7 @@ class DefaultConfigurationCache internal constructor(
 
     private
     fun formatBootstrapSummary(message: String, vararg args: Any?) =
-        StructuredMessage.forText(String.format(Locale.US, message, *args))
+        StructuredMessage.forText(String.format(Locale.ENGLISH, message, *args))
 
     override fun stop() {
         val stoppable = CompositeStoppable.stoppable()
@@ -798,7 +797,7 @@ class DefaultConfigurationCache internal constructor(
     private
     fun profileNameFor(stateFile: ConfigurationCacheStateStore.StateFile) =
         stateFile.stateType.name.replace(Regex("\\p{Upper}")) { match ->
-            " " + match.value.toDefaultLowerCase()
+            " " + match.value.lowercase()
         }.drop(1)
 
     private

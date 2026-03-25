@@ -25,7 +25,7 @@ import java.util.Locale;
 import static java.lang.String.format;
 
 public class PathTraversalChecker {
-    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase(Locale.US).contains("windows");
+    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("windows");
 
     /**
      * Checks the entry name for path traversal vulnerable sequences.

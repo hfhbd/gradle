@@ -137,7 +137,7 @@ public class VersionCatalogDependencyRegistry {
 
     private static String coordinatesToAlias(String coordinates) {
         // not required but Groovy and Kotlin slightly differ in the handling of uppercase letters of alias parts so make everything lowercase to avoid lookup failures
-        String alias = coordinates.replaceAll("[.:_]", "-").replaceAll("-(\\d)", "-v$1").toLowerCase(Locale.ENGLISH);
+        String alias = coordinates.replaceAll("[.:_]", "-").replaceAll("-(\\d)", "-v$1").toLowerCase(Locale.ROOT);
         StringBuffer resultingAlias = new StringBuffer();
         Matcher reservedComponentsMatcher = RESERVED_ALIAS_COMPONENT.matcher(alias);
         while (reservedComponentsMatcher.find()) {

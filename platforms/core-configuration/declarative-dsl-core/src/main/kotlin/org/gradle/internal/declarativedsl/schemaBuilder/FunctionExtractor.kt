@@ -36,7 +36,6 @@ import org.gradle.internal.declarativedsl.analysis.DefaultVarargParameter
 import org.gradle.internal.declarativedsl.analysis.FunctionSemanticsInternal
 import org.gradle.internal.declarativedsl.analysis.ParameterSemanticsInternal
 import org.gradle.internal.declarativedsl.analysis.SchemaItemMetadataInternal.SchemaMemberOriginInternal.DefaultConfigureFromGetterOrigin
-import java.util.Locale
 import kotlin.reflect.KClass
 import kotlin.reflect.KClassifier
 import kotlin.reflect.KFunction
@@ -370,7 +369,7 @@ class GetterBasedConfiguringFunctionExtractor(private val propertyTypePredicate:
             checkNotNull(getter)
             host.inContextOfModelMember(getter.kCallable) {
                 val nameAfterGet = name.substringAfter("get")
-                val propertyName = nameAfterGet.replaceFirstChar { it.lowercase(Locale.getDefault()) }
+                val propertyName = nameAfterGet.replaceFirstChar { it.lowercase() }
 
                 val type = getter.returnTypeRef(host).orFailWith {
                     return@map ExtractionResult.of(it, FunctionExtractionMetadata(listOf(getter)))

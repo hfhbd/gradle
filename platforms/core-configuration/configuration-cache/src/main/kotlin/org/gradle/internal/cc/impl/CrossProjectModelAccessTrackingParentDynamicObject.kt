@@ -25,7 +25,6 @@ import org.gradle.internal.configuration.problems.PropertyKind
 import org.gradle.internal.configuration.problems.PropertyTrace
 import org.gradle.internal.metaobject.DynamicInvokeResult
 import org.gradle.internal.metaobject.DynamicObject
-import java.util.Locale
 
 
 internal
@@ -122,7 +121,7 @@ class CrossProjectModelAccessTrackingParentDynamicObject(
                 text("Project ")
                 reference(referrerProject.identityPath.toString())
                 text(" cannot dynamically look up a ")
-                text(memberKind.name.lowercase(Locale.ENGLISH))
+                text(memberKind.name.lowercase())
                 text(" in the parent project ")
                 reference(ownerProject.identityPath.toString())
             }

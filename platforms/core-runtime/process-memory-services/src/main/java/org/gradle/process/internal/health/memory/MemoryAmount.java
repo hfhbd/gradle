@@ -66,7 +66,7 @@ public class MemoryAmount {
         if (notation == null) {
             return -1;
         }
-        String normalized = notation.toLowerCase(Locale.US).trim();
+        String normalized = notation.toLowerCase(Locale.ROOT).trim();
         if (normalized.isEmpty()) {
             return -1;
         }

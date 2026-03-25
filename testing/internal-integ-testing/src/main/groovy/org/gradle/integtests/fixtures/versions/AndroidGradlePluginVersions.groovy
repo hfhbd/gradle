@@ -71,7 +71,7 @@ class AndroidGradlePluginVersions {
 
     List<String> getLatestsStableOrRC() {
         return latests.findAll {
-            def lowerCaseVersion = it.toLowerCase(Locale.US)
+            def lowerCaseVersion = it.toLowerCase(Locale.ROOT)
             !lowerCaseVersion.contains('-alpha') && !(lowerCaseVersion.contains('-beta'))
         }
     }

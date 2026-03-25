@@ -40,7 +40,6 @@ import jetbrains.buildServer.configs.kotlin.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.failureConditions.BuildFailureOnText
 import jetbrains.buildServer.configs.kotlin.failureConditions.failOnText
 import jetbrains.buildServer.configs.kotlin.ui.add
-import java.util.Locale
 
 const val PLUGINS_PORTAL_URL_OVERRIDE = "-Dorg.gradle.internal.plugins.portal.url.override=%gradle.plugins.portal.url%"
 
@@ -397,7 +396,7 @@ fun BuildType.killProcessStep(
     }
 }
 
-fun String.toCapitalized() = this.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+fun String.toCapitalized() = this.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 
 fun String.toCamelCase() = lowercase().replace(Regex("_[a-z]")) { it.value[1].uppercase() }
 

@@ -35,7 +35,7 @@ enum GradleDsl {
     }
 
     String getLanguageCodeName() {
-        return name().toLowerCase(Locale.US)
+        return name().toLowerCase(Locale.ROOT)
     }
 
     static List<String> languageCodeNames() {

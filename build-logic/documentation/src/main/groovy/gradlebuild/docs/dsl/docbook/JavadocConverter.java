@@ -108,7 +108,7 @@ public class JavadocConverter {
         Text comment = (Text) firstNode.getFirstChild();
         Matcher matcher = ACCESSOR_COMMENT_PATTERN.matcher(comment.getData());
         if (matcher.lookingAt()) {
-            String theOrWhether = matcher.group(1).toLowerCase(Locale.US);
+            String theOrWhether = matcher.group(1).toLowerCase(Locale.ROOT);
             comment.setData(StringUtils.capitalize(theOrWhether) + " " + comment.getData().substring(matcher.end()));
         }
     }

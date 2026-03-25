@@ -32,7 +32,6 @@ import org.jetbrains.kotlin.lexer.KotlinLexer
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.NameUtils
 import java.io.File
-import java.util.Locale
 
 
 internal
@@ -296,7 +295,7 @@ private val KEBAB_PATTERN = "-[a-z]".toRegex()
 
 private
 fun CharSequence.kebabCaseToCamelCase() =
-    replace(KEBAB_PATTERN) { it.value.drop(1).uppercase(Locale.US) }
+    replace(KEBAB_PATTERN) { it.value.drop(1).uppercase() }
 
 
 private

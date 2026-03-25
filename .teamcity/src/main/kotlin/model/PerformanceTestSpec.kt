@@ -18,7 +18,6 @@ package model
 
 import common.Arch
 import common.Os
-import java.util.Locale
 
 interface PerformanceTestBuildSpec {
     val type: PerformanceTestType
@@ -70,7 +69,7 @@ data class PerformanceTestCoverage(
 
     override fun asName(): String = "${type.displayName} - ${os.asName()}"
 
-    override fun channel() = "${type.channel}${if (os == Os.LINUX) "" else "-${os.name.lowercase(Locale.US)}"}-%teamcity.build.branch%"
+    override fun channel() = "${type.channel}${if (os == Os.LINUX) "" else "-${os.name.lowercase()}"}-%teamcity.build.branch%"
 }
 
 data class FlameGraphGeneration(

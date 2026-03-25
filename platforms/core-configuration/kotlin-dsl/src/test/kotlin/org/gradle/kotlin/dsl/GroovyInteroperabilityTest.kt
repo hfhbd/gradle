@@ -25,7 +25,6 @@ import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
-import java.util.Locale
 
 
 class GroovyInteroperabilityTest {
@@ -92,7 +91,7 @@ class GroovyInteroperabilityTest {
 
         assertEquals(
             "GROOVY",
-            closure { uppercase(Locale.US) }.call("groovy")
+            closure { uppercase() }.call("groovy")
         )
     }
 

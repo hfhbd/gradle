@@ -328,7 +328,7 @@ class ClasspathElementTransformTest extends Specification {
 
         @Override
         String toString() {
-            return super.toString().toLowerCase(Locale.ENGLISH)
+            return super.toString().toLowerCase(Locale.ROOT)
         }
     }
 

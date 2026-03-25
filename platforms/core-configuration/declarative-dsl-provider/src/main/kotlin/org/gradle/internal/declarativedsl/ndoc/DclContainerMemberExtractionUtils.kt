@@ -29,7 +29,6 @@ import org.gradle.internal.declarativedsl.schemaBuilder.schemaBuildingError
 import org.gradle.internal.declarativedsl.schemaBuilder.schemaBuildingFailure
 import org.gradle.internal.declarativedsl.schemaBuilder.schemaResult
 import org.gradle.internal.declarativedsl.schemaBuilder.toKType
-import java.util.Locale
 import kotlin.reflect.KClass
 import kotlin.reflect.KTypeParameter
 import kotlin.reflect.KVariance
@@ -83,7 +82,7 @@ object DclContainerMemberExtractionUtils {
         when (val annotation = (supportedType.classifier as? KClass<*>)?.annotations.orEmpty().filterIsInstance<ElementFactoryName>().singleOrNull()) {
             null -> null
             else -> annotation.value.takeIf { it != "" } ?: error("@${ElementFactoryName::class.java.simpleName} must provide a value")
-        } ?: (supportedType.classifier as? KClass<*>)?.simpleName?.replaceFirstChar { it.lowercase(Locale.ROOT) }
-        ?: (supportedType.classifier as? KTypeParameter)?.name?.replaceFirstChar { it.lowercase(Locale.ROOT) }
+        } ?: (supportedType.classifier as? KClass<*>)?.simpleName?.replaceFirstChar { it.lowercase() }
+        ?: (supportedType.classifier as? KTypeParameter)?.name?.replaceFirstChar { it.lowercase() }
         ?: error("cannot determine element factory name for unexpected container element type ${supportedType.toKType()}")
 }

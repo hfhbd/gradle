@@ -22,12 +22,12 @@ import java.util.Locale;
 
 class Names {
     static String displayNameFor(Enum<?> value) {
-        String[] parts = value.name().toLowerCase(Locale.US).split("_");
+        String[] parts = value.name().toLowerCase(Locale.ROOT).split("_");
         return Joiner.on(' ').join(parts);
     }
 
     static String idFor(Enum<?> value) {
-        String[] parts = value.name().toLowerCase(Locale.US).split("_");
+        String[] parts = value.name().toLowerCase(Locale.ROOT).split("_");
         return Joiner.on('-').join(parts);
     }
 }

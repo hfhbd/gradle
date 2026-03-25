@@ -283,7 +283,7 @@ public class TextUtil {
     }
 
     private static String hex(char ch) {
-        return Integer.toHexString(ch).toUpperCase(Locale.ENGLISH);
+        return Integer.toHexString(ch).toUpperCase(Locale.ROOT);
     }
 
     /**
@@ -371,7 +371,7 @@ public class TextUtil {
 
     // TODO: This should probably also live in GUtil to be with other camel/kebab case methods
     public static String screamingSnakeToKebabCase(String text) {
-        return Strings.CS.replace(text.toLowerCase(Locale.ENGLISH), "_", "-");
+        return Strings.CS.replace(text.toLowerCase(Locale.ROOT), "_", "-");
     }
 
     /**

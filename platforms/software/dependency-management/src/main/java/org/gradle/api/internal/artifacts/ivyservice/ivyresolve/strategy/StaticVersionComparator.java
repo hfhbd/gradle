@@ -77,8 +77,8 @@ class StaticVersionComparator implements Comparator<Version> {
                 return result;
             }
             // both are strings, we compare them taking into account special meaning
-            Integer sm1 = SPECIAL_MEANINGS.get(part1.toLowerCase(Locale.US));
-            Integer sm2 = SPECIAL_MEANINGS.get(part2.toLowerCase(Locale.US));
+            Integer sm1 = SPECIAL_MEANINGS.get(part1.toLowerCase(Locale.ROOT));
+            Integer sm2 = SPECIAL_MEANINGS.get(part2.toLowerCase(Locale.ROOT));
             if (sm1 != null) {
                 sm2 = sm2 == null ? 0 : sm2;
                 return sm1 - sm2;

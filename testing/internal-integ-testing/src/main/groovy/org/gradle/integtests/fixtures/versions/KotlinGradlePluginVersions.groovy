@@ -79,7 +79,7 @@ class KotlinGradlePluginVersions {
 
     List<String> getLatestsStableOrRC() {
         return latests.findAll {
-            def lowerCaseVersion = it.toLowerCase(Locale.US)
+            def lowerCaseVersion = it.toLowerCase(Locale.ROOT)
             !lowerCaseVersion.contains('-m') && !(lowerCaseVersion.contains('-beta'))
         }
     }

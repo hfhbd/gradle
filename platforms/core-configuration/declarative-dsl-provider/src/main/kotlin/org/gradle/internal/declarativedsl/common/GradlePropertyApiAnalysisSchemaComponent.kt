@@ -42,7 +42,6 @@ import org.gradle.internal.declarativedsl.schemaBuilder.inContextOfModelMember
 import org.gradle.internal.declarativedsl.schemaBuilder.orFailWith
 import org.gradle.internal.declarativedsl.schemaBuilder.returnTypeRef
 import org.gradle.internal.declarativedsl.schemaBuilder.schemaResult
-import java.util.Locale
 import kotlin.reflect.KClass
 import kotlin.reflect.KClassifier
 import kotlin.reflect.full.allSupertypes
@@ -106,7 +105,7 @@ class GradlePropertyApiPropertyExtractor : PropertyExtractor {
             checkNotNull(getter)
             host.inContextOfModelMember(getter.kCallable) {
                 val nameAfterGet = name.substringAfter("get")
-                val propertyName = nameAfterGet.replaceFirstChar { it.lowercase(Locale.getDefault()) }
+                val propertyName = nameAfterGet.replaceFirstChar { it.lowercase() }
 
                 if (!propertyNamePredicate(propertyName)) {
                     return@mapNotNull null

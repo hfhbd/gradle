@@ -230,7 +230,7 @@ public class LoggingDeprecatedFeatureHandler implements FeatureHandler<Deprecate
         if (fileName == null) {
             return false;
         }
-        fileName = fileName.toLowerCase(Locale.US);
+        fileName = fileName.toLowerCase(Locale.ROOT);
         return fileName.endsWith(".gradle") // ordinary Groovy Gradle script
             || fileName.endsWith(".gradle.kts"); // Kotlin Gradle script
     }

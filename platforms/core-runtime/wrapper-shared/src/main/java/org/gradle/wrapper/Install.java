@@ -320,7 +320,7 @@ public class Install {
     }
 
     private boolean isWindows() {
-        String osName = System.getProperty("os.name").toLowerCase(Locale.US);
+        String osName = System.getProperty("os.name").toLowerCase(Locale.ROOT);
         return osName.contains("windows");
     }
 

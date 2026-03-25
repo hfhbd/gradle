@@ -120,7 +120,7 @@ abstract class AbstractRecompilationSpecProvider implements RecompilationSpecPro
     }
 
     private static String rebuildClauseForChangedNonSourceFile(FileChange fileChange) {
-        return String.format("%s '%s' has been %s", "resource", fileChange.getFile().getName(), fileChange.getChangeType().name().toLowerCase(Locale.US));
+        return String.format("%s '%s' has been %s", "resource", fileChange.getFile().getName(), fileChange.getChangeType().name().toLowerCase(Locale.ROOT));
     }
 
     protected abstract void processCompilerSpecificDependencies(

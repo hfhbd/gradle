@@ -60,7 +60,7 @@ public class BooleanQuestionPromptEvent extends PromptOutputEvent {
         if (text.isEmpty()) {
             return PromptResult.response(defaultValue);
         }
-        String trimmed = text.toLowerCase(Locale.US).trim();
+        String trimmed = text.toLowerCase(Locale.ROOT).trim();
         if (LENIENT_YES_NO_CHOICES.contains(trimmed)) {
             return PromptResult.response(BooleanUtils.toBoolean(trimmed));
         }

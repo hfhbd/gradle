@@ -60,7 +60,7 @@ public abstract class JacocoTaskExtension {
          * Gets type in format of agent argument.
          */
         public String getAsArg() {
-            return toString().toLowerCase(Locale.US).replaceAll("_", "");
+            return toString().toLowerCase(Locale.ROOT).replaceAll("_", "");
         }
     }
 

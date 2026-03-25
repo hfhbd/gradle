@@ -75,7 +75,6 @@ import org.gradle.internal.declarativedsl.schemaBuilder.orFailWith
 import org.gradle.internal.declarativedsl.schemaBuilder.schemaResult
 import org.gradle.internal.declarativedsl.schemaBuilder.toKType
 import org.gradle.internal.declarativedsl.schemaBuilder.withTag
-import java.util.Locale
 import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -289,7 +288,7 @@ internal class ContainersSchemaComponent : AnalysisSchemaComponent, ObjectConver
 
     private fun KCallable<*>.propertyName() = when (this) {
         is KProperty<*> -> name
-        else -> name.substringAfter("get").replaceFirstChar { it.lowercase(Locale.getDefault()) }
+        else -> name.substringAfter("get").replaceFirstChar { it.lowercase() }
     }
 }
 
@@ -326,4 +325,3 @@ private fun dataTypeRefName(
     host: SchemaBuildingHost,
     it: KClass<*>
 ) = (host.modelTypeRef(it.starProjectedType).orError() as DataTypeRef.Name).fqName.toString()
-
