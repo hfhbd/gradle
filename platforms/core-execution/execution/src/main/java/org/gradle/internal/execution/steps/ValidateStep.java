@@ -96,7 +96,7 @@ public abstract class ValidateStep<
 
         problemHandler.handleReportedProblems(context.getIdentity(), work, validationContext);
 
-        List<InternalProblem> problems = ImmutableList.<InternalProblem>builder()
+        List<ProblemInternal> problems = ImmutableList.<ProblemInternal>builder()
             .addAll(validationContext.getWarnings())
             .addAll(validationContext.getErrors())
             .build();
