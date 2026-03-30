@@ -39,6 +39,7 @@ import org.gradle.initialization.SettingsPreparer
 import org.gradle.initialization.TaskExecutionPreparer
 import org.gradle.initialization.VintageBuildModelController
 import org.gradle.internal.build.BuildModelController
+import org.gradle.internal.buildoption.InternalOptions
 import org.gradle.internal.buildtree.BuildModelParameters
 import org.gradle.internal.cc.base.services.ProjectRefResolver
 import org.gradle.internal.cc.impl.fingerprint.ConfigurationCacheFingerprintController
@@ -110,9 +111,10 @@ internal object BuildModelControllerServices : ServiceRegistrationProvider {
         @Provides
         fun createCrossBuildModelAccess(
             problems: ProblemsListener,
-            problemFactory: ProblemFactory
+            problemFactory: ProblemFactory,
+            internalOptions: InternalOptions
         ): CrossBuildModelAccess {
-            return ProblemReportingCrossBuildModelAccess(problems, problemFactory)
+            return ProblemReportingCrossBuildModelAccess(problems, problemFactory, internalOptions)
         }
 
         @Provides

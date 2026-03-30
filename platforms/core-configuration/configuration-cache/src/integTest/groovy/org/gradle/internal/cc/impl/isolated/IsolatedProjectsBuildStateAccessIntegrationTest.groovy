@@ -27,7 +27,7 @@ class IsolatedProjectsBuildStateAccessIntegrationTest extends AbstractIsolatedPr
         """
 
         when:
-        isolatedProjectsFails "help"
+        isolatedProjectsFails "help", "-Dorg.gradle.unsafe.isolated-projects.report-cross-build-access=true"
 
         then:
         fixture.assertStateStoredAndDiscarded {
@@ -49,5 +49,22 @@ class IsolatedProjectsBuildStateAccessIntegrationTest extends AbstractIsolatedPr
         "beforeProject { }"            | "Settings file 'build-logic/settings.gradle': line 2: Build ':build-logic' cannot access Gradle.beforeProject on build ':'"
         "afterProject { }"             | "Settings file 'build-logic/settings.gradle': line 2: Build ':build-logic' cannot access Gradle.afterProject on build ':'"
         "projectsEvaluated { }"        | "Settings file 'build-logic/settings.gradle': line 2: Build ':build-logic' cannot access Gradle.projectsEvaluated on build ':'"
+    }
+
+    def "does not report a cross-build access problem by default"() {
+        settingsFile("build-logic/settings.gradle", """
+            gradle.parent.getSharedServices()
+        """)
+        settingsFile """
+            includeBuild("build-logic")
+        """
+
+        when:
+        isolatedProjectsRun "help"
+
+        then:
+        fixture.assertStateStored {
+            projectsConfigured(":", ":build-logic")
+        }
     }
 }
