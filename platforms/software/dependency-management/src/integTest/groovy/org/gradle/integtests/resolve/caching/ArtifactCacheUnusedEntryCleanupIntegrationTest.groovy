@@ -24,6 +24,7 @@ import org.gradle.cache.internal.GradleUserHomeCleanupFixture
 import org.gradle.integtests.fixtures.AbstractHttpDependencyResolutionTest
 import org.gradle.integtests.fixtures.UnsupportedWithConfigurationCache
 import org.gradle.integtests.fixtures.cache.FileAccessTimeJournalFixture
+import org.gradle.integtests.fixtures.executer.GradleContextualExecuter
 import org.gradle.integtests.fixtures.executer.IntegrationTestBuildContext
 import org.gradle.integtests.resolve.JvmLibraryArtifactResolveTestFixture
 import org.gradle.test.fixtures.file.TestFile
@@ -295,7 +296,6 @@ class ArtifactCacheUnusedEntryCleanupIntegrationTest extends AbstractHttpDepende
     }
 
 
-    @UnsupportedWithConfigurationCache(because = "re-download of deleted resources requires dependency resolution, which is skipped when configuration cache entry is reused")
     def "redownloads deleted HTTP script plugin resources"() {
         given:
         def uuid = UUID.randomUUID()
@@ -318,6 +318,9 @@ class ArtifactCacheUnusedEntryCleanupIntegrationTest extends AbstractHttpDepende
         when:
         assert resource.delete()
         server.expectGet("/$uniqueFileName", script)
+        if (GradleContextualExecuter.configCache) {
+            server.expectHead("/$uniqueFileName", script)
+        }
 
         and:
         succeeds()
@@ -326,8 +329,6 @@ class ArtifactCacheUnusedEntryCleanupIntegrationTest extends AbstractHttpDepende
         resource.assertExists()
     }
 
-
-    @UnsupportedWithConfigurationCache(because = "resources.text.fromUri() in doLast references a Gradle script object, which is unsupported with the configuration cache")
     def "redownloads deleted uri backed text resources"() {
         given:
         def uuid = UUID.randomUUID()
@@ -336,10 +337,11 @@ class ArtifactCacheUnusedEntryCleanupIntegrationTest extends AbstractHttpDepende
         server.expectGet("/$uniqueFileName", resourceFile)
         buildFile << """
             task uriText {
-                doLast {
-                    print resources.text.fromUri("${server.uri}/$uniqueFileName").asString()
-                }
-            }
+               def res = resources.text.fromUri("${server.uri}/$uniqueFileName")
+               doLast {
+                   print res.asString()
+               }
+           }
         """
 
         when:
