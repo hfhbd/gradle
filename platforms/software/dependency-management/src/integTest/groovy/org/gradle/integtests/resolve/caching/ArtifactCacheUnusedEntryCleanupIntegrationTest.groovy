@@ -22,6 +22,7 @@ import org.gradle.api.internal.artifacts.ivyservice.CacheLayout
 import org.gradle.api.internal.file.collections.SingleIncludePatternFileTree
 import org.gradle.cache.internal.GradleUserHomeCleanupFixture
 import org.gradle.integtests.fixtures.AbstractHttpDependencyResolutionTest
+import org.gradle.integtests.fixtures.ToBeFixedForConfigurationCache
 import org.gradle.integtests.fixtures.UnsupportedWithConfigurationCache
 import org.gradle.integtests.fixtures.cache.FileAccessTimeJournalFixture
 import org.gradle.integtests.fixtures.executer.GradleContextualExecuter
@@ -29,6 +30,7 @@ import org.gradle.integtests.fixtures.executer.IntegrationTestBuildContext
 import org.gradle.integtests.resolve.JvmLibraryArtifactResolveTestFixture
 import org.gradle.test.fixtures.file.TestFile
 import org.gradle.test.fixtures.maven.MavenModule
+import spock.lang.Issue
 
 import static java.util.concurrent.TimeUnit.DAYS
 import static org.gradle.api.internal.cache.CacheConfigurationsInternal.DEFAULT_MAX_AGE_IN_DAYS_FOR_DOWNLOADED_CACHE_ENTRIES
@@ -362,7 +364,8 @@ class ArtifactCacheUnusedEntryCleanupIntegrationTest extends AbstractHttpDepende
     }
 
 
-    @UnsupportedWithConfigurationCache(because = "re-download of deleted artifacts requires dependency resolution, which is skipped when configuration cache entry is reused")
+    @ToBeFixedForConfigurationCache(because = "re-download of deleted artifacts requires dependency resolution, which is skipped when configuration cache entry is reused")
+    @Issue("https://github.com/gradle/gradle/issues/16179")
     def "redownloads deleted artifacts for artifact query"() {
         given:
         def module = mavenHttpRepo.module('org.example', 'example', '1.0')
