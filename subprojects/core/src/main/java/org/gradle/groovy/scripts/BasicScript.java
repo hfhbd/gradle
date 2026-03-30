@@ -80,7 +80,7 @@ public abstract class BasicScript extends org.gradle.groovy.scripts.Script imple
     public Map<String, ? extends @Nullable Object> getProperties() {
         DeprecationLogger.deprecateAction("Dynamically calling getProperties() on a script")
             .willBecomeAnErrorInGradle10()
-            .withUpgradeGuideSection(9, "deprecated_script_get_properties")
+            .withUpgradeGuideSection(9, "deprecated_get_properties")
             .nagUser();
         return dynamicLookupRoutine.getProperties(dynamicObject);
     }
