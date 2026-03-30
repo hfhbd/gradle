@@ -19,7 +19,6 @@ package org.gradle.internal.logging.console
 import org.gradle.api.logging.configuration.ConsoleOutput
 import org.gradle.integtests.fixtures.AbstractIntegrationSpec
 import org.gradle.test.fixtures.ConcurrentTestUtil
-import org.gradle.test.fixtures.Flaky
 import org.gradle.test.preconditions.IntegTestPreconditions
 import org.gradle.test.preconditions.UnitTestPreconditions
 import org.gradle.test.precondition.Requires
