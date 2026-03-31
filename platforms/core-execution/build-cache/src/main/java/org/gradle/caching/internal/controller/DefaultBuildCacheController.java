@@ -72,8 +72,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class DefaultBuildCacheController implements BuildCacheController {
-    private final BlockingNotifier blockingNotifier;
-
     @VisibleForTesting
     final RemoteBuildCacheServiceHandle remote;
 
@@ -97,9 +95,8 @@ public class DefaultBuildCacheController implements BuildCacheController {
         OriginMetadataFactory originMetadataFactory,
         Interner<String> stringInterner
     ) {
-        this.blockingNotifier = blockingNotifier;
         this.local = toLocalHandle(config.getLocal(), config.isLocalPush(), buildOperationRunner);
-        this.remote = toRemoteHandle(config.getBuildPath(), config.getRemote(), config.isRemotePush(), buildOperationRunner, buildOperationProgressEventEmitter, logStackTraces, disableRemoteOnError);
+        this.remote = toRemoteHandle(config.getBuildPath(), config.getRemote(), config.isRemotePush(), buildOperationRunner, buildOperationProgressEventEmitter, logStackTraces, disableRemoteOnError, blockingNotifier);
         this.tmp = toTempFileStore(config.getLocal(), temporaryFileFactory);
         this.packExecutor = new PackOperationExecutor(
             buildOperationRunner,
@@ -139,7 +136,7 @@ public class DefaultBuildCacheController implements BuildCacheController {
         tmp.withTempFile(((BuildCacheKeyInternal) key).getHashCodeInternal(), file -> {
             Optional<BuildCacheLoadResult> remoteResult;
             try {
-                remoteResult = blockingNotifier.blocking(() -> remote.maybeLoad(key, file, f -> packExecutor.unpack(key, entity, f)));
+                remoteResult = remote.maybeLoad(key, file, f -> packExecutor.unpack(key, entity, f));
             } catch (Exception e) {
                 throw new BuildCacheOperationException("Could not load from remote cache: " + e.getMessage(), e);
             }
@@ -273,10 +270,10 @@ public class DefaultBuildCacheController implements BuildCacheController {
         }
     }
 
-    private static RemoteBuildCacheServiceHandle toRemoteHandle(String buildPath, @Nullable BuildCacheService service, boolean push, BuildOperationRunner buildOperationRunner, BuildOperationProgressEventEmitter buildOperationProgressEventEmitter, boolean logStackTraces, boolean disableOnError) {
+    private static RemoteBuildCacheServiceHandle toRemoteHandle(String buildPath, @Nullable BuildCacheService service, boolean push, BuildOperationRunner buildOperationRunner, BuildOperationProgressEventEmitter buildOperationProgressEventEmitter, boolean logStackTraces, boolean disableOnError, BlockingNotifier blockingNotifier) {
         return service == null
             ? NullRemoteBuildCacheServiceHandle.INSTANCE
-            : new OpFiringRemoteBuildCacheServiceHandle(buildPath, service, push, BuildCacheServiceRole.REMOTE, buildOperationRunner, buildOperationProgressEventEmitter, logStackTraces, disableOnError);
+            : new OpFiringRemoteBuildCacheServiceHandle(buildPath, service, push, BuildCacheServiceRole.REMOTE, buildOperationRunner, buildOperationProgressEventEmitter, logStackTraces, disableOnError, blockingNotifier);
     }
 
     private static LocalBuildCacheServiceHandle toLocalHandle(@Nullable LocalBuildCacheService local, boolean localPush, BuildOperationRunner buildOperationRunner) {
