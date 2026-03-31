@@ -541,7 +541,7 @@ Required by:
         when:
         server.resetExpectations()
         if (!GradleContextualExecuter.configCache) {
-            // TODO - should not need to do this
+            // We should not need to do this.  When vintage (non-CC) mode is deprecated and removed, this if will no longer be necessary
             repo1Module.pom.expectHeadMissing()
         }
 

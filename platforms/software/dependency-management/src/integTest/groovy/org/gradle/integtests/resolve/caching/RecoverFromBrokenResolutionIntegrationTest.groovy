@@ -72,7 +72,7 @@ class RecoverFromBrokenResolutionIntegrationTest extends AbstractHttpDependencyR
 
         and:
         if (GradleContextualExecuter.isConfigCache()) {
-            failureDescriptionStartsWith("Configuration cache state could not be cached")
+            failureDescriptionStartsWith("Configuration cache state could not be cached: field `mainSpec` of task `:retrieve` of type `org.gradle.api.tasks.Sync`")
         } else {
             failure.assertHasDescription("Execution failed for task ':retrieve' (registered in build file 'build.gradle').")
         }
