@@ -21,12 +21,13 @@ import org.gradle.internal.concurrent.BlockingNotifier;
 import org.gradle.internal.service.scopes.Scope;
 import org.gradle.internal.service.scopes.ServiceScope;
 import org.gradle.util.Path;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 
 @ServiceScope(Scope.BuildSession.class)
+@NullMarked
 public interface ProjectLeaseRegistry extends BlockingNotifier {
     /**
      * Get the lock for the state of all projects of the given build. This lock provides exclusive access to the state of all projects in the build.While this lock is held, no project state locks can be held.
@@ -93,7 +94,7 @@ public interface ProjectLeaseRegistry extends BlockingNotifier {
      * {@link #blocking(Factory)}, but returns no result.
      */
     @Override
-    void blocking(@NonNull Runnable action);
+    void blocking(Runnable action);
 
     /**
      * Performs some blocking action, returning the result. If the current thread is allowed to make changes to project locks, then release all locks
@@ -103,7 +104,7 @@ public interface ProjectLeaseRegistry extends BlockingNotifier {
      * action and reacquired at the end.
      */
     @Override
-    <T extends @Nullable Object> T blocking(@NonNull Factory<T> action);
+    <T extends @Nullable Object> T blocking(Factory<T> action);
 
     /**
      * Runs the given action and disallows the current thread from attempting to acquire or release any project locks.
