@@ -179,20 +179,23 @@ fun Project.selectStringProperties(vararg propertyNames: String): Map<String, St
 /**
  * Creates a [Provider] that returns `true` when this [Provider] has a value
  * and `false` otherwise. The returned [Provider] always has a value.
- * @see Provider.isPresent
+ * @see isPresent
  */
 private
 fun <T : Any> Provider<T>.presence(): Provider<Boolean> =
     map { true }.orElse(false)
 
 
-fun Project.gradleProperty(propertyName: String) = providers.gradleProperty(propertyName)
+fun Project.gradleProperty(propertyName: String): Provider<String> =
+    providers.gradleProperty(propertyName)
 
 
-fun Project.systemProperty(propertyName: String) = providers.systemProperty(propertyName)
+fun Project.systemProperty(propertyName: String): Provider<String> =
+    providers.systemProperty(propertyName)
 
 
-fun Project.environmentVariable(propertyName: String) = providers.environmentVariable(propertyName)
+fun Project.environmentVariable(propertyName: String): Provider<String> =
+    providers.environmentVariable(propertyName)
 
 
 fun Project.propertyFromAnySource(propertyName: String) = gradleProperty(propertyName)
@@ -298,7 +301,7 @@ val Project.performanceChannel: Provider<String>
     get() = environmentVariable(PERFORMANCE_CHANNEL_ENV).orElse(provider {
         val channelSuffix = if (OperatingSystem.current().isLinux) "" else "-${OperatingSystem.current().familyName.lowercase()}"
         "commits$channelSuffix-${buildBranch.get()}"
-     })
+    })
 
 val Project.performanceDbPassword: Provider<String>
     get() = environmentVariable(PERFORMANCE_DB_PASSWORD_ENV)
