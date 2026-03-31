@@ -176,6 +176,14 @@ fun Project.selectStringProperties(vararg propertyNames: String): Map<String, St
         }
     }.toMap()
 
+
+/**
+ * Parses a boolean value from the string or provides `false` when the string is absent.
+ */
+private
+fun Provider<String>.asBooleanOrFalse(): Provider<Boolean> =
+    map { it.toBoolean() }.orElse(false)
+
 /**
  * Creates a [Provider] that returns `true` when this [Provider] has a value
  * and `false` otherwise. The returned [Provider] always has a value.
@@ -403,12 +411,12 @@ val Project.maxParallelForks: Int
     get() = gradleProperty(MAX_PARALLEL_FORKS).getOrElse("4").toInt()
 
 
-val Project.autoDownloadAndroidStudio: Boolean
-    get() = propertyFromAnySource(AUTO_DOWNLOAD_ANDROID_STUDIO).getOrElse("false").toBoolean()
+val Project.autoDownloadAndroidStudio: Provider<Boolean>
+    get() = propertyFromAnySource(AUTO_DOWNLOAD_ANDROID_STUDIO).asBooleanOrFalse()
 
 
-val Project.runAndroidStudioInHeadlessMode: Boolean
-    get() = propertyFromAnySource(RUN_ANDROID_STUDIO_IN_HEADLESS_MODE).getOrElse("false").toBoolean()
+val Project.runAndroidStudioInHeadlessMode: Provider<Boolean>
+    get() = propertyFromAnySource(RUN_ANDROID_STUDIO_IN_HEADLESS_MODE).asBooleanOrFalse()
 
 
 val Project.androidStudioHome: Provider<String>

@@ -101,8 +101,8 @@ abstract class AndroidStudioProvisioningExtension {
         }
         return AndroidStudioSystemProperties(
             androidStudioInstallation,
-            project.autoDownloadAndroidStudio,
-            project.runAndroidStudioInHeadlessMode,
+            project.autoDownloadAndroidStudio.get(),
+            project.runAndroidStudioInHeadlessMode.get(),
             project.androidStudioHome,
             androidStudioJvmArgs,
             project.providers
