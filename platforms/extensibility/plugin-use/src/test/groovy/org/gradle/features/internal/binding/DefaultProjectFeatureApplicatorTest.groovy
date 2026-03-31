@@ -65,6 +65,7 @@ class DefaultProjectFeatureApplicatorTest extends Specification {
     def services = Mock(ServiceLookup)
     def typeAnnotationMetadataStore = Mock(TypeAnnotationMetadataStore)
     def projectFeatureRegistry = Mock(ProjectFeatureDeclarations)
+    def buildModelRegistrar = Mock(BuildModelRegistrarInternal)
     def instantiator = TestUtil.instantiatorFactory().inject(new Services())
     def applicator = instantiator.newInstance(DefaultProjectFeatureApplicator.class, classLoaderScope, objectFactory, internalProblemReporter, services)
     def plugin = Mock(Plugin)
@@ -215,7 +216,8 @@ class DefaultProjectFeatureApplicatorTest extends Specification {
             (ProjectLayout): projectLayout,
             (TaskContainer): taskContainer,
             (ConfigurationContainer): configurationContainer,
-            (TypeAnnotationMetadataStore): typeAnnotationMetadataStore
+            (TypeAnnotationMetadataStore): typeAnnotationMetadataStore,
+            (BuildModelRegistrarInternal): buildModelRegistrar
         ]
 
         @Override

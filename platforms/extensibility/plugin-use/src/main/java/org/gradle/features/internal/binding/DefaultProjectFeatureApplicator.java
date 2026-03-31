@@ -145,6 +145,7 @@ abstract public class DefaultProjectFeatureApplicator implements ProjectFeatureA
         // Context-specific services for this feature binding
         ServiceLookup featureServices = getContextSpecificServiceLookup(projectFeature);
         ObjectFactory featureObjectFactory = getObjectFactoryFactory().createObjectFactory(featureServices);
+        BuildModelRegistrarInternal buildModelRegistrar = getBuildModelRegistrar();
 
         // Instantiate the definition and build model objects with the feature-specific object factory
         OwnDefinition definition = featureObjectFactory.newInstance(projectFeature.getDefinitionImplementationType());
@@ -152,11 +153,11 @@ abstract public class DefaultProjectFeatureApplicator implements ProjectFeatureA
         ProjectFeatureSupportInternal.attachDefinitionContext(definition, buildModelInstance, this, getProjectFeatureDeclarations(), featureObjectFactory);
 
         // Construct an apply action context with the feature-specific object factory
-        ProjectFeatureApplicationContextInternal applyActionContext =
+        ProjectFeatureApplicationContext applyActionContext =
             projectObjectFactory.newInstance(DefaultProjectFeatureApplicationContextInternal.class, featureObjectFactory);
 
         // bind any nested definitions to build model instances
-        bindNestedDefinitions(projectFeature.getDefinitionPublicType(), Cast.uncheckedCast(definition), applyActionContext, projectFeature.getNestedBuildModelTypes());
+        bindNestedDefinitions(projectFeature.getDefinitionPublicType(), Cast.uncheckedCast(definition), buildModelRegistrar, projectFeature.getNestedBuildModelTypes());
 
         return new DefaultFeatureApplication<>(
             projectFeature.getDefinitionImplementationType(),
@@ -169,13 +170,13 @@ abstract public class DefaultProjectFeatureApplicator implements ProjectFeatureA
         );
     }
 
-    private void bindNestedDefinitions(Class<?> publicType, DynamicObjectAware parent, ProjectFeatureApplicationContextInternal applyActionContext, Map<Class<?>, Class<?>> buildModelImplementationTypes) {
+    private void bindNestedDefinitions(Class<?> publicType, DynamicObjectAware parent, BuildModelRegistrarInternal buildModelRegistrar, Map<Class<?>, Class<?>> buildModelImplementationTypes) {
         // Must use an anonymous class for config cache compatibility
         propertyWalker.walkProperties(publicType, parent, new PropertyWalker.Visitor() {
             @Override
             public void visit(PropertyAnnotationMetadata propertyMetadata, Object propertyValue) {
                 if (Definition.class.isAssignableFrom(propertyMetadata.getDeclaredReturnType().getRawType())) {
-                    bindNestedDefinition(propertyValue, applyActionContext, buildModelImplementationTypes);
+                    bindNestedDefinition(propertyValue, buildModelRegistrar, buildModelImplementationTypes);
                 }
                 if (NamedDomainObjectContainer.class.isAssignableFrom(propertyMetadata.getDeclaredReturnType().getRawType())) {
                     NamedDomainObjectContainer<?> ndoc = Cast.uncheckedCast(propertyValue);
@@ -185,7 +186,7 @@ abstract public class DefaultProjectFeatureApplicator implements ProjectFeatureA
                         ndoc.all(new Action<Object>() {
                             @Override
                             public void execute(Object element) {
-                                bindNestedDefinition(element, applyActionContext, buildModelImplementationTypes);
+                                bindNestedDefinition(element, buildModelRegistrar, buildModelImplementationTypes);
                             }
                         });
                     }
@@ -194,9 +195,9 @@ abstract public class DefaultProjectFeatureApplicator implements ProjectFeatureA
         });
     }
 
-    private static void bindNestedDefinition(Object propertyValue, ProjectFeatureApplicationContextInternal applyActionContext, Map<Class<?>, Class<?>> buildModelImplementationTypes) {
+    private static void bindNestedDefinition(Object propertyValue, BuildModelRegistrarInternal buildModelRegistrar, Map<Class<?>, Class<?>> buildModelImplementationTypes) {
         Definition<?> nestedDefinition = Cast.uncheckedCast(propertyValue);
-        applyActionContext.registerBuildModel(nestedDefinition, buildModelImplementationTypes);
+        buildModelRegistrar.registerBuildModel(nestedDefinition, buildModelImplementationTypes);
     }
 
     private <OwnDefinition extends Definition<OwnBuildModel>, OwnBuildModel extends BuildModel> ServiceLookup getContextSpecificServiceLookup(ProjectFeatureImplementation<OwnDefinition, OwnBuildModel> projectFeature) {
@@ -233,6 +234,9 @@ abstract public class DefaultProjectFeatureApplicator implements ProjectFeatureA
 
     @Inject
     abstract protected TypeAnnotationMetadataStore getTypeAnnotationMetadataStore();
+
+    @Inject
+    abstract protected BuildModelRegistrarInternal getBuildModelRegistrar();
 
     /**
      * Walks the public properties of a given object, visiting each property and descending into any properties that are annotated with {@link Nested}.
@@ -343,7 +347,8 @@ abstract public class DefaultProjectFeatureApplicator implements ProjectFeatureA
      * The internal implementation of the context passed to project feature apply actions, exposing an object factory
      * appropriate for the configured safety of the apply action.
      */
-    abstract static class DefaultProjectFeatureApplicationContextInternal implements org.gradle.features.internal.binding.ProjectFeatureApplicationContextInternal {
+    abstract static class DefaultProjectFeatureApplicationContextInternal implements ProjectFeatureApplicationContext {
+
         private final ObjectFactory objectFactory;
 
         @Inject
@@ -355,6 +360,11 @@ abstract public class DefaultProjectFeatureApplicator implements ProjectFeatureA
         @Override
         public ObjectFactory getObjectFactory() {
             return objectFactory;
+        }
+
+        @Override
+        public <T extends Definition<V>, V extends BuildModel> V getBuildModel(T definition) {
+            return Cast.uncheckedNonnullCast(ProjectFeatureSupportInternal.getContext((DynamicObjectAware) definition).getBuildModel());
         }
     }
 
