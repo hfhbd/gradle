@@ -38,9 +38,8 @@ import gradlebuild.basics.repoRoot
 import gradlebuild.basics.toolchainInstallationPaths
 import gradlebuild.integrationtests.addDependenciesAndConfigurations
 import gradlebuild.integrationtests.configureTestSourceSetInIde
-import gradlebuild.integrationtests.ide.AndroidStudioProvisioningExtension
 import gradlebuild.integrationtests.ide.AndroidStudioProvisioningPlugin
-import gradlebuild.integrationtests.ide.DEFAULT_ANDROID_STUDIO_VERSION
+import gradlebuild.integrationtests.ide.composeAndroidStudioSystemProperties
 import gradlebuild.jvm.JvmCompileExtension
 import gradlebuild.performance.Config.performanceTestAndroidStudioJvmArgs
 import gradlebuild.performance.generator.tasks.AbstractProjectGeneratorTask
@@ -70,7 +69,6 @@ import org.gradle.api.tasks.bundling.Zip
 import org.gradle.api.tasks.testing.Test
 import org.gradle.jvm.toolchain.internal.LocationListInstallationSupplier.JAVA_INSTALLATIONS_PATHS_PROPERTY
 import org.gradle.kotlin.dsl.*
-import org.gradle.process.CommandLineArgumentProvider
 import org.w3c.dom.Document
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -112,22 +110,17 @@ class PerformanceTestPlugin : Plugin<Project> {
     private
     fun Project.configureAndroidStudioProvisioning() {
         pluginManager.apply(AndroidStudioProvisioningPlugin::class)
-        extensions.configure(AndroidStudioProvisioningExtension::class) {
-            androidStudioVersion.set(DEFAULT_ANDROID_STUDIO_VERSION)
-        }
     }
 
     private
     fun Project.createExtension(performanceTestSourceSet: SourceSet, cleanTestProjectsTask: TaskProvider<Delete>): PerformanceTestExtension {
         val buildService = registerBuildService()
-        val androidStudioProvisioningExtension = extensions.getByType(AndroidStudioProvisioningExtension::class)
         val performanceTestExtension = extensions.create<PerformanceTestExtension>(
             "performanceTest",
             this,
             performanceTestSourceSet,
             cleanTestProjectsTask,
             buildService,
-            androidStudioProvisioningExtension.androidStudioSystemProperties(this, performanceTestAndroidStudioJvmArgs)
         )
         performanceTestExtension.baselines = project.performanceBaselines
         return performanceTestExtension
@@ -348,7 +341,6 @@ class PerformanceTestExtension(
     private val performanceSourceSet: SourceSet,
     private val cleanTestProjectsTask: TaskProvider<Delete>,
     private val buildService: Provider<PerformanceTestService>,
-    private val androidProjectJvmArguments: CommandLineArgumentProvider
 ) {
     private
     val registeredPerformanceTests: MutableList<TaskProvider<out Task>> = mutableListOf()
@@ -366,10 +358,18 @@ class PerformanceTestExtension(
         return doRegisterTestProject(testProject, testProjectGeneratorTask, configurationAction)
     }
 
-    fun <T : Task> registerAndroidTestProject(testProject: String, testProjectGeneratorTask: Class<T>, configurationAction: Action<in T>): TaskProvider<T> {
+    fun <T : Task> registerAndroidTestProject(testProject: String, testProjectGeneratorTask: Class<T>, configurationAction: Action<in T> = Action {}): TaskProvider<T> {
+        return registerAndroidTestProject(testProject, emptyList(), testProjectGeneratorTask, configurationAction)
+    }
+
+    fun <T : Task> registerAndroidTestProject(
+        testProject: String,
+        additionalStudioJvmArgs: List<String>,
+        testProjectGeneratorTask: Class<T>,
+        configurationAction: Action<in T>
+    ): TaskProvider<T> {
         return doRegisterTestProject(testProject, testProjectGeneratorTask, configurationAction) {
-            // AndroidStudio jvmArgs could be set per project, but at the moment that is not necessary
-            jvmArgumentProviders.add(androidProjectJvmArguments)
+            jvmArgumentProviders.add(project.composeAndroidStudioSystemProperties(performanceTestAndroidStudioJvmArgs + additionalStudioJvmArgs))
             environment("JAVA_HOME", LazyEnvironmentVariable { javaLauncher.get().metadata.installationPath.asFile.absolutePath })
         }
     }
