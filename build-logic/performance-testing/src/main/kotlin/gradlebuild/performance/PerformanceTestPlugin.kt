@@ -56,6 +56,7 @@ import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.internal.tasks.testing.filter.DefaultTestFilter
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -147,12 +148,13 @@ class PerformanceTestPlugin : Plugin<Project> {
     fun Project.addPerformanceTestConfigurationAndDependencies() {
         addDependenciesAndConfigurations("performance")
 
+        val testLibs = project.the<VersionCatalogsExtension>().named("testLibs")
         val junit by configurations.creating
         dependencies {
             if (project.name != "enterprise-plugin-performance") {
                 "performanceTestImplementation"(project(":internal-performance-testing"))
             }
-            junit("junit:junit:4.13")
+            junit(testLibs.findLibrary("junit").get())
         }
     }
 
