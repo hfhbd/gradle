@@ -362,12 +362,12 @@ class PerformanceTestExtension(
     inline fun <reified T : Task> registerTestProject(testProject: String, noinline configuration: T.() -> Unit): TaskProvider<T> =
         registerTestProject(testProject, T::class.java, configuration)
 
-    fun <T : Task> registerTestProject(testProject: String, type: Class<T>, configurationAction: Action<in T>): TaskProvider<T> {
-        return doRegisterTestProject(testProject, type, configurationAction)
+    fun <T : Task> registerTestProject(testProject: String, testProjectGeneratorTask: Class<T>, configurationAction: Action<in T>): TaskProvider<T> {
+        return doRegisterTestProject(testProject, testProjectGeneratorTask, configurationAction)
     }
 
-    fun <T : Task> registerAndroidTestProject(testProject: String, type: Class<T>, configurationAction: Action<in T>): TaskProvider<T> {
-        return doRegisterTestProject(testProject, type, configurationAction) {
+    fun <T : Task> registerAndroidTestProject(testProject: String, testProjectGeneratorTask: Class<T>, configurationAction: Action<in T>): TaskProvider<T> {
+        return doRegisterTestProject(testProject, testProjectGeneratorTask, configurationAction) {
             // AndroidStudio jvmArgs could be set per project, but at the moment that is not necessary
             jvmArgumentProviders.add(androidProjectJvmArguments)
             environment("JAVA_HOME", LazyEnvironmentVariable { javaLauncher.get().metadata.installationPath.asFile.absolutePath })
@@ -375,8 +375,14 @@ class PerformanceTestExtension(
     }
 
     private
-    fun <T : Task> doRegisterTestProject(testProject: String, type: Class<T>, configurationAction: Action<in T>, testSpecificConfigurator: PerformanceTest.() -> Unit = {}): TaskProvider<T> {
-        val generatorTask = project.tasks.register(testProject, type, configurationAction)
+    fun <T : Task> doRegisterTestProject(
+        testProject: String,
+        testProjectGeneratorTask: Class<T>,
+        configurationAction: Action<in T>,
+        testSpecificConfigurator: PerformanceTest.() -> Unit = {}
+    ): TaskProvider<T> {
+
+        val generatorTask = project.tasks.register(testProject, testProjectGeneratorTask, configurationAction)
         val currentlyRegisteredTestProjects = registeredTestProjects.toList()
         cleanTestProjectsTask.configure {
             delete(generatorTask.map { it.outputs })
