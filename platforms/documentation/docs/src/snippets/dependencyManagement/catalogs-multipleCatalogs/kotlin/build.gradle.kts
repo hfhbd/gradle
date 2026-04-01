@@ -7,7 +7,10 @@ dependencies {
     implementation(libs.guava)
     implementation(libs.commons.lang3)
 
-    testImplementation(tools.junit.api)
-    testImplementation(tools.mockito)
+    implementation(tools.errorprone.annotations)
+    implementation(tools.jsr305)
+
+    testImplementation(testLibs.junit.api)
+    testImplementation(testLibs.mockito)
 }
 // end::use-multiple-catalogs[]
