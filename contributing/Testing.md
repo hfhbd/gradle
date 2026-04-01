@@ -3,7 +3,7 @@
 Below are some of the basic principles for writing tests for Gradle and [contribute to it](../CONTRIBUTING.md), however, this guide is not exhaustive.
 
 Our tests are written in [Spock](https://spockframework.org/spock/docs/).
-You can find its exact version [here](../packaging/distributions-dependencies/build.gradle.kts).
+You can find its exact version [here](../gradle/dependency-management/test.versions.toml).
 
 We use a combination of unit tests and integration tests.
 What we call integration tests are tests that run an entire Gradle build with specific build files and check its effects, so they are more like end-to-end tests.
