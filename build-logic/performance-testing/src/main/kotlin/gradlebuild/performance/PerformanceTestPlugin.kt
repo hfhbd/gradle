@@ -31,6 +31,7 @@ import gradlebuild.basics.performanceChannel
 import gradlebuild.basics.performanceDependencyBuildIds
 import gradlebuild.basics.performanceGeneratorMaxProjects
 import gradlebuild.basics.performanceStage
+import gradlebuild.basics.performanceTestBuildOperationTrace
 import gradlebuild.basics.performanceTestVerbose
 import gradlebuild.basics.propertiesForPerformanceDb
 import gradlebuild.basics.releasedVersionsFile
@@ -435,6 +436,7 @@ class PerformanceTestExtension(
             resultsJson = project.layout.buildDirectory.file("${this.name}/${Config.performanceTestResultsJson}").get().asFile
             addDatabaseParameters(project.propertiesForPerformanceDb)
             channel = project.performanceChannel
+            buildOperationTrace = project.performanceTestBuildOperationTrace
             testClassesDirs = performanceSourceSet.output.classesDirs
             classpath = performanceSourceSet.runtimeClasspath
 
