@@ -318,6 +318,15 @@ val Project.performanceDbPassword: Provider<String>
 val Project.performanceTestVerbose: Provider<String>
     get() = gradleProperty(PERFORMANCE_TEST_VERBOSE)
 
+/**
+ * Run with `-PperformanceTest.buildOperationTrace=true` to produce a build operation trace (including Perfetto trace) for tested invocation.
+ *
+ * Producing a trace has significant overhead, so it should only be used for sanity-checking and troubleshooting performance tests.
+ *
+ * For details see `--build-ops-trace` in [Gradle Profiler](https://github.com/gradle/gradle-profiler) documentation.
+ */
+val Project.performanceTestBuildOperationTrace: Provider<Boolean>
+    get() = propertyFromAnySource("performanceTest.buildOperationTrace").asBooleanOrFalse()
 
 val Project.propertiesForPerformanceDb: Map<String, String>
     get() {
