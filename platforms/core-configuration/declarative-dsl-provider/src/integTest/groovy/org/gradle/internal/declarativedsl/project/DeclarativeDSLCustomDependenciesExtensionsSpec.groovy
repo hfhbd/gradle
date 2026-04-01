@@ -27,6 +27,8 @@ import org.gradle.features.annotations.BindsProjectType
 import org.gradle.features.annotations.RegistersProjectFeatures
 import org.gradle.features.binding.BuildModel
 import org.gradle.features.binding.Definition
+import org.gradle.features.binding.ProjectFeatureApplicationContext
+import org.gradle.features.binding.ProjectTypeApplyAction
 import org.gradle.features.binding.ProjectTypeBinding
 import org.gradle.features.binding.ProjectTypeBindingBuilder
 import org.gradle.features.registration.ConfigurationRegistrar
@@ -134,8 +136,8 @@ final class DeclarativeDSLCustomDependenciesExtensionsSpec extends AbstractInteg
             import ${BindsProjectType.class.name};
             import ${ProjectTypeBinding.class.name};
             import ${ProjectTypeBindingBuilder.class.name};
-            import org.gradle.features.binding.ProjectTypeApplyAction;
-            import org.gradle.features.binding.ProjectFeatureApplicationContext;
+            import ${ProjectTypeApplyAction.class.name};
+            import ${ProjectFeatureApplicationContext.class.name};
 
             @${BindsProjectType.class.simpleName}(RestrictedPlugin.Binding.class)
             public abstract class RestrictedPlugin implements Plugin<Project> {
@@ -146,7 +148,7 @@ final class DeclarativeDSLCustomDependenciesExtensionsSpec extends AbstractInteg
                     }
                 }
 
-                static abstract class ApplyAction implements ProjectTypeApplyAction<LibraryExtension, LibraryExtension.Model> {
+                static abstract class ApplyAction implements ${ProjectTypeApplyAction.class.simpleName}<LibraryExtension, LibraryExtension.Model> {
                     @javax.inject.Inject
                     public ApplyAction() { }
 
@@ -154,7 +156,7 @@ final class DeclarativeDSLCustomDependenciesExtensionsSpec extends AbstractInteg
                     abstract protected ${ConfigurationRegistrar.class.name} getConfigurationRegistrar();
 
                     @Override
-                    public void apply(ProjectFeatureApplicationContext context, LibraryExtension definition, LibraryExtension.Model model) {
+                    public void apply(${ProjectFeatureApplicationContext.class.simpleName} context, LibraryExtension definition, LibraryExtension.Model model) {
                         // no plugin application, must create configurations manually
                         DependencyScopeConfiguration conf = getConfigurationRegistrar().dependencyScope("conf").get();
 
@@ -218,8 +220,8 @@ final class DeclarativeDSLCustomDependenciesExtensionsSpec extends AbstractInteg
             import ${BindsProjectType.class.name};
             import ${ProjectTypeBinding.class.name};
             import ${ProjectTypeBindingBuilder.class.name};
-            import org.gradle.features.binding.ProjectTypeApplyAction;
-            import org.gradle.features.binding.ProjectFeatureApplicationContext;
+            import ${ProjectTypeApplyAction.class.name};
+            import ${ProjectFeatureApplicationContext.class.name};
 
             @${BindsProjectType.class.simpleName}(RestrictedPlugin.Binding.class)
             public abstract class RestrictedPlugin implements Plugin<Project> {
@@ -230,7 +232,7 @@ final class DeclarativeDSLCustomDependenciesExtensionsSpec extends AbstractInteg
                     }
                 }
 
-                static abstract class ApplyAction implements ProjectTypeApplyAction<LibraryExtension, LibraryExtension.Model> {
+                static abstract class ApplyAction implements ${ProjectTypeApplyAction.class.simpleName}<LibraryExtension, LibraryExtension.Model> {
                     @javax.inject.Inject
                     public ApplyAction() { }
 
@@ -238,7 +240,7 @@ final class DeclarativeDSLCustomDependenciesExtensionsSpec extends AbstractInteg
                     abstract protected ${ConfigurationRegistrar.class.name} getConfigurationRegistrar();
 
                     @Override
-                    public void apply(ProjectFeatureApplicationContext context, LibraryExtension definition, LibraryExtension.Model model) {
+                    public void apply(${ProjectFeatureApplicationContext.class.simpleName} context, LibraryExtension definition, LibraryExtension.Model model) {
                         // no plugin application, must create configurations manually
                         DependencyScopeConfiguration myConf = getConfigurationRegistrar().dependencyScope("myConf").get();
                         DependencyScopeConfiguration myOtherConf = getConfigurationRegistrar().dependencyScope("myOtherConf").get();
@@ -915,8 +917,8 @@ final class DeclarativeDSLCustomDependenciesExtensionsSpec extends AbstractInteg
             import ${BindsProjectType.class.name};
             import ${ProjectTypeBinding.class.name};
             import ${ProjectTypeBindingBuilder.class.name};
-            import org.gradle.features.binding.ProjectTypeApplyAction;
-            import org.gradle.features.binding.ProjectFeatureApplicationContext;
+            import ${ProjectTypeApplyAction.class.name};
+            import ${ProjectFeatureApplicationContext.class.name};
 
             @${BindsProjectType.class.simpleName}(RestrictedPlugin.Binding.class)
             public abstract class RestrictedPlugin implements Plugin<Project> {
@@ -927,7 +929,7 @@ final class DeclarativeDSLCustomDependenciesExtensionsSpec extends AbstractInteg
                     }
                 }
 
-                static abstract class ApplyAction implements ProjectTypeApplyAction<LibraryExtension, LibraryExtension.Model> {
+                static abstract class ApplyAction implements ${ProjectTypeApplyAction.class.simpleName}<LibraryExtension, LibraryExtension.Model> {
                     @javax.inject.Inject
                     public ApplyAction() { }
 
@@ -938,7 +940,7 @@ final class DeclarativeDSLCustomDependenciesExtensionsSpec extends AbstractInteg
                     abstract protected ${TaskRegistrar.class.name} getTaskRegistrar();
 
                     @Override
-                    public void apply(ProjectFeatureApplicationContext context, LibraryExtension definition, LibraryExtension.Model model) {
+                    public void apply(${ProjectFeatureApplicationContext.class.simpleName} context, LibraryExtension definition, LibraryExtension.Model model) {
                         // no plugin application, must create configurations manually
                         DependencyScopeConfiguration api = getConfigurationRegistrar().dependencyScope("api").get();
                         DependencyScopeConfiguration implementation = getConfigurationRegistrar().dependencyScope("implementation").get();
@@ -985,8 +987,8 @@ final class DeclarativeDSLCustomDependenciesExtensionsSpec extends AbstractInteg
             import ${BindsProjectType.class.name}
             import ${ProjectTypeBinding.class.name}
             import ${ProjectTypeBindingBuilder.class.name}
-            import org.gradle.features.binding.ProjectTypeApplyAction
-            import org.gradle.features.binding.ProjectFeatureApplicationContext
+            import ${ProjectTypeApplyAction.class.name}
+            import ${ProjectFeatureApplicationContext.class.name}
 
             @${BindsProjectType.class.simpleName}(RestrictedPlugin.Binding::class)
             class RestrictedPlugin : Plugin<Project> {
@@ -997,11 +999,11 @@ final class DeclarativeDSLCustomDependenciesExtensionsSpec extends AbstractInteg
                     }
                 }
 
-                abstract class ApplyAction @javax.inject.Inject constructor() : ProjectTypeApplyAction<LibraryExtension, LibraryExtension.Model> {
+                abstract class ApplyAction @javax.inject.Inject constructor() : ${ProjectTypeApplyAction.class.simpleName}<LibraryExtension, LibraryExtension.Model> {
                     @get:javax.inject.Inject
                     abstract val configurationRegistrar: ${ConfigurationRegistrar.class.name}
 
-                    override fun apply(context: ProjectFeatureApplicationContext, definition: LibraryExtension, buildModel: LibraryExtension.Model) {
+                    override fun apply(context: ${ProjectFeatureApplicationContext.class.simpleName}, definition: LibraryExtension, buildModel: LibraryExtension.Model) {
                         // no plugin application, must create configurations manually
                         val api: DependencyScopeConfiguration = configurationRegistrar.dependencyScope("api").get()
                         val implementation: DependencyScopeConfiguration = configurationRegistrar.dependencyScope("implementation").get()
