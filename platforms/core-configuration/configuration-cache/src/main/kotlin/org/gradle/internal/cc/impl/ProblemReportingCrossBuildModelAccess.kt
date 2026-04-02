@@ -22,7 +22,7 @@ import org.gradle.internal.buildoption.InternalOptions
 import org.gradle.internal.configuration.problems.ProblemFactory
 import org.gradle.internal.configuration.problems.ProblemsListener
 
-private val CROSS_BUILD_ACCESS_FLAG = InternalOptions.ofBoolean("org.gradle.unsafe.isolated-projects.report-cross-build-access", false)
+private val CROSS_BUILD_ACCESS_FLAG = InternalOptions.ofBoolean("org.gradle.internal.isolated-projects.report-cross-build-access", false)
 
 internal
 class ProblemReportingCrossBuildModelAccess(
@@ -32,7 +32,7 @@ class ProblemReportingCrossBuildModelAccess(
 ) : CrossBuildModelAccess {
 
     override fun access(referrer: GradleInternal, gradle: GradleInternal): GradleInternal =
-        if (internalOptions.getOptionValue(CROSS_BUILD_ACCESS_FLAG).get()) {
+        if (internalOptions.getBoolean(CROSS_BUILD_ACCESS_FLAG)) {
             CrossBuildConfigurationReportingGradle(gradle, referrer, problems, problemFactory)
         } else {
             gradle
