@@ -16,6 +16,7 @@
 
 package org.gradle.testkit.runner
 
+import org.gradle.integtests.fixtures.versions.ReleasedVersionDistributions
 import org.gradle.testkit.runner.fixtures.NonCrossVersion
 import org.junit.Assume
 
@@ -28,7 +29,7 @@ import static org.gradle.tooling.internal.consumer.DefaultGradleConnector.MINIMU
 @NonCrossVersion
 class GradleRunnerUnsupportedGradleVersionFailureIntegrationTest extends BaseGradleRunnerIntegrationTest {
 
-    // Gradle 3.5.1 is above RUN_BUILDS.since (2.6) but below MINIMUM_SUPPORTED_GRADLE_VERSION (4.0),
+    // Pick a Gradle version above RUN_BUILDS.since (2.6) but below MINIMUM_SUPPORTED_GRADLE_VERSION,
     // so it triggers the deprecation warning path in ToolingApiGradleExecutor/BuildResultOutputFeatureCheck.
     // Regression test for https://github.com/gradle/gradle/issues/36267
     def "succeeds running build with deprecated Gradle version below minimum supported version"() {
@@ -36,7 +37,11 @@ class GradleRunnerUnsupportedGradleVersionFailureIntegrationTest extends BaseGra
         Assume.assumeTrue(embedded)
 
         given:
-        def oldGradleVersion = "3.5.1"
+        def oldGradleVersion = new ReleasedVersionDistributions().all
+            .collect { it.version }
+            .findAll { it < MINIMUM_SUPPORTED_GRADLE_VERSION }
+            .max()
+            .version
         buildFile << helloWorldTask()
         List<LogRecord> logRecords = []
         def handler = new Handler() {
