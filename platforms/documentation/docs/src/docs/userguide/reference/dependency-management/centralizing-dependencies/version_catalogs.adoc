@@ -85,7 +85,7 @@ include::sample[dir="snippets/dependencyManagement/catalogs-settings/common",fil
 Where the catalog can be imported from a <<#sec:importing-catalog-from-file,local file>> or a <<#sec:importing-published-catalog,repository>>.
 
 [[sec:type-unsafe-access-to-catalog]]
-Catalogs use a <<#sec::toml-dependencies-format,TOML format>> in which accessors map directly to the aliases and versions defined in it, providing type-safe access to dependencies and plugins.
+Version catalogs use a <<#sec::toml-dependencies-format,TOML format>> in which accessors map directly to the aliases and versions defined in it, providing type-safe access to dependencies and plugins.
 This enables IDEs to provide autocompletion, highlight typos, and identify missing dependencies as errors.
 
 [[sec:mapping-aliases-to-accessors]]
@@ -130,11 +130,11 @@ Each dash in the alias maps to a dot in the accessor, creating a nested group th
 
 === Classifiers, artifact types, and capabilities
 
-Version catalogs intentionally capture only dependency coordinates — `group`, `name`, and `version`.
+Version catalogs intentionally capture only dependency coordinates: `group`, `name`, and `version`.
 They do not support classifiers, artifact types (`@aar`, `@zip`), excludes, or capabilities directly in the <<#sec::toml-dependencies-format,TOML>> file.
 
 ====
-include::sample[dir="snippets/dependencyManagement/catalogs-classifiers/common/gradle",files="libs.versions.toml[tags=catalog]"]
+include::sample[dir="snippets/dependencyManagement/catalogs-classifiers/common/gradle",files="libs.versions.toml[]"]
 ====
 
 When you need a specific classifier for a dependency declared in a version catalog, use `variantOf()` at the dependency declaration site in your build script:
@@ -166,14 +166,14 @@ include::sample[dir="snippets/dependencyManagement/catalogs-javaPlatformCatalog/
 ====
 
 The `from()` method accepts standard dependency notation (`"group:artifact:version"`).
-Gradle downloads the <<#sec::toml-dependencies-format,TOML>> file from whatever repositories are configured in the `dependencyResolutionManagement` block and makes its entries available as type-safe accessors, just like a local `libs.versions.toml` file.
+Gradle downloads the <<#sec::toml-dependencies-format,TOML>> file from whatever repositories are configured in the `dependencyResolutionManagement` block and makes its entries available as type-safe accessors.
 
 Once imported, all projects in the build can reference the catalog's libraries, plugins, and bundles using the catalog name (e.g., `libs.someLibrary`).
 
 [[sec:importing-catalog-from-file]]
 == Importing a catalog from a file
 
-IMPORTANT: Gradle automatically imports a catalog in the `gradle` directory named `libs.versions.toml`.
+IMPORTANT: Gradle *automatically* imports a catalog in the `gradle` directory named `libs.versions.toml`. You do not need to import it programmatically.
 
 [[sec:sharing-catalogs]]
 The link:{javadocPath}/org/gradle/api/initialization/dsl/VersionCatalogBuilder.html[version catalog builder API] allows importing a catalog from an external file, enabling reuse across different parts of a build, such as sharing the main build's catalog with `buildSrc`.
@@ -226,6 +226,9 @@ They use the TOML format:
 include::sample[dir="snippets/dependencyManagement/catalogs-toml/common",files="gradle/libs.versions.toml[]"]
 ====
 
+However, they can reside in other folders and use different names.
+See <<sec:importing-catalog-from-file>> for importing a catalog from a custom location, or <<sec:multiple-catalogs>> for registering additional catalogs.
+
 [[sec::toml-dependencies-format]]
 === The TOML format
 
@@ -264,7 +267,7 @@ Each library is mapped to a GAV coordinate: `group`, `artifact`, `version`.
 They can be declared as a simple string, in which case they are interpreted as coordinates, or a separate group and name:
 
 ====
-include::sample[dir="snippets/dependencyManagement/catalogs-toml/common",files="gradle/test-libs.versions.toml[]"]
+include::sample[dir="snippets/dependencyManagement/catalogs-toml/common",files="gradle/test-libs.versions.toml[tags=catalog]"]
 ====
 
 You can also define strict or preferred versions using `strictly` or `prefer`:
@@ -367,6 +370,18 @@ These are explicit limitations the catalog TOML format does not support:
 * `exclude` rules
 * `capabilities` requirements
 
+[[sec:programmatic-catalog-versions]]
+== Programming catalogs
+
+Version catalogs can be declared programmatically in the `settings.gradle(.kts)` file using the link:{javadocPath}/org/gradle/api/initialization/Settings.html[Settings API]:
+
+====
+include::sample[dir="snippets/dependencyManagement/catalogs-settings/kotlin",files="settings.gradle.kts[tags=catalog_with_versions]"]
+include::sample[dir="snippets/dependencyManagement/catalogs-settings/groovy",files="settings.gradle[tags=catalog_with_versions]"]
+====
+
+TIP: Don't use `libs` for your programmatic version catalog name if you have the default `libs.versions.toml` in your project.
+
 [[sec:version-catalog-plugin]]
 == Publishing a catalog
 
@@ -384,34 +399,44 @@ This is the best approach for organizations that need to distribute a catalog to
 
 === Using the `version-catalog` plugin
 
-The `version-catalog` plugin lets you declare a catalog and publish it as a Maven or Ivy artifact.
+The `version-catalog` plugin lets you publish a catalog as a Maven or Ivy artifact.
+It works with both an existing TOML file and programmatic catalog declarations.
 
-First, apply the plugin:
+If you already have a `gradle/libs.versions.toml` file, you can publish it directly by importing it into the link:{javadocPath}/org/gradle/api/plugins/catalog/CatalogPluginExtension.html[catalog extension]:
 
 ====
-include::sample[dir="snippets/dependencyManagement/catalogs-versionCatalogPlugin/kotlin",files="build.gradle.kts[tags=apply_plugin]"]
-include::sample[dir="snippets/dependencyManagement/catalogs-versionCatalogPlugin/groovy",files="build.gradle[tags=apply_plugin]"]
+include::sample[dir="snippets/dependencyManagement/catalogs-publishTomlFile/kotlin",files="build.gradle.kts[tags=publish_toml_file]"]
+include::sample[dir="snippets/dependencyManagement/catalogs-publishTomlFile/groovy",files="build.gradle[tags=publish_toml_file]"]
 ====
 
-Then, use the link:{javadocPath}/org/gradle/api/plugins/catalog/CatalogPluginExtension.html[catalog extension] to declare the catalog entries:
+This keeps the TOML file as the single source of truth — there is no need to redeclare entries in the build script.
+
+Alternatively, you can declare the catalog entries programmatically in the `catalog` extension:
 
 ====
 include::sample[dir="snippets/dependencyManagement/catalogs-versionCatalogPlugin/kotlin",files="build.gradle.kts[tags=catalog_spec]"]
 include::sample[dir="snippets/dependencyManagement/catalogs-versionCatalogPlugin/groovy",files="build.gradle[tags=catalog_spec]"]
 ====
 
-Finally, apply either the `maven-publish` or `ivy-publish` plugin and configure a publication using the `versionCatalog` component:
+In both cases, configure a publication using the `versionCatalog` component:
 
 ====
 include::sample[dir="snippets/dependencyManagement/catalogs-versionCatalogPlugin/kotlin",files="build.gradle.kts[tags=catalog_publish]"]
 include::sample[dir="snippets/dependencyManagement/catalogs-versionCatalogPlugin/groovy",files="build.gradle[tags=catalog_publish]"]
 ====
 
-When you run `./gradlew publish`, a `libs.versions.toml` file is generated from the catalog declaration and uploaded as a Maven artifact (with the `.toml` extension).
+When you run `./gradlew publish`, the catalog is uploaded as a Maven artifact (with the `.toml` extension).
 This artifact can then be <<#sec:importing-published-catalog,imported by other Gradle builds>>.
 
 NOTE: The published artifact is a standard TOML file attached to Maven coordinates (e.g., `com.mycompany:catalog:1.0`).
 Consumers reference these coordinates to import the catalog — they do not need access to the original source code or build script.
+
+For example, a consumer imports the published catalog in their `settings.gradle(.kts)` file:
+
+====
+include::sample[dir="snippets/dependencyManagement/catalogs-javaPlatformCatalog/kotlin/consumer",files="settings.gradle.kts[tags=consume_catalog]"]
+include::sample[dir="snippets/dependencyManagement/catalogs-javaPlatformCatalog/groovy/consumer",files="settings.gradle[tags=consume_catalog]"]
+====
 
 [[sec:changing-catalog-name]]
 == Changing the catalog name
@@ -435,28 +460,10 @@ include::sample[dir="snippets/dependencyManagement/catalogs-javaPlatformCatalog/
 ====
 
 In the examples above, any dependency referencing the `groovy` version will automatically be updated to use `3.0.6`.
+You can see how this is used in <<#sec:working-multiple-version-catalogs,Working with multiple version catalogs>>.
 
 NOTE: Overwriting a version only affects what is imported and used when declaring dependencies.
 The actual resolved dependency version may differ due to conflict resolution.
-
-[[sec:programmatic-catalog-versions]]
-== Programming catalogs
-
-Version catalogs can be declared programmatically in the `settings.gradle(.kts)` file.
-
-====
-include::sample[dir="snippets/dependencyManagement/catalogs-settings/kotlin",files="settings.gradle.kts[tags=catalog_with_versions]"]
-include::sample[dir="snippets/dependencyManagement/catalogs-settings/groovy",files="settings.gradle[tags=catalog_with_versions]"]
-====
-
-TIP: Don't use `libs` for your programmatic version catalog name if you have the default `libs.versions.toml` in your project.
-
-Creating a version catalog programmatically uses the link:{javadocPath}/org/gradle/api/initialization/Settings.html[Settings API]:
-
-====
-include::sample[dir="snippets/dependencyManagement/catalogs-settings/kotlin",files="settings.gradle.kts[tags=catalog_with_bundle]"]
-include::sample[dir="snippets/dependencyManagement/catalogs-settings/groovy",files="settings.gradle[tags=catalog_with_bundle]"]
-====
 
 [[sec:buildsrc-version-catalog]]
 == Using a catalog in `buildSrc`
@@ -487,6 +494,7 @@ include::sample[dir="snippets/dependencyManagement/catalogs-toml-buildSrc/groovy
 
 However, the plugins block in the **precompiled script plugin** cannot access the version catalog.
 
+[[sec:working-multiple-version-catalogs]]
 == Working with multiple version catalogs
 
 Most builds should use a **single `libs.versions.toml` file**.
@@ -541,14 +549,12 @@ Below are three concrete workarounds, ordered from simplest to most flexible.
 
 ==== Workaround 1 — Duplicate and verify
 
-Declare the shared version in every TOML file that needs it, and add a lightweight check that the values stay in sync.
+Declare the shared version in every TOML file that needs it, and add a lightweight check that the values stay in sync:
 
-.gradle/distribution.versions.toml
 ====
 include::sample[dir="snippets/dependencyManagement/catalogs-duplicateAndVerify/kotlin/gradle",files="distribution.versions.toml[tags=versions]"]
 ====
 
-.gradle/test.versions.toml
 ====
 include::sample[dir="snippets/dependencyManagement/catalogs-duplicateAndVerify/kotlin/gradle",files="test.versions.toml[tags=versions]"]
 ====
@@ -566,7 +572,6 @@ This approach is straightforward and keeps each TOML file independently readable
 
 Extract shared versions into a plain properties file and inject them into each catalog in `settings.gradle(.kts)`.
 
-.gradle/shared-versions.properties
 ====
 include::sample[dir="snippets/dependencyManagement/catalogs-externalProperties/kotlin/gradle",files="shared-versions.properties[tags=shared_versions]"]
 ====
@@ -578,7 +583,6 @@ include::sample[dir="snippets/dependencyManagement/catalogs-externalProperties/g
 
 The TOML files use `version.ref` to reference these versions as if they were declared locally:
 
-.gradle/distribution.versions.toml
 ====
 include::sample[dir="snippets/dependencyManagement/catalogs-externalProperties/kotlin/gradle",files="distribution.versions.toml[tags=catalog]"]
 ====
@@ -613,65 +617,49 @@ This pattern cleanly separates organizational standards from project-level conce
 The version catalog builder API allows you to **mix** a TOML file import with programmatic declarations in the same catalog.
 The `from()` call loads the base content, and subsequent `version()`, `library()`, `bundle()`, or `plugin()` calls add to or override that content.
 
-```kotlin
-// settings.gradle.kts
-dependencyResolutionManagement {
-    versionCatalogs {
-        create("libs") {
-            // 1. Load the base catalog from a TOML file
-            from(files("gradle/libs.versions.toml"))
-
-            // 2. Override an existing version
-            //    If "groovy" is already declared in the TOML file,
-            //    this replaces its value.
-            version("groovy", "3.0.6")
-
-            // 3. Add a new version not present in the TOML file
-            version("errorProne", "2.28.0")
-
-            // 4. Add a library that uses the injected version
-            library("errorProne-core", "com.google.errorprone", "error_prone_core").versionRef("errorProne")
-        }
-    }
-}
-```
+====
+include::sample[dir="snippets/dependencyManagement/catalogs-combineFromWithVersion/kotlin",files="settings.gradle.kts[tags=combine_from_with_version]"]
+include::sample[dir="snippets/dependencyManagement/catalogs-combineFromWithVersion/groovy",files="settings.gradle[tags=combine_from_with_version]"]
+====
 
 This works identically when importing from a published artifact:
 
-```kotlin
+====
+[.multi-language-sample]
+=====
+[source,kotlin]
+----
 create("libs") {
     from("com.mycompany:catalog:1.0")
     version("guava", "33.5.0-jre")  // override the published version
 }
-```
+----
+=====
+[.multi-language-sample]
+=====
+[source,groovy]
+----
+libs {
+    from("com.mycompany:catalog:1.0")
+    version("guava", "33.5.0-jre")  // override the published version
+}
+----
+=====
+====
 
 A common scenario is needing the same Kotlin version for both the `kotlin("jvm")` plugin and the `kotlin-stdlib` library dependency.
 Plugins are resolved from the `[plugins]` section, while libraries come from `[libraries]` — and both need the same version.
 
-**`gradle/libs.versions.toml`**
-```toml
-[libraries]
-kotlin-stdlib  = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
-kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+====
+include::sample[dir="snippets/dependencyManagement/catalogs-kotlinVersionSharing/common",files="gradle/catalog.versions.toml[tags=kotlin_catalog]"]
+====
 
-[plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-```
+====
+include::sample[dir="snippets/dependencyManagement/catalogs-kotlinVersionSharing/kotlin",files="settings.gradle.kts[tags=kotlin_version_sharing]"]
+include::sample[dir="snippets/dependencyManagement/catalogs-kotlinVersionSharing/groovy",files="settings.gradle[tags=kotlin_version_sharing]"]
+====
 
-**`settings.gradle.kts`**
-```kotlin
-dependencyResolutionManagement {
-    versionCatalogs {
-        create("libs") {
-            from(files("gradle/libs.versions.toml"))
-            // Single source of truth for the Kotlin version
-            version("kotlin", "2.3.20")
-        }
-    }
-}
-```
-
-Both the plugin alias and the library aliases resolve to `2.3.20`, and updating requires changing only one line in `settings.gradle.kts`.
+Both the plugin alias and the library aliases resolve to `2.3.20`, and updating requires changing only one line in `settings.gradle(.kts)`.
 
 == Using catalog entries in Gradle APIs
 
@@ -680,37 +668,18 @@ Calling `.get()` on it unwraps the provider and gives you the `MinimalExternalMo
 
 In dependency declarations, both forms work identically:
 
-```kotlin
-// These are equivalent in a dependencies {} block:
-implementation(libs.groovy.core)
-implementation(libs.groovy.core.get())
-```
+====
+include::sample[dir="snippets/dependencyManagement/catalogs-gradleApis/kotlin",files="build.gradle.kts[tags=use_catalog_entries]"]
+include::sample[dir="snippets/dependencyManagement/catalogs-gradleApis/groovy",files="build.gradle[tags=use_catalog_entries]"]
+====
 
-However, in other Gradle APIs — such as dependency substitution rules, dependency constraints, or any API that
-accepts a dependency notation — **prefer passing the provider** (`libs.groovy.core`) rather than the unwrapped
-value (`libs.groovy.core.get()`):
+However, in other Gradle APIs, such as dependency substitution rules, dependency constraints, or any API that accepts a dependency notation, **try to pass the provider** (`libs.groovy.core`) rather than the unwrapped value (`libs.groovy.core.get()`):
 
-```kotlin
-// Preferred — pass the provider:
-configurations.configureEach {
-    resolutionStrategy.dependencySubstitution {
-        all {
-            if (requested is ModuleComponentSelector
-                && requested.group == "org.codehaus.groovy"
-                && requested.module == "groovy-all") {
-                useTarget(libs.groovy.core)
-            }
-        }
-    }
-}
-```
+====
+include::sample[dir="snippets/dependencyManagement/catalogs-gradleApis/kotlin",files="build.gradle.kts[tags=use_provider_in_apis]"]
+include::sample[dir="snippets/dependencyManagement/catalogs-gradleApis/groovy",files="build.gradle[tags=use_provider_in_apis]"]
+====
 
 When you pass the provider, Gradle handles any necessary type conversions internally.
-Unwrapping with `.get()` gives you a `MinimalExternalModuleDependency`, which implements
-`ExternalDependency` and `ModuleVersionSelector` — but some resolution APIs expect
-`ModuleComponentSelector`, a different type.
+Unwrapping with `.get()` gives you a `MinimalExternalModuleDependency`, which implements `ExternalDependency` and `ModuleVersionSelector` — but some resolution APIs expect `ModuleComponentSelector`, a different type.
 Passing the provider avoids mismatches between these types.
-
-**Note:** Version catalog entries carry dependency coordinates (group, name, and version constraint), but they do not carry classifier, artifact type, exclude, or capability information.
-When you need any of these, apply them at the declaration site in your build script.
-See <<sec:overriding-catalog-versions,Overwriting catalog versions>> for examples.
