@@ -33,12 +33,7 @@ class ProblemReportingCrossBuildModelAccess(
 
     override fun access(referrer: GradleInternal, gradle: GradleInternal): GradleInternal =
         if (internalOptions.getOptionValue(CROSS_BUILD_ACCESS_FLAG).get()) {
-            CrossBuildConfigurationReportingGradle(
-                gradle,
-                referrer,
-                problems,
-                problemFactory
-            )
+            CrossBuildConfigurationReportingGradle(gradle, referrer, problems, problemFactory)
         } else {
             gradle
         }

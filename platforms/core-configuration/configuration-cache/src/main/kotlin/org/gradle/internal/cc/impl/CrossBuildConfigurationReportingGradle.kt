@@ -111,23 +111,13 @@ class CrossBuildConfigurationReportingGradle(
 
     override fun getParent(): GradleInternal? =
         delegate.parent?.let { delegateParent ->
-            CrossBuildConfigurationReportingGradle(
-                delegateParent,
-                referrer,
-                problems,
-                problemFactory
-            )
+            CrossBuildConfigurationReportingGradle(delegateParent, referrer, problems, problemFactory)
         }
 
     override fun getRoot(): GradleInternal =
         when (val root = delegate.root) {
             delegate -> this
-            else -> CrossBuildConfigurationReportingGradle(
-                root,
-                referrer,
-                problems,
-                problemFactory
-            )
+            else -> CrossBuildConfigurationReportingGradle(root, referrer, problems, problemFactory)
         }
 
     override fun getOwner(): BuildState {
