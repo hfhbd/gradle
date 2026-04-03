@@ -31,6 +31,7 @@ import org.hamcrest.Matchers
 import org.junit.Rule
 
 @PolyglotDslTest
+@SkipDsl(dsl = GradleDsl.GROOVY, because = "Groovy DSL is not supported for declarative configuration")
 class ProjectTypeDeclarationIntegrationTest extends AbstractIntegrationSpec implements ProjectTypeFixture, PolyglotTestFixture {
     @Rule
     MavenHttpPluginRepository pluginPortal = MavenHttpPluginRepository.asGradlePluginPortal(executer, mavenRepo)
@@ -174,7 +175,6 @@ class ProjectTypeDeclarationIntegrationTest extends AbstractIntegrationSpec impl
         outputDoesNotContain("Applying AnotherProjectTypeImplPlugin")
     }
 
-    @SkipDsl(dsl = GradleDsl.GROOVY, because = "Groovy has no problem with finding non-public methods/types ...")
     def 'can declare and configure a custom project type with different public and implementation model types'() {
         given:
         withProjectTypeThatHasDifferentPublicAndImplementationTypes().prepareToExecute()
@@ -298,7 +298,6 @@ class ProjectTypeDeclarationIntegrationTest extends AbstractIntegrationSpec impl
         failure.assertHasCause("The project has already applied the 'testProjectType' project type and is also attempting to apply the 'anotherProjectType' project type.  Only one project type can be applied to a project.")
     }
 
-    @SkipDsl(dsl = GradleDsl.GROOVY, because = "Groovy can use a property value on the assignment RHS")
     @SkipDsl(dsl = GradleDsl.KOTLIN, because = "Kotlin can use a property value on the assignment RHS")
     def 'sensible error when declarative script uses a property as value for another property'() {
         given:
