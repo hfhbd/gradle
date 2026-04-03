@@ -19,7 +19,6 @@ package org.gradle.integtests.resolve.transform
 import org.gradle.integtests.fixtures.AbstractHttpDependencyResolutionTest
 import org.gradle.integtests.fixtures.BuildOperationsFixture
 import org.gradle.integtests.fixtures.ToBeFixedForConfigurationCache
-import org.gradle.integtests.fixtures.UnsupportedWithConfigurationCache
 import org.gradle.integtests.fixtures.resolve.ResolveTestFixture
 import org.gradle.internal.file.FileType
 import org.gradle.operations.dependencies.transforms.ExecutePlannedTransformStepBuildOperationType
@@ -1706,7 +1705,7 @@ Found the following transformation chains:
         outputContains("files: [b.jar]")
     }
 
-    @UnsupportedWithConfigurationCache(because = "Resolution happens during configuration time, so the transform is not triggered")
+    @ToBeFixedForConfigurationCache(because = "Resolution happens during configuration time, so the transform is not triggered. Also, lenient is not respected https://github.com/gradle/gradle/issues/37420")
     def "user gets a reasonable error message when a transform input cannot be downloaded and proceeds with other inputs"() {
         def m1 = ivyHttpRepo.module("test", "test", "1.3")
             .artifact(type: 'jar', name: 'test-api')
@@ -2118,7 +2117,7 @@ Found the following transformation chains:
         failure.assertHasCause("broken")
     }
 
-    @UnsupportedWithConfigurationCache(because = "Resolution happens during configuration time, so the transform is not triggered")
+    @ToBeFixedForConfigurationCache(because = "Resolution happens during configuration time, so the transform is not triggered, Also, lenient is not respected https://github.com/gradle/gradle/issues/37420")
     def "collects multiple failures"() {
         def m1 = mavenHttpRepo.module("test", "a", "1.3").publish()
         def m2 = mavenHttpRepo.module("test", "broken", "2.0").publish()
