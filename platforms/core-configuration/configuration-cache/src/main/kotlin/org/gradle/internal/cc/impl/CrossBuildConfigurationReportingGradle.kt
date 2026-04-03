@@ -22,6 +22,8 @@ import org.gradle.BuildResult
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.ProjectEvaluationListener
+import org.gradle.api.artifacts.DependencyResolutionListener
+import org.gradle.api.execution.TaskExecutionGraphListener
 import org.gradle.api.initialization.IncludedBuild
 import org.gradle.api.initialization.Settings
 import org.gradle.api.internal.GradleInternal
@@ -63,7 +65,7 @@ class CrossBuildConfigurationReportingGradle(
     private fun onBuildMutableStateAccess(what: String) {
         val problem = problemFactory.problem {
             text("Build ")
-            reference(referrer.identityPath.toString())
+            reference(referrer.identityPath.asString())
             text(" cannot access Gradle.$what on build ")
             reference(gradle.buildPath)
         }
@@ -71,6 +73,10 @@ class CrossBuildConfigurationReportingGradle(
             .build()
 
         problems.onProblem(problem)
+    }
+
+    private fun shouldNotBeUsed(): Nothing {
+        throw UnsupportedOperationException("This internal method should not be used.")
     }
 
     internal
@@ -98,17 +104,6 @@ class CrossBuildConfigurationReportingGradle(
 
     override fun getGradle(): Gradle = this
 
-    // region mutable state
-    override fun getRootProject(): ProjectInternal {
-        onBuildMutableStateAccess("getRootProject")
-        return delegate.getRootProject()
-    }
-
-    override fun setRootProject(rootProject: ProjectInternal) {
-        onBuildMutableStateAccess("setRootProject")
-        delegate.setRootProject(rootProject)
-    }
-
     override fun getParent(): GradleInternal? =
         delegate.parent?.let { delegateParent ->
             CrossBuildConfigurationReportingGradle(delegateParent, referrer, problems, problemFactory)
@@ -120,9 +115,18 @@ class CrossBuildConfigurationReportingGradle(
             else -> CrossBuildConfigurationReportingGradle(root, referrer, problems, problemFactory)
         }
 
+    // region mutable state
+    override fun getRootProject(): ProjectInternal {
+        onBuildMutableStateAccess("getRootProject")
+        return delegate.getRootProject()
+    }
+
+    override fun setRootProject(rootProject: ProjectInternal) {
+        shouldNotBeUsed()
+    }
+
     override fun getOwner(): BuildState {
-        onBuildMutableStateAccess("getOwner")
-        return delegate.getOwner()
+        shouldNotBeUsed()
     }
 
     override fun getTaskGraph(): TaskExecutionGraphInternal {
@@ -136,8 +140,7 @@ class CrossBuildConfigurationReportingGradle(
     }
 
     override fun setDefaultProject(defaultProject: ProjectInternal) {
-        onBuildMutableStateAccess("setDefaultProject")
-        delegate.setDefaultProject(defaultProject)
+        shouldNotBeUsed()
     }
 
     override fun getProjectEvaluationBroadcaster(): ProjectEvaluationListener {
@@ -151,8 +154,7 @@ class CrossBuildConfigurationReportingGradle(
     }
 
     override fun attachSettings(settings: SettingsState?) {
-        onBuildMutableStateAccess("attachSettings")
-        delegate.attachSettings(settings)
+        shouldNotBeUsed()
     }
 
     override fun getBuildListenerBroadcaster(): BuildListener {
@@ -166,28 +168,23 @@ class CrossBuildConfigurationReportingGradle(
     }
 
     override fun setClassLoaderScope(classLoaderScope: Supplier<out ClassLoaderScope>) {
-        onBuildMutableStateAccess("setClassLoaderScope")
-        delegate.setClassLoaderScope(classLoaderScope)
+        shouldNotBeUsed()
     }
 
     override fun getClassLoaderScope(): ClassLoaderScope {
-        onBuildMutableStateAccess("getClassLoaderScope")
-        return delegate.getClassLoaderScope()
-    }
-
-    override fun setIncludedBuilds(includedBuilds: Collection<IncludedBuildInternal>) {
-        onBuildMutableStateAccess("setIncludedBuilds")
-        delegate.setIncludedBuilds(includedBuilds)
+        shouldNotBeUsed()
     }
 
     override fun baseProjectClassLoaderScope(): ClassLoaderScope {
-        onBuildMutableStateAccess("baseProjectClassLoaderScope")
-        return delegate.baseProjectClassLoaderScope()
+        shouldNotBeUsed()
     }
 
     override fun setBaseProjectClassLoaderScope(classLoaderScope: ClassLoaderScope) {
-        onBuildMutableStateAccess("setBaseProjectClassLoaderScope")
-        delegate.setBaseProjectClassLoaderScope(classLoaderScope)
+        shouldNotBeUsed()
+    }
+
+    override fun setIncludedBuilds(includedBuilds: Collection<IncludedBuildInternal>) {
+        shouldNotBeUsed()
     }
 
     override fun getStartParameter(): StartParameterInternal {
@@ -201,8 +198,7 @@ class CrossBuildConfigurationReportingGradle(
     }
 
     override fun resetState() {
-        // Should not be called
-        throw UnsupportedOperationException()
+        shouldNotBeUsed()
     }
 
     override fun rootProject(action: Action<in Project>) {
@@ -308,7 +304,10 @@ class CrossBuildConfigurationReportingGradle(
     }
 
     override fun addListener(listener: Any) {
-        onBuildMutableStateAccess("addListener")
+        if (isSupportedListener(listener)) {
+            // Other listeners are reported as CC problem already
+            onBuildMutableStateAccess("addListener")
+        }
         delegate.addListener(listener)
     }
 
@@ -333,8 +332,7 @@ class CrossBuildConfigurationReportingGradle(
     }
 
     override fun includedBuilds(): List<IncludedBuildInternal> {
-        onBuildMutableStateAccess("includedBuilds")
-        return delegate.includedBuilds()
+        shouldNotBeUsed()
     }
 
     override fun includedBuild(name: String): IncludedBuild {
