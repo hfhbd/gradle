@@ -41,30 +41,38 @@ import java.io.Closeable
  * the embedded version's artifacts from the Gradle Plugin Portal.
  */
 @RunWith(Parameterized::class)
-class KotlinDslPluginWithExplicitKGPVersionTest(private val kotlinVersionString: String) : AbstractKotlinIntegrationTest() {
+class KotlinDslPluginWithExplicitKGPVersionTest(
+    private val kotlinVersionString: String,
+    private val versionLabel: String
+) : AbstractKotlinIntegrationTest() {
 
     companion object {
 
-        @Parameterized.Parameters(name = "KGP {0}")
+        @Parameterized.Parameters(name = "KGP {0} ({1})")
         @JvmStatic
-        fun testedKotlinVersions(): List<String> {
+        fun testedKotlinVersions(): List<Array<String>> {
             val embeddedVersion = VersionNumber.parse(embeddedKotlinVersion)
             val kgpVersions = KotlinGradlePluginVersions()
 
+            val latestKnown = kgpVersions.latest
+            val latestKnownVersion = VersionNumber.parse(latestKnown)
+
             // Latest available version newer than embedded, or a synthetic next minor version
-            val newerVersion = kgpVersions.latest
-                .takeIf { VersionNumber.parse(it) > embeddedVersion }
-                ?: "${embeddedVersion.major}.${embeddedVersion.minor + 1}.0"
+            val newerVersion = if (latestKnownVersion > embeddedVersion) {
+                arrayOf(latestKnown, "real")
+            } else {
+                arrayOf("${embeddedVersion.major}.${embeddedVersion.minor + 1}.0", "synthetic")
+            }
 
             // Latest stable version older than embedded (always differs)
             val latestOlderStable = kgpVersions.latestsStable
                 .lastOrNull { VersionNumber.parse(it) < embeddedVersion }
+                ?.let { arrayOf(it, "real") }
 
             return listOfNotNull(latestOlderStable, newerVersion)
         }
 
-        private fun isSynthetic(version: String): Boolean =
-            VersionNumber.parse(version) > VersionNumber.parse(KotlinGradlePluginVersions().latest)
+        private fun isSynthetic(label: String): Boolean = label == "synthetic"
     }
 
     private var syntheticKgpRepo: SyntheticKgpRepo? = null
@@ -72,7 +80,7 @@ class KotlinDslPluginWithExplicitKGPVersionTest(private val kotlinVersionString:
     @Test
     fun `can apply kotlin-dsl plugin with explicit different kotlin-jvm plugin version`() {
 
-        if (isSynthetic(kotlinVersionString)) {
+        if (isSynthetic(versionLabel)) {
             setupSyntheticKgpRepo()
         }
 
