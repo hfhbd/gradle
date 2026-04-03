@@ -86,6 +86,17 @@ class CrossBuildConfigurationReportingGradle(
         else -> gradle
     }
 
+    override fun getParent(): GradleInternal? =
+        delegate.parent?.let { delegateParent ->
+            CrossBuildConfigurationReportingGradle(delegateParent, referrer, problems, problemFactory)
+        }
+
+    override fun getRoot(): GradleInternal =
+        when (val root = delegate.root) {
+            delegate -> this
+            else -> CrossBuildConfigurationReportingGradle(root, referrer, problems, problemFactory)
+        }
+
     override fun isRootBuild(): Boolean = delegate.isRootBuild
 
     override fun getIdentityPath(): Path = delegate.identityPath
@@ -103,17 +114,6 @@ class CrossBuildConfigurationReportingGradle(
     override fun getGradleHomeDir(): File? = delegate.gradleHomeDir
 
     override fun getGradle(): Gradle = this
-
-    override fun getParent(): GradleInternal? =
-        delegate.parent?.let { delegateParent ->
-            CrossBuildConfigurationReportingGradle(delegateParent, referrer, problems, problemFactory)
-        }
-
-    override fun getRoot(): GradleInternal =
-        when (val root = delegate.root) {
-            delegate -> this
-            else -> CrossBuildConfigurationReportingGradle(root, referrer, problems, problemFactory)
-        }
 
     // region mutable state
     override fun getRootProject(): ProjectInternal {
