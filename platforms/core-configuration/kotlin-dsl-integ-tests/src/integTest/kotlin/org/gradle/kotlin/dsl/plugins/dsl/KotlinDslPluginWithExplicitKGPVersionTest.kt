@@ -16,89 +16,209 @@
 
 package org.gradle.kotlin.dsl.plugins.dsl
 
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.mockwebserver.Dispatcher
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
+import okhttp3.mockwebserver.RecordedRequest
+import org.gradle.integtests.fixtures.versions.KotlinGradlePluginVersions
 import org.gradle.kotlin.dsl.embeddedKotlinVersion
 import org.gradle.kotlin.dsl.fixtures.AbstractKotlinIntegrationTest
 import org.gradle.util.internal.VersionNumber
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import javax.xml.parsers.DocumentBuilderFactory
+import java.io.Closeable
 
 
 /**
  * Tests that the `kotlin-dsl` plugin can be applied alongside an explicit, different version
  * of the `org.jetbrains.kotlin.jvm` plugin.
+ *
+ * When no real newer Kotlin version is available, a synthetic version is used.
+ * A [SyntheticKgpRepo] serves the synthetic version's metadata by rewriting
+ * the embedded version's artifacts from the Gradle Plugin Portal.
  */
 @RunWith(Parameterized::class)
 class KotlinDslPluginWithExplicitKGPVersionTest(private val kotlinVersionString: String) : AbstractKotlinIntegrationTest() {
 
     companion object {
 
-        private const val KOTLIN_STDLIB_MAVEN_METADATA_URL =
-            "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/maven-metadata.xml"
-
-        private fun fetchKotlinVersionsFromMavenCentral(): List<Pair<String, VersionNumber>> {
-            val doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(KOTLIN_STDLIB_MAVEN_METADATA_URL)
-            val versions = doc.getElementsByTagName("version")
-            return (0 until versions.length)
-                .map { versions.item(it).textContent }
-                .map { it to VersionNumber.parse(it) }
-                .sortedBy { it.second }
-        }
-
         @Parameterized.Parameters(name = "KGP {0}")
         @JvmStatic
         fun testedKotlinVersions(): List<String> {
             val embeddedVersion = VersionNumber.parse(embeddedKotlinVersion)
-            val allVersions = fetchKotlinVersionsFromMavenCentral()
-            val stableVersions = allVersions.filter { it.second.baseVersion == it.second }
+            val kgpVersions = KotlinGradlePluginVersions()
 
-            // Latest available version from Maven Central that is newer than embedded
-            val latest = allVersions
-                .lastOrNull { it.second > embeddedVersion }
-                ?.first
+            // Latest available version newer than embedded, or a synthetic next minor version
+            val newerVersion = kgpVersions.latest
+                .takeIf { VersionNumber.parse(it) > embeddedVersion }
+                ?: "${embeddedVersion.major}.${embeddedVersion.minor + 1}.0"
 
-            // Latest stable version older than the embedded version (always differs)
-            val latestOlderStable = stableVersions
-                .lastOrNull { it.second < embeddedVersion }
-                ?.first
+            // Latest stable version older than embedded (always differs)
+            val latestOlderStable = kgpVersions.latestsStable
+                .lastOrNull { VersionNumber.parse(it) < embeddedVersion }
 
-            return listOfNotNull(latestOlderStable, latest)
+            return listOfNotNull(latestOlderStable, newerVersion)
         }
+
+        private fun isSynthetic(version: String): Boolean =
+            VersionNumber.parse(version) > VersionNumber.parse(KotlinGradlePluginVersions().latest)
     }
+
+    private var syntheticKgpRepo: SyntheticKgpRepo? = null
 
     @Test
     fun `can apply kotlin-dsl plugin with explicit different kotlin-jvm plugin version`() {
 
-        withBuildScript(
+        if (isSynthetic(kotlinVersionString)) {
+            setupSyntheticKgpRepo()
+        }
+
+        try {
+            withBuildScript(
+                """
+
+                plugins {
+                    `kotlin-dsl`
+                    id("org.jetbrains.kotlin.jvm") version "$kotlinVersionString"
+                }
+
+                $repositoriesBlock
+
+                """
+            )
+
+            withFile(
+                "src/main/kotlin/code.kt",
+                """
+
+                import org.gradle.api.Plugin
+                import org.gradle.api.Project
+
+                class MyPlugin : Plugin<Project> {
+                    override fun apply(project: Project) {
+                        println("applied!")
+                    }
+                }
+
+                """
+            )
+
+            build("classes")
+        } finally {
+            syntheticKgpRepo?.close()
+        }
+    }
+
+    private fun setupSyntheticKgpRepo() {
+        syntheticKgpRepo = SyntheticKgpRepo(kotlinVersionString, embeddedKotlinVersion)
+        syntheticKgpRepo!!.start()
+
+        val initScript = file(".integTest/synthetic-kgp-repo.init.gradle")
+        initScript.parentFile.mkdirs()
+        initScript.writeText(
             """
-
-            plugins {
-                `kotlin-dsl`
-                id("org.jetbrains.kotlin.jvm") version "$kotlinVersionString"
-            }
-
-            $repositoriesBlock
-
-            """
-        )
-
-        withFile(
-            "src/main/kotlin/code.kt",
-            """
-
-            import org.gradle.api.Plugin
-            import org.gradle.api.Project
-
-            class MyPlugin : Plugin<Project> {
-                override fun apply(project: Project) {
-                    println("applied!")
+            beforeSettings { settings ->
+                settings.pluginManagement {
+                    repositories {
+                        maven {
+                            url = uri("${syntheticKgpRepo!!.url}")
+                        }
+                    }
                 }
             }
-
             """
         )
+        executer.beforeExecute {
+            it.usingInitScript(initScript)
+        }
+    }
 
-        build("classes")
+    /**
+     * A lightweight Maven repository proxy that serves a synthetic version of the KGP plugin.
+     *
+     * Metadata files (POM, .module) are fetched from the Plugin Portal, have their version strings
+     * rewritten, and are served with the modified content. All other files (jars, checksums,
+     * etc.) are redirected to the upstream URL via HTTP 302.
+     */
+    class SyntheticKgpRepo(
+        private val syntheticVersion: String,
+        private val realVersion: String,
+        private val upstreamBaseUrl: String = "https://plugins.gradle.org/m2"
+    ) : Closeable {
+
+        private val httpClient = OkHttpClient()
+        private val server = MockWebServer()
+
+        val url: String
+            get() = "http://127.0.0.1:${server.port}"
+
+        fun start() {
+            server.dispatcher = object : Dispatcher() {
+                override fun dispatch(request: RecordedRequest): MockResponse {
+                    val path = request.path ?: return MockResponse().setResponseCode(404)
+                    if (!path.contains(syntheticVersion)) {
+                        return MockResponse().setResponseCode(404)
+                    }
+
+                    val upstreamPath = path.replace(syntheticVersion, realVersion)
+                    val upstreamUrl = "$upstreamBaseUrl$upstreamPath"
+                    val rewriter = selectRewriter(path) ?: return MockResponse()
+                        .setResponseCode(302)
+                        .setHeader("Location", upstreamUrl)
+
+                    return try {
+                        val responseBytes = fetchFromUpstream(upstreamUrl)
+                        val rewritten = rewriter(String(responseBytes)).toByteArray()
+                        MockResponse()
+                            .setResponseCode(200)
+                            .setBody(okio.Buffer().write(rewritten))
+                    } catch (_: Exception) {
+                        MockResponse().setResponseCode(404)
+                    }
+                }
+            }
+            server.start()
+        }
+
+        override fun close() {
+            server.shutdown()
+        }
+
+        private fun selectRewriter(path: String): ((String) -> String)? {
+            val isMarkerPom = path.contains("gradle.plugin") && path.endsWith(".pom")
+            val isKgpPom = !path.contains("gradle.plugin") && path.endsWith(".pom")
+            val isModule = path.endsWith(".module")
+
+            return when {
+                isMarkerPom -> { content ->
+                    content.replace(realVersion, syntheticVersion)
+                }
+                isKgpPom -> { content ->
+                    content.replaceFirst(
+                        "<version>$realVersion</version>",
+                        "<version>$syntheticVersion</version>"
+                    )
+                }
+                isModule -> { content ->
+                    content.replaceFirst(
+                        "\"version\": \"$realVersion\"",
+                        "\"version\": \"$syntheticVersion\""
+                    )
+                }
+                else -> null
+            }
+        }
+
+        private fun fetchFromUpstream(url: String): ByteArray {
+            return httpClient.newCall(
+                Request.Builder().url(url).build()
+            ).execute().use { response ->
+                if (!response.isSuccessful) throw Exception("HTTP ${response.code}")
+                response.body?.bytes() ?: throw Exception("Empty body")
+            }
+        }
     }
 }
