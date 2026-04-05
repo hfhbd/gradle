@@ -113,6 +113,9 @@ class CrossBuildConfigurationReportingGradle(
 
     override fun getGradle(): Gradle = this
 
+    override fun getConfigurationTargetIdentifier(): ConfigurationTargetIdentifier =
+        delegate.getConfigurationTargetIdentifier()
+
     // region mutable state
     override fun getRootProject(): ProjectInternal {
         onBuildMutableStateAccess("getRootProject")
@@ -337,9 +340,6 @@ class CrossBuildConfigurationReportingGradle(
         onBuildMutableStateAccess("includedBuild")
         return delegate.includedBuild(name)
     }
-
-    override fun getConfigurationTargetIdentifier(): ConfigurationTargetIdentifier =
-        delegate.getConfigurationTargetIdentifier()
 
     override fun getProviders(): ProviderFactory {
         onBuildMutableStateAccess("getProviders")

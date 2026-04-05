@@ -19,11 +19,11 @@ package org.gradle.internal.cc.impl.isolated
 class IsolatedProjectsBuildStateAccessIntegrationTest extends AbstractIsolatedProjectsIntegrationTest {
 
     def "reports a problem on settings-level access to mutable state of the parent build"() {
-        settingsFile("build-logic/settings.gradle", """
+        settingsFile "build-logic/settings.gradle", """
             gradle.parent.$invocation
-        """)
+        """
         settingsFile """
-            includeBuild("build-logic")
+            includeBuild "build-logic"
         """
 
         when:
@@ -86,12 +86,12 @@ class IsolatedProjectsBuildStateAccessIntegrationTest extends AbstractIsolatedPr
         """
 
     def "fails on settings-level access to unavailable state of the parent build"() {
-        settingsFile("build-logic/settings.gradle", """
+        settingsFile "build-logic/settings.gradle", """
             def parentGradle = gradle.parent // wrapped
             gradle.$invocation
-        """)
+        """
         settingsFile """
-            includeBuild("build-logic")
+            includeBuild "build-logic"
         """
 
         when:
@@ -123,11 +123,11 @@ class IsolatedProjectsBuildStateAccessIntegrationTest extends AbstractIsolatedPr
     }
 
     def "does not report a cross-build access problem by default"() {
-        settingsFile("build-logic/settings.gradle", """
+        settingsFile"build-logic/settings.gradle", """
             gradle.parent.getSharedServices()
-        """)
+        """
         settingsFile """
-            includeBuild("build-logic")
+            includeBuild "build-logic"
         """
 
         when:

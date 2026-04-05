@@ -20,6 +20,9 @@ import org.gradle.api.internal.GradleInternal;
 import org.gradle.internal.service.scopes.Scope;
 import org.gradle.internal.service.scopes.ServiceScope;
 
+/**
+ * Mediates settings-level access to other builds, across build boundaries, withing a build tree.
+ */
 @ServiceScope(Scope.Build.class)
 public interface CrossBuildModelAccess {
     GradleInternal access(GradleInternal referrer, GradleInternal gradle);
