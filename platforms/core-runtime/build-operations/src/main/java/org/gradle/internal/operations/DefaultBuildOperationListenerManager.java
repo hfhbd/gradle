@@ -89,7 +89,7 @@ public class DefaultBuildOperationListenerManager implements BuildOperationListe
      * for operations whose started notification was not delivered to this listener.
      *
      * Tracks active operations in a primitive long hash set to avoid per-operation
-     * object allocation. Only delivers progress/finished if started was seen.
+     * object allocation. Only delivers progress if started was seen.
      */
     private static class ProgressShieldingBuildOperationListener implements BuildOperationListener {
 
