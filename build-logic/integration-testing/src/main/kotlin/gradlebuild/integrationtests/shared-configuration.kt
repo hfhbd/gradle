@@ -32,6 +32,8 @@ import gradlebuild.testing.services.BuildBucketProvider
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.Dependency
+import org.gradle.api.artifacts.ModuleDependency
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.attributes.Category
 import org.gradle.api.attributes.LibraryElements
@@ -49,6 +51,7 @@ import org.gradle.kotlin.dsl.*
 import org.gradle.plugins.ide.idea.IdeaPlugin
 import org.gradle.process.CommandLineArgumentProvider
 
+val CROSSVERSION_TEST_MODELS = "${TestType.CROSSVERSION.prefix}TestModels"
 
 fun Project.addDependenciesAndConfigurations(prefix: String) {
     configurations {
@@ -277,4 +280,15 @@ fun Project.localRepositoryResolver(name: String, extends: Configuration? = null
     if (extends != null) {
         extendsFrom(extends)
     }
+}
+
+fun Project.crossVersionTestModels(notation: kotlin.Any, configureAction: Action<Dependency> = Action {}) = provider {
+    val dependency = dependencies.create(notation)
+    if (dependency is ModuleDependency) {
+        dependency.capabilities {
+            requireCapability("${dependency.group}:${dependency.name}-${CROSSVERSION_TEST_MODELS}")
+        }
+    }
+    configureAction.execute(dependency)
+    return@provider dependency
 }
