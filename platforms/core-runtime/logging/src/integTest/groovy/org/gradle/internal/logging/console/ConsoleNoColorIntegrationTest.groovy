@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 the original author or authors.
+ * Copyright 2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,22 @@ import org.gradle.integtests.fixtures.AbstractIntegrationSpec
 
 class ConsoleNoColorIntegrationTest extends AbstractIntegrationSpec {
 
+    private static final ANSI_BOLD = '\u001B[1m'
+    private static final ANSI_FOREGROUND_COLOR = /\u001B\[3[0-7]m/
+    private static final ANSI_BRIGHT_FOREGROUND_COLOR = /\u001B\[9[0-7]m/
+
+    def "empty NO_COLOR does not suppress styling"() {
+        given:
+        executer.withEnvironmentVars(NO_COLOR: "")
+        executer.withConsole(ConsoleOutput.Rich)
+
+        when:
+        succeeds('help')
+
+        then:
+        output.contains(ANSI_BOLD)
+    }
+
     def "NO_COLOR strips foreground colors with --console=#consoleOutput"() {
         given:
         executer.withEnvironmentVars(NO_COLOR: "1")
@@ -30,14 +46,14 @@ class ConsoleNoColorIntegrationTest extends AbstractIntegrationSpec {
         succeeds('help')
 
         then:
-        !(output =~ /\u001B\[3[0-7]m/)
-        !(output =~ /\u001B\[9[0-7]m/)
+        !(output =~ ANSI_FOREGROUND_COLOR)
+        !(output =~ ANSI_BRIGHT_FOREGROUND_COLOR)
 
         where:
         consoleOutput << ConsoleOutput.values()
     }
 
-    def "NO_COLOR preserves bold styling with --console=#consoleOutput"() {
+    def "NO_COLOR preserves emphasis styling with --console=#consoleOutput"() {
         given:
         executer.withEnvironmentVars(NO_COLOR: "1")
         executer.withConsole(consoleOutput)
@@ -46,7 +62,7 @@ class ConsoleNoColorIntegrationTest extends AbstractIntegrationSpec {
         succeeds('help')
 
         then:
-        output.contains('\u001B[1m')
+        output.contains(ANSI_BOLD)
 
         where:
         consoleOutput << [ConsoleOutput.Rich, ConsoleOutput.Verbose, ConsoleOutput.Colored]
