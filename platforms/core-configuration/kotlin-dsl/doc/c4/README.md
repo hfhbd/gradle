@@ -194,7 +194,7 @@ C4Component
 
         System_Ext(ideKotlin, "IntelliJ Kotlin Plugin", "for IDEA or Android Studio")
 
-        Rel(editor, ideKotlin, "Uses")
+        Rel(editorDependencies, ideKotlin, "Uses")
         Rel(ideKotlin, providerScriptTemplates, "Selects", "by file extension")
     }
 
@@ -207,8 +207,8 @@ C4Component
 
     System_Ext(buildCache, "Gradle Build Cache", "Local, Develocity Build Cache Node, etc...")
 
-    Rel(dev, gradle, "Uses", "Command Line")
-    Rel(dev, editor, "Uses", "GUI")
+    Rel(dev, gradleScriptEvaluation, "Uses", "Command Line")
+    Rel(dev, editorDependencies, "Uses", "GUI")
 
     Rel(providerExecution, kotlinc, "Uses", "Embedded")
 
