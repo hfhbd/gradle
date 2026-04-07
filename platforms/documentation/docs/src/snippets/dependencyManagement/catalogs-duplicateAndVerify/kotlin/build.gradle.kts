@@ -4,10 +4,10 @@ plugins {
 
 // tag::verify_shared_versions[]
 tasks.register("verifySharedVersions") {
-    doLast {
-        val distToml = file("gradle/distribution.versions.toml").readText()
-        val testToml = file("gradle/test.versions.toml").readText()
+    val distToml = file("gradle/distribution.versions.toml").readText()
+    val testToml = file("gradle/test.versions.toml").readText()
 
+    doLast {
         // Extract the errorProne version from each file
         val regex = """errorProne\s*=\s*"(.+?)"""".toRegex()
         val distVersion = regex.find(distToml)?.groupValues?.get(1)
