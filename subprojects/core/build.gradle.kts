@@ -1,3 +1,5 @@
+import gradlebuild.integrationtests.configureTestSourceSetInIde
+
 plugins {
     id("gradlebuild.distribution.api-java")
     id("gradlebuild.cross-version-tests")
@@ -15,6 +17,9 @@ val testInterceptors = sourceSets.create("testInterceptors") {
     compileClasspath += sourceSets.main.get().output
     runtimeClasspath += sourceSets.main.get().output
 }
+
+configureTestSourceSetInIde(testInterceptors)
+
 sourceSets.test {
     compileClasspath += testInterceptors.output
     runtimeClasspath += testInterceptors.output
@@ -39,10 +44,9 @@ dependencies {
     api(projects.baseServices)
     api(projects.baseServicesGroovy)
     api(projects.buildCache)
+    api(projects.buildCacheApi)
     api(projects.buildCacheBase)
-    api(projects.buildCacheLocal)
-    api(projects.buildCachePackaging)
-    api(projects.buildCacheSpi)
+    api(projects.buildCacheCore)
     api(projects.buildDiscovery)
     api(projects.buildDiscoveryImpl)
     api(projects.buildInitSpecs)
@@ -67,6 +71,7 @@ dependencies {
     api(projects.files)
     api(projects.functional)
     api(projects.hashing)
+    api(projects.hashingServices)
     api(projects.instrumentationAgentServices)
     api(projects.instrumentationReporting)
     api(projects.internalInstrumentationApi)
@@ -104,6 +109,8 @@ dependencies {
     api(libs.jspecify)
     api(libs.jsr305)
 
+    implementation(projects.buildCachePackaging)
+    implementation(projects.buildCacheSpi)
     implementation(projects.buildDiscoveryReporting)
     implementation(projects.buildOperationsTrace)
     implementation(projects.daemonLogging)

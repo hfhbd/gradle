@@ -3,12 +3,13 @@ import gradlebuild.basics.repoRoot
 import gradlebuild.basics.runBrokenForConfigurationCacheDocsTests
 import gradlebuild.basics.util.getSingleFileProvider
 import gradlebuild.integrationtests.androidhomewarmup.SdkVersion
+import gradlebuild.integrationtests.configureTestSourceSetInIde
 import gradlebuild.integrationtests.model.GradleDistribution
+import java.io.FileFilter
 import org.asciidoctor.gradle.jvm.AsciidoctorTask
 import org.gradle.docs.internal.tasks.CheckLinks
 import org.gradle.docs.samples.internal.tasks.InstallSample
 import org.gradle.internal.os.OperatingSystem
-import java.io.FileFilter
 
 plugins {
     id("java-library") // Needed for the dependency-analysis plugin. However, we should not need this. This is not a real library.
@@ -19,6 +20,8 @@ plugins {
     id("org.gradle.samples")
     id("gradlebuild.android-home-warmup")
 }
+
+configureTestSourceSetInIde(sourceSets.docsTest.get())
 
 androidHomeWarmup {
     rootProjectDir = project.layout.projectDirectory.dir("../../..")
@@ -309,26 +312,10 @@ tasks.named<Test>("docsTest") {
                 "snippet-buildlifecycle-task-execution-events_groovy_taskExecutionEvents.groovy",
                 "snippet-buildlifecycle-task-execution-events_kotlin_sanityCheck",
                 "snippet-buildlifecycle-task-execution-events_kotlin_taskExecutionEvents.kotlin",
-                "snippet-custom-model-internal-views_groovy_softwareModelExtend-iv-model",
-                "snippet-custom-model-language-type_groovy_softwareModelExtend-components",
 
-                // These snippets are not used in the documentation, but only in the integration tests.
-                "snippet-dependency-management-working-with-dependencies-access-metadata-artifact_groovy_accessingMetadataArtifact",
-                "snippet-dependency-management-working-with-dependencies-access-metadata-artifact_kotlin_accessingMetadataArtifact",
-                "snippet-dependency-management-working-with-dependencies-iterate-artifacts_kotlin_iterating-artifacts",
-                "snippet-dependency-management-working-with-dependencies-walk-graph_groovy_walking-dependency-graph",
-                "snippet-dependency-management-working-with-dependencies-walk-graph_kotlin_walking-dependency-graph",
-
-                "snippet-ide-eclipse_groovy_wtpWithXml",
-                "snippet-ide-eclipse_kotlin_wtpWithXml",
-                "snippet-ide-idea-additional-test-sources_groovy_ideaAdditionalTestSources",
-                "snippet-ide-idea-additional-test-sources_kotlin_ideaAdditionalTestSources",
-                "snippet-ide-idea_groovy_projectWithXml",
-                "snippet-ide-idea_kotlin_projectWithXml",
                 "snippet-init-scripts-custom-logger_groovy_customLogger.groovy",
                 "snippet-init-scripts-custom-logger_kotlin_customLogger.kotlin",
                 "snippet-model-rules-basic-rule-source-plugin_groovy_basicRuleSourcePlugin-all",
-                "snippet-model-rules-basic-rule-source-plugin_groovy_basicRuleSourcePlugin-model-task",
                 "snippet-model-rules-configure-as-required_groovy_modelDslConfigureRuleRunWhenRequired",
                 "snippet-model-rules-configure-elements-of-map_groovy_modelDslModelMapNestedAll",
                 "snippet-model-rules-initialization-rule-runs-before-configuration-rules_groovy_modelDslInitializationRuleRunsBeforeConfigurationRule",
@@ -345,23 +332,13 @@ tasks.named<Test>("docsTest") {
             // These tests use third-party plugins at versions that may not support the configuration cache properly.
             // The tests should be removed from this list when the plugin is updated to the version that works with the configuration cache properly.
             val testsWithThirdPartyFailures = listOf(
-                "snippet-build-organization-structuring-software-projects_groovy_aggregate-reports",
                 "snippet-build-organization-structuring-software-projects_groovy_build-android-app",
-                "snippet-build-organization-structuring-software-projects_groovy_build-server-application",
-                "snippet-build-organization-structuring-software-projects_groovy_umbrella-build",
-                "snippet-build-organization-structuring-software-projects_kotlin_aggregate-reports",
                 "snippet-build-organization-structuring-software-projects_kotlin_build-android-app",
-                "snippet-build-organization-structuring-software-projects_kotlin_build-server-application",
-                "snippet-build-organization-structuring-software-projects_kotlin_umbrella-build",
             )
 
             // These tests cover features that the configuration cache doesn't support yet, but we plan to do that before hitting stable.
             // The tests should be removed from this list when the feature becomes supported.
             val testsForNotYetSupportedFeatures = listOf(
-                // TODO(https://github.com/gradle/gradle/issues/14880)
-                "snippet-dependency-management-working-with-dependencies-iterate-dependencies_groovy_iterating-dependencies",
-                "snippet-dependency-management-working-with-dependencies-iterate-dependencies_kotlin_iterating-dependencies",
-
                 // TODO(https://github.com/gradle/gradle/issues/22879) The snippet extracts build logic into a method and calls the method at execution time
                 "snippet-tutorial-ant-loadfile-with-method_groovy_antLoadfileWithMethod",
                 "snippet-tutorial-ant-loadfile-with-method_kotlin_antLoadfileWithMethod",
@@ -372,22 +349,6 @@ tasks.named<Test>("docsTest") {
             val testsToBeFixedForConfigurationCache = listOf(
                 "snippet-build-cache-configure-task_groovy_configureTask",
                 "snippet-build-cache-configure-task_kotlin_configureTask",
-                // TODO(mlopatkin) These snippets use bintray plugin which is not fully CC-compatible. Remove bintray plugin from samples.
-                "snippet-plugins-buildscript_groovy_sanityCheck",
-                "snippet-plugins-buildscript_kotlin_sanityCheck",
-                "snippet-plugins-dsl_groovy_sanityCheck",
-                "snippet-plugins-dsl_kotlin_sanityCheck",
-                // TODO(lkasso) remove this when config cache is working later but needed to merge for now.
-                "snippet-dependency-management-introduction-core-dependencies_groovy_sanityCheck",
-                "snippet-dependency-management-introduction-core-dependencies_kotlin_sanityCheck",
-                "snippet-dependency-management-introduction-core-dependencies_groovy_dependencyIntroReport",
-                "snippet-dependency-management-introduction-core-dependencies_kotlin_dependencyIntroReport",
-                "snippet-dependency-management-catalogs-toml-simple_groovy_sanityCheck",
-                "snippet-dependency-management-catalogs-toml-simple_kotlin_sanityCheck",
-                "snippet-dependency-management-catalogs-toml-simple_groovy_resolve",
-                "snippet-dependency-management-catalogs-toml-simple_kotlin_resolve",
-                "snippet-dependency-management-catalogs-platforms_groovy_sanityCheck",
-                "snippet-dependency-management-catalogs-platforms_kotlin_sanityCheck",
             )
 
             val brokenTests = testsForUnsupportedFeatures + testsWithThirdPartyFailures + testsForNotYetSupportedFeatures + testsToBeFixedForConfigurationCache
