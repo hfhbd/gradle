@@ -22,8 +22,8 @@ import org.gradle.integtests.fixtures.AbstractIntegrationSpec
 class ConsoleNoColorIntegrationTest extends AbstractIntegrationSpec {
 
     private static final ANSI_BOLD = '\u001B[1m'
-    private static final ANSI_FOREGROUND_COLOR = /\u001B\[3[0-7]m/
-    private static final ANSI_BRIGHT_FOREGROUND_COLOR = /\u001B\[9[0-7]m/
+    private static final ANSI_FOREGROUND_COLOR = /\u001B\[[\d;]*3[0-7][;m]/
+    private static final ANSI_BRIGHT_FOREGROUND_COLOR = /\u001B\[[\d;]*9[0-7][;m]/
 
     def "empty NO_COLOR does not suppress styling"() {
         given:
@@ -35,6 +35,7 @@ class ConsoleNoColorIntegrationTest extends AbstractIntegrationSpec {
 
         then:
         output.contains(ANSI_BOLD)
+        output =~ ANSI_FOREGROUND_COLOR
     }
 
     def "NO_COLOR strips foreground colors with --console=#consoleOutput"() {
