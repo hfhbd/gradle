@@ -88,6 +88,8 @@ See the [Non-interactive mode](userguide/command_line_interface.html#sec:non_int
 Gradle now honors the `NO_COLOR` environment variable following the [no-color.org](https://no-color.org/) convention.
 When `NO_COLOR` is set and non-empty, Gradle suppresses color output while preserving other styling (bold, underline) and rich features (progress bars, animations).
 
+![NO-COLOR Screenshot](release-notes-assets/no-color-screenshot.png)
+
 See the [Environment variables](userguide/build_environment.html#sec:gradle_environment_variables) section in the Gradle User Manual for more information.
 
 ### Build authoring improvements
