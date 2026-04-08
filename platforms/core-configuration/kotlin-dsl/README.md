@@ -1,10 +1,14 @@
-# Gradle Kotlin DSL C4 Model
+# Gradle Kotlin DSL
+
+Kotlin DSL Provider and API.
+
+## Gradle Kotlin DSL C4 Model
 
 Core [C4 Model](https://c4model.com/#coreDiagrams) diagrams for the Gradle Kotlin DSL.
 
 > **Note:** The optional 4th level, UML diagrams, isn't provided, favoring the source code and inspection tools.
 
-## Level 1: System Context diagram
+### Level 1: System Context diagram
 
 A developer uses the Gradle Kotlin DSL either via Gradle directly or in an IDE that uses the Kotlin DSL support via Gradle.
 The Kotlin DSL is embedded into the Gradle Build Tool and, just like the IDE, makes use of the Kotlin toolchain.
@@ -35,7 +39,7 @@ C4Context
     UpdateLayoutConfig($c4ShapeInRow="1", $c4BoundaryInRow="2")
 ```
 
-## Level 2: Container diagram
+### Level 2: Container diagram
 
 When used for the compilation of scripts of a Gradle build, the Kotlin DSL Provider compiles scripts using an embedded Kotlin compiler.
 
@@ -92,7 +96,7 @@ C4Container
     UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="2")
 ```
 
-## Level 3: Component diagram
+### Level 3: Component diagram
 
 The following diagram details each container's components and gets closer to how the Kotlin DSL is organized.
 It should be useful enough to know where to find what in the Kotlin DSL source code.
