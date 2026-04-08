@@ -12,7 +12,7 @@
 
 We are excited to announce Gradle @version@ (released [@releaseDate@](https://gradle.org/releases/)).
 
-This release improves [diagnostics and reporting](#diagnostics-and-reporting-improvements) with task provenance in errors and reports, plus clearer logging when the client JVM is incompatible with daemon requirements for `--no-daemon`.
+This release improves [diagnostics and reporting](#diagnostics-and-reporting-improvements) with task provenance in errors and reports, plus clearer logging when the client JVM is incompatible with daemon requirements.
 
 [Plugin authors](#core-plugin-and-plugin-authoring-enhancements) gain type-safe Kotlin accessors for precompiled Settings convention plugins and automatic retry support for Wrapper downloads.
 
@@ -100,9 +100,9 @@ build - Assembles and tests this project. (registered by plugin 'org.gradle.lang
 
 See [Task Provenance](userguide/more_about_tasks.html#sec:task_provenance) to learn more.
 
-#### Improved diagnostics for single-use daemon forking
+#### Improved diagnostics for daemon JVM compatibility
 
-When Gradle forks a single-use [daemon](userguide/gradle_daemon.html) because the client JVM is incompatible with the build requirements, it now [logs](userguide/logging.html) the specific reason at the `INFO` level:
+When Gradle finds an existing [daemon](userguide/gradle_daemon.html) but cannot use it due to JVM incompatibility, it now [logs](userguide/logging.html) the specific reason at the INFO level:
 
 ```text
 Found daemon DaemonInfo{pid=32935, ...} however its context does not match the desired criteria.
@@ -111,9 +111,9 @@ Wanted: DaemonRequestContext{jvmCriteria=.../corretto-1.8.0_412/... (no Daemon J
 Actual: DefaultDaemonContext[javaHome=.../jdk-17.0.13+11/..., javaVersion=17, javaVendor=Eclipse Adoptium, ...]
 ``` 
 
-Previously, Gradle only stated that a single-use daemon would be used without explaining why.
+Previously, Gradle only stated that a new daemon would be used without explaining why the existing one was rejected.
 
-This makes it easier to diagnose unexpected daemon forking when using [--no-daemon](userguide/gradle_daemon.html#sec:disabling_the_daemon) or investigating JVM compatibility issues.
+This makes it easier to diagnose unexpected daemon behavior, whether using [--no-daemon](userguide/gradle_daemon.html#sec:disabling_the_daemon), investigating daemon spawns, or troubleshooting JVM compatibility issues.
 
 ### Core plugin and plugin authoring enhancements
 
@@ -288,6 +288,11 @@ For example, in IntelliJ IDEA, users can run `--help` and `--version` via the `E
 The samples page has been removed.
 Code examples can now be found on their corresponding documentation pages, with links to the repository for full project files.
 For reference, you can still view the [original samples page](/9.4.1/samples/index.html) from Gradle 9.4.1.
+
+### Training
+
+The following course is now available:
+[Dependency Management 1: Configurations](https://dpeuniversity.gradle.com/app/courses/b836790a-444e-4385-b0c2-05f570215167)
 
 ## Fixed issues
 
