@@ -173,7 +173,10 @@
             <trusting group="^org[.]gradle($|([.].*))" regex="true"/>
          </trusted-key>
          <trusted-key id="31FAE244A81D64507B47182E1B2718089CE964B8" group="com.thoughtworks.qdox"/>
-         <trusted-key id="32118CF76C9EC5D918E54967CA80D1F0EB6CA4BA" group="org.codehaus.plexus" name="plexus-xml"/>
+         <trusted-key id="32118CF76C9EC5D918E54967CA80D1F0EB6CA4BA">
+            <trusting group="org.codehaus.plexus" name="plexus-xml"/>
+            <trusting group="org.codehaus.plexus" name="plexus-utils"/>
+         </trusted-key>
          <trusted-key id="331224E1D7BE883D16E8A685825C06C827AF6B66" group="me.champeau.gradle"/>
          <trusted-key id="33FD4BFD33554634053D73C0C2148900BCD3C2AF" group="org.jetbrains" name="annotations"/>
          <trusted-key id="34441E504A937F43EB0DAEF96A65176A0FB1CD0B">
