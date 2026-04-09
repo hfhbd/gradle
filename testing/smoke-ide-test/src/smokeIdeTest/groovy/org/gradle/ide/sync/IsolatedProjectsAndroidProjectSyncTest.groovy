@@ -19,10 +19,8 @@ package org.gradle.ide.sync
 import org.gradle.ide.starter.IdeScenarioBuilder
 import org.gradle.integtests.fixtures.versions.AndroidGradlePluginVersions
 import org.gradle.test.fixtures.Flaky
-import spock.lang.Ignore
 
 @Flaky(because = "https://github.com/gradle/gradle-private/issues/5093")
-@Ignore("https://github.com/gradle/gradle-private/issues/5157") // gradle-ide-starter needs to be updated to account for Android Studio download URL changes
 class IsolatedProjectsAndroidProjectSyncTest extends AbstractIdeSyncTest {
 
     // https://developer.android.com/build/releases/gradle-plugin
