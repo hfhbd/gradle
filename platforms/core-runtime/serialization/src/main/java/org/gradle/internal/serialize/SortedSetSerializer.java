@@ -19,7 +19,8 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
 import org.jspecify.annotations.NullMarked;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -39,14 +40,11 @@ public class SortedSetSerializer<T extends Comparable<T>> extends AbstractSerial
         this.entrySerializer = entrySerializer;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public void write(Encoder encoder, Set<T> value) throws Exception {
-        // We cannot create a T[] directly due to type erasure; Comparable[] is the
-        // closest array type available since T extends Comparable<T>.
-        T[] sorted = (T[]) value.toArray(new Comparable[0]);
-        Arrays.sort(sorted);
-        encoder.writeInt(sorted.length);
+        List<T> sorted = new ArrayList<>(value);
+        sorted.sort(null);
+        encoder.writeInt(sorted.size());
         for (T t : sorted) {
             entrySerializer.write(encoder, t);
         }

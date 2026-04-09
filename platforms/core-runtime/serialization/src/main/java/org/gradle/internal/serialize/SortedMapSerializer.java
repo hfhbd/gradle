@@ -16,10 +16,11 @@
 package org.gradle.internal.serialize;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.Maps;
 import org.jspecify.annotations.NullMarked;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,14 +42,11 @@ public class SortedMapSerializer<K extends Comparable<K>, V> extends AbstractSer
         this.valueSerializer = valueSerializer;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public void write(Encoder encoder, Map<K, V> value) throws Exception {
-        // We cannot create a K[] directly due to type erasure; Comparable[] is the
-        // closest array type available since K extends Comparable<K>.
-        K[] sortedKeys = (K[]) value.keySet().toArray(new Comparable[0]);
-        Arrays.sort(sortedKeys);
-        encoder.writeInt(sortedKeys.length);
+        List<K> sortedKeys = new ArrayList<>(value.keySet());
+        sortedKeys.sort(null);
+        encoder.writeInt(sortedKeys.size());
         for (K key : sortedKeys) {
             keySerializer.write(encoder, key);
             valueSerializer.write(encoder, value.get(key));
@@ -58,7 +56,7 @@ public class SortedMapSerializer<K extends Comparable<K>, V> extends AbstractSer
     @Override
     public Map<K, V> read(Decoder decoder) throws Exception {
         int size = decoder.readInt();
-        Map<K, V> map = new LinkedHashMap<>(size);
+        Map<K, V> map = Maps.newLinkedHashMapWithExpectedSize(size);
         for (int i = 0; i < size; i++) {
             K key = keySerializer.read(decoder);
             V value = valueSerializer.read(decoder);

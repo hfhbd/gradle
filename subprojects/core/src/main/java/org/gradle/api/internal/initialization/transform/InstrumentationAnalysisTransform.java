@@ -40,6 +40,8 @@ import org.objectweb.asm.ClassReader;
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
+import com.google.common.collect.Maps;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -175,7 +177,7 @@ public abstract class InstrumentationAnalysisTransform implements TransformActio
     }
 
     private static Map<String, Set<String>> toMapWithKeys(Set<String> keys) {
-        HashMap<String, Set<String>> map = new HashMap<>(keys.size());
+        Map<String, Set<String>> map = Maps.newHashMapWithExpectedSize(keys.size());
         keys.forEach(key -> map.put(key, Collections.emptySet()));
         return map;
     }
