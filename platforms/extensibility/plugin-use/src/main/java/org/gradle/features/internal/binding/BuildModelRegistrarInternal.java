@@ -20,12 +20,9 @@ import org.gradle.features.binding.BuildModel;
 import org.gradle.features.binding.BuildModelRegistrar;
 import org.gradle.features.binding.Definition;
 import org.gradle.features.binding.ProjectFeatureApplicationContext;
-import org.gradle.internal.service.scopes.Scope;
-import org.gradle.internal.service.scopes.ServiceScope;
 
 import java.util.Map;
 
-@ServiceScope(Scope.Project.class)
 public interface BuildModelRegistrarInternal extends BuildModelRegistrar {
 
     /**

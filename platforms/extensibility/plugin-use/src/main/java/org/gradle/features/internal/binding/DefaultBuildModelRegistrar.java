@@ -23,22 +23,18 @@ import org.gradle.internal.Cast;
 import org.gradle.internal.inspection.DefaultTypeParameterInspection;
 import org.gradle.internal.inspection.TypeParameterInspection;
 
-import javax.inject.Inject;
 import java.util.Map;
 
-public abstract class DefaultBuildModelRegistrar implements BuildModelRegistrarInternal {
-
-    @Inject
-    protected abstract ProjectFeatureApplicator getProjectFeatureApplicator();
-
-    @Inject
-    protected abstract ProjectFeatureDeclarations getProjectFeatureRegistry();
+public class DefaultBuildModelRegistrar implements BuildModelRegistrarInternal {
 
     private final ObjectFactory objectFactory;
+    private final ProjectFeatureApplicator projectFeatureApplicator;
+    private final ProjectFeatureDeclarations projectFeatureDeclarations;
 
-    @Inject
-    public DefaultBuildModelRegistrar(ObjectFactory objectFactory) {
+    public DefaultBuildModelRegistrar(ObjectFactory objectFactory, ProjectFeatureApplicator projectFeatureApplicator, ProjectFeatureDeclarations projectFeatureDeclarations) {
         this.objectFactory = objectFactory;
+        this.projectFeatureApplicator = projectFeatureApplicator;
+        this.projectFeatureDeclarations = projectFeatureDeclarations;
     }
 
     @Override
@@ -49,7 +45,7 @@ public abstract class DefaultBuildModelRegistrar implements BuildModelRegistrarI
         }
 
         V buildModel = ProjectFeatureSupportInternal.createBuildModelInstance(objectFactory, implementationType);
-        ProjectFeatureSupportInternal.attachDefinitionContext(definition, buildModel, getProjectFeatureApplicator(), getProjectFeatureRegistry(), objectFactory);
+        ProjectFeatureSupportInternal.attachDefinitionContext(definition, buildModel, projectFeatureApplicator, projectFeatureDeclarations, objectFactory);
 
         return buildModel;
     }

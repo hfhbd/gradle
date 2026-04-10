@@ -17,8 +17,6 @@
 package org.gradle.features.binding;
 
 import org.gradle.api.Incubating;
-import org.gradle.internal.service.scopes.Scope;
-import org.gradle.internal.service.scopes.ServiceScope;
 
 /**
  * Provides explicit build model registration.
@@ -31,7 +29,6 @@ import org.gradle.internal.service.scopes.ServiceScope;
  * @since 9.6.0
  */
 @Incubating
-@ServiceScope(Scope.Project.class)
 public interface BuildModelRegistrar {
     /**
      * Creates, registers, and returns a new build model instance for the given {@code definition} instance.

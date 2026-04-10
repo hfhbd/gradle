@@ -40,6 +40,7 @@ import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.features.binding.BuildModel;
+import org.gradle.features.binding.BuildModelRegistrar;
 import org.gradle.features.binding.Definition;
 import org.gradle.features.binding.ProjectFeatureApplicationContext;
 import org.gradle.features.binding.ProjectFeatureApplyAction;
@@ -143,9 +144,12 @@ abstract public class DefaultProjectFeatureApplicator implements ProjectFeatureA
 
     private <OwnDefinition extends Definition<OwnBuildModel>, OwnBuildModel extends BuildModel> FeatureApplication<OwnDefinition, OwnBuildModel> instantiateBoundFeatureObjects(Object parentDefinition, ProjectFeatureImplementation<OwnDefinition, OwnBuildModel> projectFeature) {
         // Context-specific services for this feature binding
-        ServiceLookup featureServices = getContextSpecificServiceLookup(projectFeature);
+        ServicesForApplyAction featureServices = getContextSpecificServiceLookup(projectFeature);
         ObjectFactory featureObjectFactory = getObjectFactoryFactory().createObjectFactory(featureServices);
-        BuildModelRegistrarInternal buildModelRegistrar = getBuildModelRegistrar();
+        BuildModelRegistrarInternal buildModelRegistrar = new DefaultBuildModelRegistrar(featureObjectFactory, this, getProjectFeatureDeclarations());
+        if (featureServices instanceof UnsafeServicesForApplyAction) {
+            ((UnsafeServicesForApplyAction) featureServices).setBuildModelRegistrar(buildModelRegistrar);
+        }
 
         // Instantiate the definition and build model objects with the feature-specific object factory
         OwnDefinition definition = featureObjectFactory.newInstance(projectFeature.getDefinitionImplementationType());
@@ -200,7 +204,7 @@ abstract public class DefaultProjectFeatureApplicator implements ProjectFeatureA
         buildModelRegistrar.registerBuildModel(nestedDefinition, buildModelImplementationTypes);
     }
 
-    private <OwnDefinition extends Definition<OwnBuildModel>, OwnBuildModel extends BuildModel> ServiceLookup getContextSpecificServiceLookup(ProjectFeatureImplementation<OwnDefinition, OwnBuildModel> projectFeature) {
+    private <OwnDefinition extends Definition<OwnBuildModel>, OwnBuildModel extends BuildModel> ServicesForApplyAction getContextSpecificServiceLookup(ProjectFeatureImplementation<OwnDefinition, OwnBuildModel> projectFeature) {
         TaskRegistrar taskRegistrar = new DefaultTaskRegistrar(getTaskContainer());
         ProjectFeatureLayout projectFeatureLayout = new DefaultProjectFeatureLayout(getProjectLayout());
         ConfigurationRegistrar configurationRegistrar = new DefaultConfigurationRegistrar(getConfigurationContainer());
@@ -234,9 +238,6 @@ abstract public class DefaultProjectFeatureApplicator implements ProjectFeatureA
 
     @Inject
     abstract protected TypeAnnotationMetadataStore getTypeAnnotationMetadataStore();
-
-    @Inject
-    abstract protected BuildModelRegistrarInternal getBuildModelRegistrar();
 
     /**
      * Walks the public properties of a given object, visiting each property and descending into any properties that are annotated with {@link Nested}.
@@ -475,6 +476,7 @@ abstract public class DefaultProjectFeatureApplicator implements ProjectFeatureA
     private static class UnsafeServicesForApplyAction extends ServicesForApplyAction {
         private final String featureName;
         private final InternalProblemReporter problemReporter; // Not used in this class
+        private BuildModelRegistrarInternal buildModelRegistrar; // set after construction to share ObjectFactory created with this instance
 
         public UnsafeServicesForApplyAction(ServiceLookup allServices, TaskRegistrar taskRegistrar, ProjectFeatureLayout projectFeatureLayout, ConfigurationRegistrar configurationRegistrar, String featureName, InternalProblemReporter problemReporter) {
             super(allServices, taskRegistrar, projectFeatureLayout, configurationRegistrar);
@@ -482,11 +484,23 @@ abstract public class DefaultProjectFeatureApplicator implements ProjectFeatureA
             this.problemReporter = problemReporter;
         }
 
+        void setBuildModelRegistrar(BuildModelRegistrarInternal buildModelRegistrar) {
+            this.buildModelRegistrar = buildModelRegistrar;
+        }
+
         @Override
         public @Nullable Object find(Type serviceType) throws ServiceLookupException {
             Object found = super.find(serviceType);
             if (found != null) {
                 return found;
+            }
+
+            // Context-specific service for build model registration, only available in unsafe apply actions
+            if (serviceType instanceof Class) {
+                Class<?> serviceClass = Cast.uncheckedNonnullCast(serviceType);
+                if (serviceClass.isAssignableFrom(BuildModelRegistrar.class)) {
+                    return buildModelRegistrar;
+                }
             }
 
             // If not found in the safe/limited set, allow lookup from all services
