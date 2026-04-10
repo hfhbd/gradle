@@ -21,10 +21,10 @@ import org.gradle.api.artifacts.component.ProjectComponentIdentifier;
 import org.gradle.api.internal.BuildDefinition;
 import org.gradle.api.internal.artifacts.DefaultModuleVersionIdentifier;
 import org.gradle.api.internal.artifacts.configurations.DependencyMetaDataProvider;
-import org.gradle.api.internal.project.ProjectInternal;
 import org.gradle.api.internal.project.ProjectState;
 import org.gradle.internal.Pair;
 import org.gradle.internal.build.AbstractBuildState;
+import org.gradle.internal.build.BuildProjectRegistry;
 import org.gradle.internal.build.BuildState;
 import org.gradle.internal.build.CompositeBuildParticipantBuildState;
 import org.gradle.internal.buildtree.BuildTreeState;
@@ -50,9 +50,12 @@ public abstract class AbstractCompositeParticipantBuildState extends AbstractBui
         if (availableModules == null) {
             ensureChildBuildConfigured();
             availableModules = new LinkedHashSet<>();
-            for (ProjectState project : getProjects().getAllProjects()) {
-                registerProject(availableModules, project.getMutableModel());
-            }
+            BuildProjectRegistry projectRegistry = getProjects();
+            projectRegistry.withMutableStateOfAllProjects(() -> {
+                for (ProjectState project : projectRegistry.getAllProjects()) {
+                    registerProject(availableModules, project);
+                }
+            });
         }
         return availableModules;
     }
@@ -63,11 +66,13 @@ public abstract class AbstractCompositeParticipantBuildState extends AbstractBui
 
     private static void registerProject(
         Set<Pair<ModuleVersionIdentifier, ProjectComponentIdentifier>> availableModules,
-        ProjectInternal project
+        ProjectState projectState
     ) {
-        ProjectComponentIdentifier projectIdentifier = project.getOwner().getComponentIdentifier();
-        ModuleVersionIdentifier moduleId = DefaultModuleVersionIdentifier.newId(project.getServices().get(DependencyMetaDataProvider.class).getModule());
-        LOGGER.info("Registering {} in composite build. Will substitute for module '{}'.", project, moduleId.getModule());
+        ProjectComponentIdentifier projectIdentifier = projectState.getComponentIdentifier();
+        ModuleVersionIdentifier moduleId = projectState.fromMutableState(project ->
+            DefaultModuleVersionIdentifier.newId(project.getServices().get(DependencyMetaDataProvider.class).getModule())
+        );
+        LOGGER.info("Registering {} in composite build. Will substitute for module '{}'.", projectState, moduleId.getModule());
         availableModules.add(Pair.of(moduleId, projectIdentifier));
     }
 
