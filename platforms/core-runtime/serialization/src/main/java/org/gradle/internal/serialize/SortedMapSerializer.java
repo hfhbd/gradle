@@ -20,6 +20,8 @@ import com.google.common.collect.Maps;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +47,8 @@ public class SortedMapSerializer<K extends Comparable<K>, V> extends AbstractSer
     @Override
     public void write(Encoder encoder, Map<K, V> value) throws Exception {
         List<K> sortedKeys = new ArrayList<>(value.keySet());
-        sortedKeys.sort(null);
+        Collections.sort(sortedKeys);
+
         encoder.writeInt(sortedKeys.size());
         for (K key : sortedKeys) {
             keySerializer.write(encoder, key);
