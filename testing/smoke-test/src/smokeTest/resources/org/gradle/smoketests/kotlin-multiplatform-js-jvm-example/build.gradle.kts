@@ -43,7 +43,7 @@ kotlin {
     }
 
     sourceSets {
-        val commonTest by getting {
+        named("commonTest") {
             dependencies {
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
