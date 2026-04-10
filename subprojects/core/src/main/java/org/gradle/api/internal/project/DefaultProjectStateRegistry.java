@@ -38,6 +38,7 @@ import org.gradle.internal.resources.ResourceLock;
 import org.gradle.internal.service.ServiceRegistry;
 import org.gradle.internal.work.WorkerLeaseService;
 import org.gradle.util.Path;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.io.Closeable;
@@ -255,6 +256,7 @@ public class DefaultProjectStateRegistry implements ProjectStateRegistry, Closea
         }
     }
 
+    @NullMarked
     private class ProjectStateImpl implements ProjectState, Closeable {
 
         private final ProjectDescriptorInternal descriptor;
@@ -446,12 +448,12 @@ public class DefaultProjectStateRegistry implements ProjectStateRegistry, Closea
         }
 
         @Override
-        public <S> S fromMutableState(Function<? super ProjectInternal, ? extends S> function) {
+        public <S extends @Nullable Object> S fromMutableState(Function<? super ProjectInternal, ? extends S> function) {
             return runWithModelLock(() -> function.apply(getMutableModel()));
         }
 
         @Override
-        public <S> S runWithModelLock(Supplier<S> action) {
+        public <S extends @Nullable Object> S runWithModelLock(Supplier<S> action) {
             Thread currentThread = Thread.currentThread();
             if (workerLeaseService.isAllowedUncontrolledAccessToAnyProject() || canDoAnythingToThisProject.contains(currentThread)) {
                 // Current thread is allowed to access anything at any time, so run the action
