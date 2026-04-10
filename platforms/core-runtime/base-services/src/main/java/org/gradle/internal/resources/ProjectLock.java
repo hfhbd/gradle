@@ -24,6 +24,10 @@ public class ProjectLock extends ExclusiveAccessResourceLock {
         this.allProjectsLock = allProjectsLock;
     }
 
+    ResourceLock getAllProjectsLock() {
+        return allProjectsLock;
+    }
+
     @Override
     protected boolean canAcquire() {
         // Either the "all projects" lock is not held, or it is held by this thread

@@ -25,7 +25,26 @@ public class ProjectLockRegistry extends AbstractResourceLockRegistry<Path, Proj
     public ProjectLockRegistry(ResourceLockCoordinationService coordinationService, boolean parallelEnabled) {
         super(coordinationService);
         this.parallelEnabled = parallelEnabled;
-        allProjectsLocks = new LockCache<Path, AllProjectsLock>(coordinationService, this);
+        allProjectsLocks = new LockCache<>(coordinationService, this);
+    }
+
+    /**
+     * Checks if any project lock is currently held that is associated with the given "all projects" lock, and is held by another thread.
+     * This is effectively a proxy for checking if any of the project locks have the same {@code buildIdentityPath} as the given "all projects" lock.
+     *
+     * @param relevantAllProjectsLock the "all projects" lock for which to check if any project locks are currently held by another thread
+     * @return {@code true} if any project lock is currently held by another thread that is associated with the given "all projects" lock, {@code false} otherwise
+     */
+    private boolean isAnyProjectLockHeldByAnotherThread(AllProjectsLock relevantAllProjectsLock) {
+        for (ProjectLock projectLock : getAllResourceLocks()) {
+            if (projectLock.getAllProjectsLock() != relevantAllProjectsLock) {
+                continue;
+            }
+            if (projectLock.isLocked() && !projectLock.isLockedByCurrentThread()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean getAllowsParallelExecution() {
@@ -33,12 +52,9 @@ public class ProjectLockRegistry extends AbstractResourceLockRegistry<Path, Proj
     }
 
     public ResourceLock getAllProjectsLock(final Path buildIdentityPath) {
-        return allProjectsLocks.getOrRegisterResourceLock(buildIdentityPath, new ResourceLockProducer<Path, AllProjectsLock>() {
-            @Override
-            public AllProjectsLock create(Path key, ResourceLockCoordinationService coordinationService, ResourceLockContainer owner) {
-                String displayName = "All projects of " + buildIdentityPath;
-                return new AllProjectsLock(displayName, coordinationService, owner);
-            }
+        return allProjectsLocks.getOrRegisterResourceLock(buildIdentityPath, (key, coordinationService, owner) -> {
+            String displayName = "All projects of " + buildIdentityPath;
+            return new AllProjectsLock(displayName, coordinationService, owner, this::isAnyProjectLockHeldByAnotherThread);
         });
     }
 
@@ -47,12 +63,9 @@ public class ProjectLockRegistry extends AbstractResourceLockRegistry<Path, Proj
     }
 
     private ProjectLock doGetResourceLock(final Path buildIdentityPath, final Path lockPath) {
-        return getOrRegisterResourceLock(lockPath, new ResourceLockProducer<Path, ProjectLock>() {
-            @Override
-            public ProjectLock create(Path projectPath, ResourceLockCoordinationService coordinationService, ResourceLockContainer owner) {
-                String displayName = parallelEnabled ? "state of project " + lockPath : "state of build " + lockPath;
-                return new ProjectLock(displayName, coordinationService, owner, getAllProjectsLock(buildIdentityPath));
-            }
+        return getOrRegisterResourceLock(lockPath, (projectPath, coordinationService, owner) -> {
+            String displayName = parallelEnabled ? "state of project " + lockPath : "state of build " + lockPath;
+            return new ProjectLock(displayName, coordinationService, owner, getAllProjectsLock(buildIdentityPath));
         });
     }
 }

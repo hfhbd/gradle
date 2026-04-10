@@ -83,6 +83,10 @@ public abstract class AbstractResourceLockRegistry<K, T extends ResourceLock> im
         lockDetails.locks.add(Cast.<T>uncheckedCast(resourceLock));
     }
 
+    protected Iterable<T> getAllResourceLocks() {
+        return resourceLocks.values();
+    }
+
     public boolean holdsLock() {
         ThreadLockDetails<T> details = detailsForCurrentThread();
         return !details.locks.isEmpty();

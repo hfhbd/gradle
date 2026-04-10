@@ -311,6 +311,65 @@ class DefaultProjectStateRegistryTest extends ConcurrentSpec {
         instant.thread2 > instant.thread1
     }
 
+    def "cannot lock all projects while another thread has locked project state"() {
+        given:
+        def build = build("p1", "p2")
+        createRootProject()
+        def state = registry.stateFor(projectId("p1"))
+        createProject(state, project("p1"))
+        def projects = registry.projectsFor(build.buildIdentifier)
+
+        when:
+        async {
+            workerThread {
+                state.applyToMutableState {
+                    instant.start
+                    thread.block()
+                    instant.thread1
+                }
+            }
+            workerThread {
+                thread.blockUntil.start
+                projects.withMutableStateOfAllProjects {
+                    instant.thread2
+                }
+            }
+        }
+
+        then:
+        instant.thread2 > instant.thread1
+    }
+
+    def "can lock all projects while the current thread holds a project lock"() {
+        given:
+        def build = build("p1", "p2")
+        createRootProject()
+        def state1 = registry.stateFor(projectId("p1"))
+        createProject(state1, project("p1"))
+        def state2 = registry.stateFor(projectId("p2"))
+        createProject(state2, project("p2"))
+        def projects = registry.projectsFor(build.buildIdentifier)
+
+        when:
+        async {
+            workerThread {
+                state1.applyToMutableState {
+                    assert state1.hasMutableState()
+                    assert !state2.hasMutableState()
+                    projects.withMutableStateOfAllProjects {
+                        assert state1.hasMutableState()
+                        assert state2.hasMutableState()
+                    }
+                    assert state1.hasMutableState()
+                    assert !state2.hasMutableState()
+                }
+            }
+        }
+
+        then:
+        noExceptionThrown()
+    }
+
     def "releases lock for all projects while running blocking operation"() {
         given:
         def build = build("p1", "p2")

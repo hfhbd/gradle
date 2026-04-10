@@ -16,14 +16,18 @@
 
 package org.gradle.internal.resources;
 
+import java.util.function.Predicate;
+
 class AllProjectsLock extends ExclusiveAccessResourceLock {
-    public AllProjectsLock(String displayName, ResourceLockCoordinationService coordinationService, ResourceLockContainer owner) {
+    private final Predicate<AllProjectsLock> anyProjectLockHeldByOtherThreads;
+
+    public AllProjectsLock(String displayName, ResourceLockCoordinationService coordinationService, ResourceLockContainer owner, Predicate<AllProjectsLock> anyProjectLockHeldByOtherThreads) {
         super(displayName, coordinationService, owner);
+        this.anyProjectLockHeldByOtherThreads = anyProjectLockHeldByOtherThreads;
     }
 
     @Override
     protected boolean canAcquire() {
-        // TODO - should block while some other thread holds a project lock
-        return true;
+        return !anyProjectLockHeldByOtherThreads.test(this);
     }
 }
