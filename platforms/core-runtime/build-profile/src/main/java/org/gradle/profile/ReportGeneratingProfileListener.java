@@ -57,12 +57,14 @@ public class ReportGeneratingProfileListener {
             .getRootBuild()
             .getProjects()
             .getRootProject()
-            .getMutableModel()
-            .getServices()
-            .get(ProjectLayout.class)
-            .getBuildDirectory()
-            .getAsFile()
-            .get();
+            .fromMutableState(project ->
+                project
+                    .getServices()
+                    .get(ProjectLayout.class)
+                    .getBuildDirectory()
+                    .getAsFile()
+                    .get()
+            );
     }
 
     private void renderReportUrl(File reportFile) {
