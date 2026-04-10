@@ -5,11 +5,11 @@ plugins {
 
 // This configuration is used to declare dependencies only.
 // It is neither resolvable nor consumable.
-val instrumentedRuntimeDependencies by configurations.dependencyScope("instrumentedRuntimeDependencies")
+val instrumentedRuntimeDependencies = configurations.dependencyScope("instrumentedRuntimeDependencies").get()
 
 // This resolvable configuration is used to resolve the instrumented JAR files.
 // It extends from the dependency-declaring configuration above.
-val instrumentedRuntime by configurations.resolvable("instrumentedRuntime") {
+val instrumentedRuntime = configurations.resolvable("instrumentedRuntime") {
     // Wire the dependency declarations
     extendsFrom(instrumentedRuntimeDependencies)
 
@@ -17,7 +17,7 @@ val instrumentedRuntime by configurations.resolvable("instrumentedRuntime") {
     attributes {
         attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named("instrumented-jar"))
     }
-}
+}.get()
 // end::custom-config[]
 
 // tag::dependency[]
