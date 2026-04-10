@@ -25,6 +25,7 @@ import org.gradle.api.internal.project.ProjectState;
 import org.gradle.api.internal.properties.GradleProperties;
 import org.gradle.api.internal.properties.GradlePropertiesController;
 import org.gradle.initialization.properties.FilteringGradleProperties;
+import org.gradle.internal.build.BuildProjectRegistry;
 
 import java.util.Set;
 
@@ -44,7 +45,10 @@ public class ProjectPropertySettingBuildLoader implements BuildLoader {
     @Override
     public void load(SettingsInternal settings, GradleInternal gradle) {
         buildLoader.load(settings, gradle);
-        setProjectProperties(gradle.getOwner().getProjects().getRootProject());
+        BuildProjectRegistry projectRegistry = gradle.getOwner().getProjects();
+        projectRegistry.withMutableStateOfAllProjects(() ->
+            setProjectProperties(projectRegistry.getRootProject())
+        );
     }
 
     private void setProjectProperties(ProjectState project) {
@@ -58,10 +62,10 @@ public class ProjectPropertySettingBuildLoader implements BuildLoader {
         gradlePropertiesController.loadGradleProperties(project.getIdentity(), project.getProjectDir());
         GradleProperties projectGradleProperties = gradlePropertiesController.getGradleProperties(project.getIdentity());
 
-        ProjectInternal mutableProject = project.getMutableModel();
-
-        Set<String> consumedProperties = assignSelectedPropertiesDirectly(mutableProject, projectGradleProperties);
-        installProjectExtraPropertiesDefaults(mutableProject, projectGradleProperties, consumedProperties);
+        project.applyToMutableState(mutableProject -> {
+            Set<String> consumedProperties = assignSelectedPropertiesDirectly(mutableProject, projectGradleProperties);
+            installProjectExtraPropertiesDefaults(mutableProject, projectGradleProperties, consumedProperties);
+        });
     }
 
     /**

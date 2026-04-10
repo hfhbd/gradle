@@ -28,17 +28,20 @@ import org.gradle.internal.build.BuildProjectRegistry
 import org.gradle.internal.build.BuildState
 import spock.lang.Specification
 
+import java.util.function.Consumer
+
 class ProjectPropertySettingBuildLoaderTest extends Specification {
 
-    final ProjectState childProjectState = projectState()
-    final ProjectInternal childProject = childProjectState.getMutableModel()
+    final ProjectInternal childProject = Mock()
+    final ProjectState childProjectState = projectState(childProject)
 
-    final ProjectState rootProjectState = projectState([childProjectState] as Set)
-    final ProjectInternal rootProject = rootProjectState.getMutableModel()
+    final ProjectInternal rootProject = Mock()
+    final ProjectState rootProjectState = projectState(rootProject, [childProjectState] as Set)
 
     final BuildState buildState = Mock(BuildState) {
         getProjects() >> Mock(BuildProjectRegistry) {
             getRootProject() >> rootProjectState
+            withMutableStateOfAllProjects(_) >> { Runnable r -> r.run() }
         }
     }
     final GradleInternal gradle = Mock() {
@@ -146,14 +149,10 @@ class ProjectPropertySettingBuildLoaderTest extends Specification {
         new DefaultGradleProperties(props)
     }
 
-    ProjectState projectState(Set<ProjectState> children = []) {
-        def state = Mock(ProjectState) {
+    ProjectState projectState(ProjectInternal project, Set<ProjectState> children = []) {
+        Mock(ProjectState) {
             getChildProjects() >> children
+            applyToMutableState(_) >> { Consumer consumer -> consumer.accept(project) }
         }
-        def project = Mock(ProjectInternal) {
-            getOwner() >> state
-        }
-        _ * state.getMutableModel() >> project
-        state
     }
 }
