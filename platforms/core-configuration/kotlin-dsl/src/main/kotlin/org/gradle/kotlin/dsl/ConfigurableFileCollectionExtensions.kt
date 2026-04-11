@@ -27,6 +27,7 @@ import kotlin.reflect.KProperty
  *
  * Example: `val aFileCollection by project.files()`
  */
+@Deprecated("Use 'val files = configurableFileCollection.getFiles()' instead. See the Gradle 9.6 upgrading guide.")
 operator fun ConfigurableFileCollection.getValue(receiver: Any?, property: KProperty<*>): ConfigurableFileCollection {
     DeprecationLogger.deprecate("The 'val files by configurableFileCollection' property delegate syntax")
         .withAdvice("Use 'val files = configurableFileCollection.getFiles()' instead.")
@@ -42,6 +43,7 @@ operator fun ConfigurableFileCollection.getValue(receiver: Any?, property: KProp
  *
  * Example: `var aFileCollection by project.files()`
  */
+@Deprecated("Use 'configurableFileCollection.setFrom(...)' instead. See the Gradle 9.6 upgrading guide.")
 operator fun ConfigurableFileCollection.setValue(receiver: Any?, property: KProperty<*>, value: Iterable<*>) {
     DeprecationLogger.deprecate("The 'val files by configurableFileCollection; files = ...' property delegate syntax")
         .withAdvice("Use 'configurableFileCollection.setFrom(...)' instead.")

@@ -40,6 +40,8 @@ val ExtensionAware.extra: ExtraPropertiesExtension
 /**
  * Provides property delegate for typed access to extra properties.
  */
+@Deprecated("Use 'val property = extra[name] as Type' instead. See the Gradle 9.6 upgrading guide.")
+@Suppress("DEPRECATION")
 operator fun ExtraPropertiesExtension.provideDelegate(receiver: Any?, property: KProperty<*>): MutablePropertyDelegate {
     if (property.returnType.isMarkedNullable) {
         DeprecationLogger.deprecate("The 'val name: Type? by extra' property delegate syntax")
@@ -59,6 +61,7 @@ operator fun ExtraPropertiesExtension.provideDelegate(receiver: Any?, property: 
 }
 
 
+@Suppress("DEPRECATION")
 private
 class NonNullExtraPropertyDelegate(
     private val extra: ExtraPropertiesExtension,
@@ -78,6 +81,7 @@ class NonNullExtraPropertyDelegate(
 }
 
 
+@Suppress("DEPRECATION")
 private
 class NullableExtraPropertyDelegate(
     private val extra: ExtraPropertiesExtension,
@@ -98,6 +102,8 @@ class NullableExtraPropertyDelegate(
  *
  * Usage: `val answer by extra { 42 }`
  */
+@Deprecated("Use 'extra.set(name, value)' instead. See the Gradle 9.6 upgrading guide.")
+@Suppress("DEPRECATION")
 inline operator fun <T> ExtraPropertiesExtension.invoke(initialValueProvider: () -> T): InitialValueExtraPropertyDelegateProvider<T> =
     invoke(initialValueProvider())
 
@@ -107,6 +113,8 @@ inline operator fun <T> ExtraPropertiesExtension.invoke(initialValueProvider: ()
  *
  * Usage: `val answer by extra(42)`
  */
+@Deprecated("Use 'extra.set(name, value)' instead. See the Gradle 9.6 upgrading guide.")
+@Suppress("DEPRECATION")
 operator fun <T> ExtraPropertiesExtension.invoke(initialValue: T): InitialValueExtraPropertyDelegateProvider<T> {
     DeprecationLogger.deprecate("The 'val name by extra(...)' or 'val name by extra { ... }' property delegate syntax")
         .withAdvice("Use 'extra.set(name, value)' instead.")
@@ -120,12 +128,14 @@ operator fun <T> ExtraPropertiesExtension.invoke(initialValue: T): InitialValueE
 /**
  * Enables typed access to extra properties with initial value.
  */
+@Deprecated("Use 'extra.set(name, value)' instead. See the Gradle 9.6 upgrading guide.")
 class InitialValueExtraPropertyDelegateProvider<T>
 private constructor(
     private val extra: ExtraPropertiesExtension,
     private val initialValue: T
 ) {
     companion object {
+        @Suppress("DEPRECATION")
         fun <T> of(extra: ExtraPropertiesExtension, initialValue: T) =
             InitialValueExtraPropertyDelegateProvider(extra, initialValue).also {
                 DeprecationLogger.deprecateType(InitialValueExtraPropertyDelegateProvider::class.java)
@@ -135,6 +145,7 @@ private constructor(
             }
     }
 
+    @Suppress("DEPRECATION")
     operator fun provideDelegate(thisRef: Any?, property: kotlin.reflect.KProperty<*>): InitialValueExtraPropertyDelegate<T> {
         extra.set(property.name, initialValue)
         return DeprecationLogger.whileDisabled(Factory { InitialValueExtraPropertyDelegate.of(extra) })
@@ -145,11 +156,13 @@ private constructor(
 /**
  * Enables typed access to extra properties with initial value.
  */
+@Deprecated("Use 'extra.set(name, value)' instead. See the Gradle 9.6 upgrading guide.")
 class InitialValueExtraPropertyDelegate<T>
 private constructor(
     private val extra: ExtraPropertiesExtension
 ) {
     companion object {
+        @Suppress("DEPRECATION")
         fun <T> of(extra: ExtraPropertiesExtension) =
             InitialValueExtraPropertyDelegate<T>(extra).also {
                 DeprecationLogger.deprecateType(InitialValueExtraPropertyDelegate::class.java)

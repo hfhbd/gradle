@@ -41,6 +41,8 @@ inline fun <reified T : Plugin<Settings>> Settings.apply() =
 /**
  * Locates a property on [Settings].
  */
+@Deprecated("Use 'providers.gradleProperty(name)' for Gradle properties or 'extra[name]' for extra properties instead. See the Gradle 9.6 upgrading guide.")
+@Suppress("DEPRECATION")
 operator fun Settings.provideDelegate(any: Any?, property: KProperty<*>): PropertyDelegate {
     if (property.returnType.isMarkedNullable) {
         DeprecationLogger.deprecate("The 'val name: Type? by settings' property delegate syntax")

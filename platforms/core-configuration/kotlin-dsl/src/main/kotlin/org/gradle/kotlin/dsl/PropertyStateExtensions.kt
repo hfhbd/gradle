@@ -27,6 +27,7 @@ import kotlin.reflect.KProperty
  *
  * Example: `val someProperty by somePropertyState`
  */
+@Deprecated("Use 'val value = property.get()' instead. See the Gradle 9.6 upgrading guide.")
 operator fun <T : Any> Property<T>.getValue(receiver: Any?, property: KProperty<*>): T {
     DeprecationLogger.deprecate("The 'val value by property' property delegate syntax")
         .withAdvice("Use 'val value = property.get()' instead.")
@@ -42,6 +43,7 @@ operator fun <T : Any> Property<T>.getValue(receiver: Any?, property: KProperty<
  *
  * Example: `var someProperty by somePropertyState`
  */
+@Deprecated("Use 'property.set(value)' instead. See the Gradle 9.6 upgrading guide.")
 operator fun <T : Any> Property<T>.setValue(receiver: Any?, property: KProperty<*>, value: T) {
     DeprecationLogger.deprecate("The 'var name by property; name = value' property delegate syntax")
         .withAdvice("Use 'property.set(value)' instead.")

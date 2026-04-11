@@ -58,6 +58,8 @@ inline operator fun TaskContainer.invoke(
 /**
  * Provides a [TaskProvider] delegate for the task named after the property.
  */
+@Deprecated("Use 'val task = tasks.named(name)' instead. See the Gradle 9.6 upgrading guide.")
+@Suppress("DEPRECATION")
 operator fun ExistingDomainObjectDelegateProvider<out TaskContainer>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
@@ -71,6 +73,8 @@ operator fun ExistingDomainObjectDelegateProvider<out TaskContainer>.provideDele
 /**
  * Provides a [TaskProvider] delegate for the task named after the property after configuring it with the given action.
  */
+@Deprecated("Use 'val task = tasks.named(name) { }' instead. See the Gradle 9.6 upgrading guide.")
+@Suppress("DEPRECATION")
 operator fun ExistingDomainObjectDelegateProviderWithAction<out TaskContainer, Task>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
@@ -84,6 +88,8 @@ operator fun ExistingDomainObjectDelegateProviderWithAction<out TaskContainer, T
 /**
  * Provides a [TaskProvider] delegate for the task of the given type named after the property.
  */
+@Deprecated("Use 'val task = tasks.named<Type>(name)' instead. See the Gradle 9.6 upgrading guide.")
+@Suppress("DEPRECATION")
 operator fun <U : Task> ExistingDomainObjectDelegateProviderWithType<out TaskContainer, U>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
@@ -97,6 +103,8 @@ operator fun <U : Task> ExistingDomainObjectDelegateProviderWithType<out TaskCon
 /**
  * Provides a [TaskProvider] delegate for the task of the given type named after the property after configuring it with the given action.
  */
+@Deprecated("Use 'val task = tasks.named<Type>(name) { }' instead. See the Gradle 9.6 upgrading guide.")
+@Suppress("DEPRECATION")
 operator fun <U : Task> ExistingDomainObjectDelegateProviderWithTypeAndAction<out TaskContainer, U>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
@@ -110,6 +118,8 @@ operator fun <U : Task> ExistingDomainObjectDelegateProviderWithTypeAndAction<ou
 /**
  * Registers a task and provides a delegate with the resulting [TaskProvider].
  */
+@Deprecated("Use 'val task = tasks.register(name)' instead. See the Gradle 9.6 upgrading guide.")
+@Suppress("DEPRECATION")
 operator fun RegisteringDomainObjectDelegateProvider<out TaskContainer>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
@@ -123,6 +133,8 @@ operator fun RegisteringDomainObjectDelegateProvider<out TaskContainer>.provideD
 /**
  * Registers a task that gets configured with the given action and provides a delegate with the resulting [TaskProvider].
  */
+@Deprecated("Use 'val task = tasks.register(name) { }' instead. See the Gradle 9.6 upgrading guide.")
+@Suppress("DEPRECATION")
 operator fun RegisteringDomainObjectDelegateProviderWithAction<out TaskContainer, Task>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
@@ -136,6 +148,8 @@ operator fun RegisteringDomainObjectDelegateProviderWithAction<out TaskContainer
 /**
  * Registers a task of the given type and provides a delegate with the resulting [TaskProvider].
  */
+@Deprecated("Use 'val task = tasks.register<Type>(name)' instead. See the Gradle 9.6 upgrading guide.")
+@Suppress("DEPRECATION")
 operator fun <U : Task> RegisteringDomainObjectDelegateProviderWithType<out TaskContainer, U>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
@@ -149,6 +163,8 @@ operator fun <U : Task> RegisteringDomainObjectDelegateProviderWithType<out Task
 /**
  * Registers a task of the given type that gets configured with the given action and provides a delegate with the resulting [TaskProvider].
  */
+@Deprecated("Use 'val task = tasks.register<Type>(name) { }' instead. See the Gradle 9.6 upgrading guide.")
+@Suppress("DEPRECATION")
 operator fun <U : Task> RegisteringDomainObjectDelegateProviderWithTypeAndAction<out TaskContainer, U>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
@@ -294,6 +310,7 @@ inline fun <reified T : Task> TaskContainer.create(name: String, noinline config
 /**
  * Provides a property delegate that creates tasks of the default type.
  */
+@Suppress("DEPRECATION")
 @Deprecated("Use registering instead. See https://docs.gradle.org/current/userguide/task_configuration_avoidance.html for more information.", ReplaceWith("registering"))
 val TaskContainer.creating
     get() = DeprecationLogger.whileDisabled(Factory {
@@ -311,6 +328,7 @@ val TaskContainer.creating
  *
  * `val someTask by tasks.creating { onlyIf = true }`
  */
+@Suppress("DEPRECATION")
 @Deprecated("Use registering instead. See https://docs.gradle.org/current/userguide/task_configuration_avoidance.html for more information.", ReplaceWith("registering(configuration)"))
 fun TaskContainer.creating(configuration: Task.() -> Unit) =
     DeprecationLogger.whileDisabled(Factory {
@@ -326,6 +344,7 @@ fun TaskContainer.creating(configuration: Task.() -> Unit) =
 /**
  * Provides a property delegate that creates tasks of the given [type].
  */
+@Suppress("DEPRECATION")
 @Deprecated("Use registering instead. See https://docs.gradle.org/current/userguide/task_configuration_avoidance.html for more information.", ReplaceWith("registering(type)"))
 fun <U : Task> TaskContainer.creating(type: KClass<U>) =
     DeprecationLogger.whileDisabled(Factory {
@@ -352,6 +371,7 @@ fun <U : Task> TaskContainer.creating(type: KClass<U>, configuration: U.() -> Un
  * Provides a property delegate that creates tasks of the given [type] expressed as a [java.lang.Class]
  * with the given [configuration].
  */
+@Suppress("DEPRECATION")
 @Deprecated("Use registering instead. See https://docs.gradle.org/current/userguide/task_configuration_avoidance.html for more information.", ReplaceWith("registering(type, configuration)"))
 fun <U : Task> TaskContainer.creating(type: Class<U>, configuration: U.() -> Unit) =
     DeprecationLogger.whileDisabled(Factory {

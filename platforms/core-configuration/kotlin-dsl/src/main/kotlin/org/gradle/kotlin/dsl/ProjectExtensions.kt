@@ -184,6 +184,8 @@ fun Project.artifacts(configuration: ArtifactHandlerScope.() -> Unit) =
 /**
  * Locates a property on [Project].
  */
+@Deprecated("Use 'val property = project.property(name)' or 'val property = project.findProperty(name)' instead. See the Gradle 9.6 upgrading guide.")
+@Suppress("DEPRECATION")
 operator fun Project.provideDelegate(any: Any?, property: KProperty<*>): PropertyDelegate {
     if (property.returnType.isMarkedNullable) {
         DeprecationLogger.deprecate("The 'val name: Type? by project' property delegate syntax")

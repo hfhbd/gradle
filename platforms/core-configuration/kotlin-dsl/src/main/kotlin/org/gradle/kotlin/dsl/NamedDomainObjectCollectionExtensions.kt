@@ -51,6 +51,8 @@ inline fun <reified S : Any> NamedDomainObjectCollection<in S>.withType(): Named
  * @param T the domain object type
  * @param C the concrete container type
  */
+@Suppress("DEPRECATION")
+@Deprecated("Use 'val element = named(name)' instead. See the Gradle 9.6 upgrading guide.")
 inline val <T : Any, C : NamedDomainObjectCollection<T>> C.existing: ExistingDomainObjectDelegateProvider<out C>
     get() {
         DeprecationLogger.deprecate("The 'val name by existing' property delegate syntax")
@@ -73,6 +75,8 @@ inline val <T : Any, C : NamedDomainObjectCollection<T>> C.existing: ExistingDom
  * @param C the concrete container type
  * @param action the configuration action
  */
+@Suppress("DEPRECATION")
+@Deprecated("Use 'val element = named(name) { }' instead. See the Gradle 9.6 upgrading guide.")
 fun <T : Any, C : NamedDomainObjectCollection<T>> C.existing(action: T.() -> Unit): ExistingDomainObjectDelegateProviderWithAction<out C, T> {
     DeprecationLogger.deprecate("The 'val name by existing { }' property delegate syntax")
         .withAdvice("Use 'val element = named(name) { }' instead.")
@@ -94,6 +98,8 @@ fun <T : Any, C : NamedDomainObjectCollection<T>> C.existing(action: T.() -> Uni
  * @param C the concrete container type
  * @param type the domain object type
  */
+@Suppress("DEPRECATION")
+@Deprecated("Use 'val element = named<Type>(name)' instead. See the Gradle 9.6 upgrading guide.")
 fun <T : Any, C : NamedDomainObjectCollection<T>, U : T> C.existing(type: KClass<U>): ExistingDomainObjectDelegateProviderWithType<out C, U> {
     DeprecationLogger.deprecate("The 'val name by existing(Type::class)' property delegate syntax")
         .withAdvice("Use 'val element = named<Type>(name)' instead.")
@@ -116,6 +122,8 @@ fun <T : Any, C : NamedDomainObjectCollection<T>, U : T> C.existing(type: KClass
  * @param type the domain object type
  * @param action the configuration action
  */
+@Suppress("DEPRECATION")
+@Deprecated("Use 'val element = named<Type>(name) { }' instead. See the Gradle 9.6 upgrading guide.")
 fun <T : Any, C : NamedDomainObjectCollection<T>, U : T> C.existing(type: KClass<U>, action: U.() -> Unit): ExistingDomainObjectDelegateProviderWithTypeAndAction<out C, U> {
     DeprecationLogger.deprecate("The 'val name by existing(Type::class) { }' property delegate syntax")
         .withAdvice("Use 'val element = named<Type>(name) { }' instead.")
@@ -133,11 +141,13 @@ fun <T : Any, C : NamedDomainObjectCollection<T>, U : T> C.existing(type: KClass
  * the purpose of providing specialized implementations for the `provideDelegate` operator
  * based on the static type of the provider.
  */
+@Deprecated("Use 'val element = named(name)' instead. See the Gradle 9.6 upgrading guide.")
 class ExistingDomainObjectDelegateProvider<T>
 private constructor(
     internal val delegateProvider: T
 ) {
     companion object {
+        @Suppress("DEPRECATION")
         fun <T> of(delegateProvider: T) =
             ExistingDomainObjectDelegateProvider(delegateProvider).also {
                 DeprecationLogger.deprecateType(ExistingDomainObjectDelegateProvider::class.java)
@@ -154,12 +164,14 @@ private constructor(
  * the purpose of providing specialized implementations for the `provideDelegate` operator
  * based on the static type of the provider.
  */
+@Deprecated("Use 'val element = named(name) { }' instead. See the Gradle 9.6 upgrading guide.")
 class ExistingDomainObjectDelegateProviderWithAction<C, T>
 private constructor(
     internal val delegateProvider: C,
     internal val action: T.() -> Unit
 ) {
     companion object {
+        @Suppress("DEPRECATION")
         fun <C, T> of(delegateProvider: C, action: T.() -> Unit) =
             ExistingDomainObjectDelegateProviderWithAction(delegateProvider, action).also {
                 DeprecationLogger.deprecateType(ExistingDomainObjectDelegateProviderWithAction::class.java)
@@ -176,12 +188,14 @@ private constructor(
  * the purpose of providing specialized implementations for the `provideDelegate` operator
  * based on the static type of the provider.
  */
+@Deprecated("Use 'val element = named<Type>(name)' instead. See the Gradle 9.6 upgrading guide.")
 class ExistingDomainObjectDelegateProviderWithType<T, U : Any>
 private constructor(
     internal val delegateProvider: T,
     internal val type: KClass<U>
 ) {
     companion object {
+        @Suppress("DEPRECATION")
         fun <T, U : Any> of(delegateProvider: T, type: KClass<U>) =
             ExistingDomainObjectDelegateProviderWithType(delegateProvider, type).also {
                 DeprecationLogger.deprecateType(ExistingDomainObjectDelegateProviderWithType::class.java)
@@ -198,6 +212,7 @@ private constructor(
  * the purpose of providing specialized implementations for the `provideDelegate` operator
  * based on the static type of the provider.
  */
+@Deprecated("Use 'val element = named<Type>(name) { }' instead. See the Gradle 9.6 upgrading guide.")
 class ExistingDomainObjectDelegateProviderWithTypeAndAction<T, U : Any>
 private constructor(
     internal val delegateProvider: T,
@@ -205,6 +220,7 @@ private constructor(
     internal val action: U.() -> Unit
 ) {
     companion object {
+        @Suppress("DEPRECATION")
         fun <T, U : Any> of(delegateProvider: T, type: KClass<U>, action: U.() -> Unit) =
             ExistingDomainObjectDelegateProviderWithTypeAndAction(delegateProvider, type, action).also {
                 DeprecationLogger.deprecateType(ExistingDomainObjectDelegateProviderWithTypeAndAction::class.java)
@@ -220,6 +236,8 @@ private constructor(
  * Provides access to the [NamedDomainObjectProvider] for the element of the given
  * property name from the container via a delegated property.
  */
+@Suppress("DEPRECATION")
+@Deprecated("Use 'val element = named(name)' instead. See the Gradle 9.6 upgrading guide.")
 operator fun <T : Any, C : NamedDomainObjectCollection<T>> ExistingDomainObjectDelegateProvider<C>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
@@ -234,6 +252,8 @@ operator fun <T : Any, C : NamedDomainObjectCollection<T>> ExistingDomainObjectD
  * Provides access to the [NamedDomainObjectProvider] for the element of the given
  * property name from the container via a delegated property.
  */
+@Suppress("DEPRECATION")
+@Deprecated("Use 'val element = named(name) { }' instead. See the Gradle 9.6 upgrading guide.")
 operator fun <T : Any, C : NamedDomainObjectCollection<T>> ExistingDomainObjectDelegateProviderWithAction<C, T>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
@@ -248,6 +268,8 @@ operator fun <T : Any, C : NamedDomainObjectCollection<T>> ExistingDomainObjectD
  * Provides access to the [NamedDomainObjectProvider] for the element of the given
  * property name from the container via a delegated property.
  */
+@Suppress("DEPRECATION")
+@Deprecated("Use 'val element = named<Type>(name)' instead. See the Gradle 9.6 upgrading guide.")
 operator fun <T : Any, C : NamedDomainObjectCollection<T>, U : T> ExistingDomainObjectDelegateProviderWithType<C, U>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
@@ -262,6 +284,8 @@ operator fun <T : Any, C : NamedDomainObjectCollection<T>, U : T> ExistingDomain
  * Provides access to the [NamedDomainObjectProvider] for the element of the given
  * property name from the container via a delegated property.
  */
+@Suppress("DEPRECATION")
+@Deprecated("Use 'val element = named<Type>(name) { }' instead. See the Gradle 9.6 upgrading guide.")
 operator fun <T : Any, C : NamedDomainObjectCollection<T>, U : T> ExistingDomainObjectDelegateProviderWithTypeAndAction<C, U>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
@@ -276,11 +300,13 @@ operator fun <T : Any, C : NamedDomainObjectCollection<T>, U : T> ExistingDomain
  * Holds a property delegate with the purpose of providing specialized implementations for the
  * `getValue` operator based on the static type of the delegate.
  */
+@Deprecated("Use the named() API instead. See the Gradle 9.6 upgrading guide.")
 class ExistingDomainObjectDelegate<T>
 private constructor(
     internal val delegate: T
 ) {
     companion object {
+        @Suppress("DEPRECATION")
         fun <T> of(delegate: T) =
             ExistingDomainObjectDelegate(delegate).also {
                 DeprecationLogger.deprecateType(ExistingDomainObjectDelegate::class.java)
@@ -295,6 +321,8 @@ private constructor(
 /**
  * Gets the delegate value.
  */
+@Suppress("DEPRECATION")
+@Deprecated("Use the named() API instead. See the Gradle 9.6 upgrading guide.")
 operator fun <T> ExistingDomainObjectDelegate<out T>.getValue(receiver: Any?, property: KProperty<*>): T =
     delegate
 
@@ -417,7 +445,8 @@ inline fun <reified T : Any> NamedDomainObjectCollection<out Any>.getByName(name
  *
  * `tasks { val jar by getting }`
  */
-@Suppress("unchecked_cast")
+@Suppress("unchecked_cast", "DEPRECATION")
+@Deprecated("Use 'val element = getByName(name)' instead. See the Gradle 9.6 upgrading guide.")
 inline val <T : Any, U : NamedDomainObjectCollection<out T>> U.getting
     get() = DeprecationLogger.whileDisabled(Factory {
         NamedDomainObjectCollectionDelegateProvider.of(this)
@@ -436,6 +465,8 @@ inline val <T : Any, U : NamedDomainObjectCollection<out T>> U.getting
  *
  * `tasks { val jar by getting { group = "My" } }`
  */
+@Suppress("DEPRECATION")
+@Deprecated("Use 'val element = getByName(name) { }' instead. See the Gradle 9.6 upgrading guide.")
 fun <T : Any, U : NamedDomainObjectCollection<T>> U.getting(configuration: T.() -> Unit) =
     DeprecationLogger.whileDisabled(Factory {
         NamedDomainObjectCollectionDelegateProvider.of(this, configuration)
@@ -451,12 +482,14 @@ fun <T : Any, U : NamedDomainObjectCollection<T>> U.getting(configuration: T.() 
 /**
  * Enables typed access to container elements via delegated properties.
  */
+@Deprecated("Use 'val element = getByName(name)' instead. See the Gradle 9.6 upgrading guide.")
 class NamedDomainObjectCollectionDelegateProvider<T : Any>
 private constructor(
     internal val collection: NamedDomainObjectCollection<T>,
     internal val configuration: (T.() -> Unit)?
 ) {
     companion object {
+        @Suppress("DEPRECATION")
         fun <T : Any> of(
             collection: NamedDomainObjectCollection<T>,
             configuration: (T.() -> Unit)? = null
@@ -469,6 +502,8 @@ private constructor(
             }
     }
 
+    @Suppress("DEPRECATION")
+    @Deprecated("Use 'val element = getByName(name)' instead. See the Gradle 9.6 upgrading guide.")
     operator fun provideDelegate(thisRef: Any?, property: kotlin.reflect.KProperty<*>) =
         DeprecationLogger.whileDisabled(Factory {
             ExistingDomainObjectDelegate.of(
@@ -499,6 +534,8 @@ operator fun <T : Any> NamedDomainObjectCollection<T>.get(name: String): T =
  *
  * @see [NamedDomainObjectCollection.named]
  */
+@Suppress("DEPRECATION")
+@Deprecated("Use 'val element = getByName(name)' instead. See the Gradle 9.6 upgrading guide.")
 operator fun <T : Any> NamedDomainObjectCollection<T>.provideDelegate(thisRef: Any?, property: KProperty<*>) =
     named(property.name).also {
         DeprecationLogger.deprecate("The 'val name by container' property delegate syntax")
@@ -515,6 +552,7 @@ operator fun <T : Any> NamedDomainObjectCollection<T>.provideDelegate(thisRef: A
  * @see [NamedDomainObjectProvider.get]
  */
 @Suppress("nothing_to_inline", "unchecked_cast")
+@Deprecated("Use 'val value = provider.get()' instead. See the Gradle 9.6 upgrading guide.")
 inline operator fun <T : Any, reified U : T> NamedDomainObjectProvider<out T>.getValue(thisRef: Any?, property: KProperty<*>): U {
     DeprecationLogger.deprecate("The 'val name by provider' property delegate syntax")
         .withAdvice("Use 'val value = provider.get()' instead.")
