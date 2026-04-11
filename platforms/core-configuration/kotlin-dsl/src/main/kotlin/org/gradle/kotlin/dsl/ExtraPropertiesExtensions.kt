@@ -20,6 +20,7 @@ import org.gradle.api.InvalidUserCodeException
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.api.plugins.ExtraPropertiesExtension
+import org.gradle.internal.Factory
 import org.gradle.internal.deprecation.DeprecationLogger
 
 import org.gradle.kotlin.dsl.support.uncheckedCast
@@ -46,14 +47,14 @@ operator fun ExtraPropertiesExtension.provideDelegate(receiver: Any?, property: 
             .willBeRemovedInGradle10()
             .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
             .nagUser()
-        return NullableExtraPropertyDelegate(this, property.name)
+        return DeprecationLogger.whileDisabled(Factory { NullableExtraPropertyDelegate(this, property.name) })
     } else {
         DeprecationLogger.deprecate("The 'val name: Type by extra' property delegate syntax")
             .withAdvice("Use 'val property = extra[name] as Type' instead.")
             .willBeRemovedInGradle10()
             .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
             .nagUser()
-        return NonNullExtraPropertyDelegate(this, property.name)
+        return DeprecationLogger.whileDisabled(Factory { NonNullExtraPropertyDelegate(this, property.name) })
     }
 }
 
@@ -112,7 +113,7 @@ operator fun <T> ExtraPropertiesExtension.invoke(initialValue: T): InitialValueE
         .willBeRemovedInGradle10()
         .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
         .nagUser()
-    return InitialValueExtraPropertyDelegateProvider.of(this, initialValue)
+    return DeprecationLogger.whileDisabled(Factory { InitialValueExtraPropertyDelegateProvider.of(this, initialValue) })
 }
 
 
@@ -126,12 +127,17 @@ private constructor(
 ) {
     companion object {
         fun <T> of(extra: ExtraPropertiesExtension, initialValue: T) =
-            InitialValueExtraPropertyDelegateProvider(extra, initialValue)
+            InitialValueExtraPropertyDelegateProvider(extra, initialValue).also {
+                DeprecationLogger.deprecateType(InitialValueExtraPropertyDelegateProvider::class.java)
+                    .willBeRemovedInGradle10()
+                    .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+                    .nagUser()
+            }
     }
 
     operator fun provideDelegate(thisRef: Any?, property: kotlin.reflect.KProperty<*>): InitialValueExtraPropertyDelegate<T> {
         extra.set(property.name, initialValue)
-        return InitialValueExtraPropertyDelegate.of(extra)
+        return DeprecationLogger.whileDisabled(Factory { InitialValueExtraPropertyDelegate.of(extra) })
     }
 }
 
@@ -145,7 +151,12 @@ private constructor(
 ) {
     companion object {
         fun <T> of(extra: ExtraPropertiesExtension) =
-            InitialValueExtraPropertyDelegate<T>(extra)
+            InitialValueExtraPropertyDelegate<T>(extra).also {
+                DeprecationLogger.deprecateType(InitialValueExtraPropertyDelegate::class.java)
+                    .willBeRemovedInGradle10()
+                    .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+                    .nagUser()
+            }
     }
 
     operator fun setValue(receiver: Any?, property: kotlin.reflect.KProperty<*>, value: T) =

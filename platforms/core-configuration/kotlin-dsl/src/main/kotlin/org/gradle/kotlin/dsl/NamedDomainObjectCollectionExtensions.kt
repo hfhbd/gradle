@@ -20,6 +20,7 @@ import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.UnknownDomainObjectException
 
+import org.gradle.internal.Factory
 import org.gradle.internal.deprecation.DeprecationLogger
 import org.gradle.kotlin.dsl.support.illegalElementType
 
@@ -57,7 +58,9 @@ inline val <T : Any, C : NamedDomainObjectCollection<T>> C.existing: ExistingDom
             .willBeRemovedInGradle10()
             .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
             .nagUser()
-        return ExistingDomainObjectDelegateProvider.of(this)
+        return DeprecationLogger.whileDisabled(Factory {
+            ExistingDomainObjectDelegateProvider.of(this)
+        })!!
     }
 
 
@@ -76,7 +79,9 @@ fun <T : Any, C : NamedDomainObjectCollection<T>> C.existing(action: T.() -> Uni
         .willBeRemovedInGradle10()
         .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
         .nagUser()
-    return ExistingDomainObjectDelegateProviderWithAction.of(this, action)
+    return DeprecationLogger.whileDisabled(Factory {
+        ExistingDomainObjectDelegateProviderWithAction.of(this, action)
+    })!!
 }
 
 
@@ -95,7 +100,9 @@ fun <T : Any, C : NamedDomainObjectCollection<T>, U : T> C.existing(type: KClass
         .willBeRemovedInGradle10()
         .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
         .nagUser()
-    return ExistingDomainObjectDelegateProviderWithType.of(this, type)
+    return DeprecationLogger.whileDisabled(Factory {
+        ExistingDomainObjectDelegateProviderWithType.of(this, type)
+    })!!
 }
 
 
@@ -115,7 +122,9 @@ fun <T : Any, C : NamedDomainObjectCollection<T>, U : T> C.existing(type: KClass
         .willBeRemovedInGradle10()
         .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
         .nagUser()
-    return ExistingDomainObjectDelegateProviderWithTypeAndAction.of(this, type, action)
+    return DeprecationLogger.whileDisabled(Factory {
+        ExistingDomainObjectDelegateProviderWithTypeAndAction.of(this, type, action)
+    })!!
 }
 
 
@@ -130,7 +139,12 @@ private constructor(
 ) {
     companion object {
         fun <T> of(delegateProvider: T) =
-            ExistingDomainObjectDelegateProvider(delegateProvider)
+            ExistingDomainObjectDelegateProvider(delegateProvider).also {
+                DeprecationLogger.deprecateType(ExistingDomainObjectDelegateProvider::class.java)
+                    .willBeRemovedInGradle10()
+                    .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+                    .nagUser()
+            }
     }
 }
 
@@ -147,7 +161,12 @@ private constructor(
 ) {
     companion object {
         fun <C, T> of(delegateProvider: C, action: T.() -> Unit) =
-            ExistingDomainObjectDelegateProviderWithAction(delegateProvider, action)
+            ExistingDomainObjectDelegateProviderWithAction(delegateProvider, action).also {
+                DeprecationLogger.deprecateType(ExistingDomainObjectDelegateProviderWithAction::class.java)
+                    .willBeRemovedInGradle10()
+                    .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+                    .nagUser()
+            }
     }
 }
 
@@ -164,7 +183,12 @@ private constructor(
 ) {
     companion object {
         fun <T, U : Any> of(delegateProvider: T, type: KClass<U>) =
-            ExistingDomainObjectDelegateProviderWithType(delegateProvider, type)
+            ExistingDomainObjectDelegateProviderWithType(delegateProvider, type).also {
+                DeprecationLogger.deprecateType(ExistingDomainObjectDelegateProviderWithType::class.java)
+                    .willBeRemovedInGradle10()
+                    .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+                    .nagUser()
+            }
     }
 }
 
@@ -182,7 +206,12 @@ private constructor(
 ) {
     companion object {
         fun <T, U : Any> of(delegateProvider: T, type: KClass<U>, action: U.() -> Unit) =
-            ExistingDomainObjectDelegateProviderWithTypeAndAction(delegateProvider, type, action)
+            ExistingDomainObjectDelegateProviderWithTypeAndAction(delegateProvider, type, action).also {
+                DeprecationLogger.deprecateType(ExistingDomainObjectDelegateProviderWithTypeAndAction::class.java)
+                    .willBeRemovedInGradle10()
+                    .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+                    .nagUser()
+            }
     }
 }
 
@@ -194,10 +223,11 @@ private constructor(
 operator fun <T : Any, C : NamedDomainObjectCollection<T>> ExistingDomainObjectDelegateProvider<C>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
-): ExistingDomainObjectDelegate<NamedDomainObjectProvider<T>> =
+) = DeprecationLogger.whileDisabled(Factory {
     ExistingDomainObjectDelegate.of(
         delegateProvider.named(property.name)
     )
+})!!
 
 
 /**
@@ -207,10 +237,11 @@ operator fun <T : Any, C : NamedDomainObjectCollection<T>> ExistingDomainObjectD
 operator fun <T : Any, C : NamedDomainObjectCollection<T>> ExistingDomainObjectDelegateProviderWithAction<C, T>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
-): ExistingDomainObjectDelegate<NamedDomainObjectProvider<T>> =
+) = DeprecationLogger.whileDisabled(Factory {
     ExistingDomainObjectDelegate.of(
         delegateProvider.named(property.name).apply { configure(action) }
     )
+})!!
 
 
 /**
@@ -220,10 +251,11 @@ operator fun <T : Any, C : NamedDomainObjectCollection<T>> ExistingDomainObjectD
 operator fun <T : Any, C : NamedDomainObjectCollection<T>, U : T> ExistingDomainObjectDelegateProviderWithType<C, U>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
-): ExistingDomainObjectDelegate<NamedDomainObjectProvider<U>> =
+) = DeprecationLogger.whileDisabled(Factory {
     ExistingDomainObjectDelegate.of(
         delegateProvider.named(property.name, type)
     )
+})!!
 
 
 /**
@@ -233,10 +265,11 @@ operator fun <T : Any, C : NamedDomainObjectCollection<T>, U : T> ExistingDomain
 operator fun <T : Any, C : NamedDomainObjectCollection<T>, U : T> ExistingDomainObjectDelegateProviderWithTypeAndAction<C, U>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
-): ExistingDomainObjectDelegate<NamedDomainObjectProvider<U>> =
+) = DeprecationLogger.whileDisabled(Factory {
     ExistingDomainObjectDelegate.of(
         delegateProvider.named(property.name, type, action)
     )
+})!!
 
 
 /**
@@ -249,7 +282,12 @@ private constructor(
 ) {
     companion object {
         fun <T> of(delegate: T) =
-            ExistingDomainObjectDelegate(delegate)
+            ExistingDomainObjectDelegate(delegate).also {
+                DeprecationLogger.deprecateType(ExistingDomainObjectDelegate::class.java)
+                    .willBeRemovedInGradle10()
+                    .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+                    .nagUser()
+            }
     }
 }
 
@@ -380,14 +418,15 @@ inline fun <reified T : Any> NamedDomainObjectCollection<out Any>.getByName(name
  * `tasks { val jar by getting }`
  */
 @Suppress("unchecked_cast")
-inline val <T : Any, U : NamedDomainObjectCollection<out T>> U.getting: NamedDomainObjectCollectionDelegateProvider<T>
-    get() {
+inline val <T : Any, U : NamedDomainObjectCollection<out T>> U.getting
+    get() = DeprecationLogger.whileDisabled(Factory {
+        NamedDomainObjectCollectionDelegateProvider.of(this)
+    })!!.also {
         DeprecationLogger.deprecate("The 'val name by getting' property delegate syntax")
             .withAdvice("Use 'val element = getByName(name)' instead.")
             .willBeRemovedInGradle10()
             .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
             .nagUser()
-        return NamedDomainObjectCollectionDelegateProvider.of(this) as NamedDomainObjectCollectionDelegateProvider<T>
     }
 
 
@@ -397,14 +436,16 @@ inline val <T : Any, U : NamedDomainObjectCollection<out T>> U.getting: NamedDom
  *
  * `tasks { val jar by getting { group = "My" } }`
  */
-fun <T : Any, U : NamedDomainObjectCollection<T>> U.getting(configuration: T.() -> Unit): NamedDomainObjectCollectionDelegateProvider<T> {
-    DeprecationLogger.deprecate("The 'val name by getting { }' property delegate syntax")
-        .withAdvice("Use 'val element = getByName(name) { }' instead.")
-        .willBeRemovedInGradle10()
-        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
-        .nagUser()
-    return NamedDomainObjectCollectionDelegateProvider.of(this, configuration)
-}
+fun <T : Any, U : NamedDomainObjectCollection<T>> U.getting(configuration: T.() -> Unit) =
+    DeprecationLogger.whileDisabled(Factory {
+        NamedDomainObjectCollectionDelegateProvider.of(this, configuration)
+    })!!.also {
+        DeprecationLogger.deprecate("The 'val name by getting { }' property delegate syntax")
+            .withAdvice("Use 'val element = getByName(name) { }' instead.")
+            .willBeRemovedInGradle10()
+            .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+            .nagUser()
+    }
 
 
 /**
@@ -420,16 +461,23 @@ private constructor(
             collection: NamedDomainObjectCollection<T>,
             configuration: (T.() -> Unit)? = null
         ) =
-            NamedDomainObjectCollectionDelegateProvider(collection, configuration)
+            NamedDomainObjectCollectionDelegateProvider(collection, configuration).also {
+                DeprecationLogger.deprecateType(NamedDomainObjectCollectionDelegateProvider::class.java)
+                    .willBeRemovedInGradle10()
+                    .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+                    .nagUser()
+            }
     }
 
-    operator fun provideDelegate(thisRef: Any?, property: kotlin.reflect.KProperty<*>): ExistingDomainObjectDelegate<T> =
-        ExistingDomainObjectDelegate.of(
-            when (configuration) {
-                null -> collection.getByName(property.name)
-                else -> collection.getByName(property.name, configuration)
-            }
-        )
+    operator fun provideDelegate(thisRef: Any?, property: kotlin.reflect.KProperty<*>) =
+        DeprecationLogger.whileDisabled(Factory {
+            ExistingDomainObjectDelegate.of(
+                when (configuration) {
+                    null -> collection.getByName(property.name)
+                    else -> collection.getByName(property.name, configuration)
+                }
+            )
+        })!!
 }
 
 
@@ -451,14 +499,14 @@ operator fun <T : Any> NamedDomainObjectCollection<T>.get(name: String): T =
  *
  * @see [NamedDomainObjectCollection.named]
  */
-operator fun <T : Any> NamedDomainObjectCollection<T>.provideDelegate(thisRef: Any?, property: KProperty<*>): NamedDomainObjectProvider<T> {
-    DeprecationLogger.deprecate("The 'val name by container' property delegate syntax")
-        .withAdvice("Use 'val element = getByName(name)' instead.")
-        .willBeRemovedInGradle10()
-        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
-        .nagUser()
-    return named(property.name)
-}
+operator fun <T : Any> NamedDomainObjectCollection<T>.provideDelegate(thisRef: Any?, property: KProperty<*>) =
+    named(property.name).also {
+        DeprecationLogger.deprecate("The 'val name by container' property delegate syntax")
+            .withAdvice("Use 'val element = getByName(name)' instead.")
+            .willBeRemovedInGradle10()
+            .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+            .nagUser()
+    }
 
 
 /**

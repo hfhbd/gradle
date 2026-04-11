@@ -18,6 +18,7 @@ package org.gradle.kotlin.dsl
 import org.gradle.api.Plugin
 import org.gradle.api.initialization.Settings
 import org.gradle.api.plugins.PluginAware
+import org.gradle.internal.Factory
 import org.gradle.internal.deprecation.DeprecationLogger
 import org.gradle.kotlin.dsl.support.serviceOf
 
@@ -60,5 +61,5 @@ operator fun Settings.provideDelegate(any: Any?, property: KProperty<*>): Proper
             .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
             .nagUser()
     }
-    return propertyDelegateFor(serviceOf(), this, property)
+    return DeprecationLogger.whileDisabled(Factory { propertyDelegateFor(serviceOf(), this, property) })
 }

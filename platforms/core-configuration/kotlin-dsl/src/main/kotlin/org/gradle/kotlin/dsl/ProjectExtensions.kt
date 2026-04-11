@@ -33,6 +33,7 @@ import org.gradle.api.internal.file.FileCollectionInternal
 import org.gradle.api.plugins.PluginAware
 
 import org.gradle.api.tasks.TaskContainer
+import org.gradle.internal.Factory
 import org.gradle.internal.component.local.model.OpaqueComponentIdentifier
 import org.gradle.internal.deprecation.DeprecationLogger
 
@@ -197,7 +198,7 @@ operator fun Project.provideDelegate(any: Any?, property: KProperty<*>): Propert
             .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
             .nagUser()
     }
-    return propertyDelegateFor(serviceOf(), this, property)
+    return DeprecationLogger.whileDisabled(Factory { propertyDelegateFor(serviceOf(), this, property) })
 }
 
 
