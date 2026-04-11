@@ -18,6 +18,7 @@ package org.gradle.kotlin.dsl
 
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.FileCollection
+import org.gradle.internal.deprecation.DeprecationLogger
 import kotlin.reflect.KProperty
 
 
@@ -26,8 +27,14 @@ import kotlin.reflect.KProperty
  *
  * Example: `val aFileCollection by project.files()`
  */
-operator fun ConfigurableFileCollection.getValue(receiver: Any?, property: KProperty<*>): ConfigurableFileCollection =
-    this
+operator fun ConfigurableFileCollection.getValue(receiver: Any?, property: KProperty<*>): ConfigurableFileCollection {
+    DeprecationLogger.deprecate("The 'val files by configurableFileCollection' property delegate syntax")
+        .withAdvice("Use 'val files = configurableFileCollection.getFiles()' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
+    return this
+}
 
 
 /**
@@ -35,8 +42,14 @@ operator fun ConfigurableFileCollection.getValue(receiver: Any?, property: KProp
  *
  * Example: `var aFileCollection by project.files()`
  */
-operator fun ConfigurableFileCollection.setValue(receiver: Any?, property: KProperty<*>, value: Iterable<*>) =
+operator fun ConfigurableFileCollection.setValue(receiver: Any?, property: KProperty<*>, value: Iterable<*>) {
+    DeprecationLogger.deprecate("The 'val files by configurableFileCollection; files = ...' property delegate syntax")
+        .withAdvice("Use 'configurableFileCollection.setFrom(...)' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
     setFrom(value)
+}
 
 
 /**

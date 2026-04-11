@@ -21,6 +21,7 @@ import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.PolymorphicDomainObjectContainer
 
+import org.gradle.internal.deprecation.DeprecationLogger
 import org.gradle.kotlin.dsl.support.delegates.NamedDomainObjectContainerDelegate
 
 import kotlin.reflect.KClass
@@ -50,7 +51,14 @@ inline operator fun <T : Any, C : NamedDomainObjectContainer<T>> C.invoke(
  * @param C the concrete container type
  */
 inline val <T : Any, C : NamedDomainObjectContainer<T>> C.registering: RegisteringDomainObjectDelegateProvider<out C>
-    get() = RegisteringDomainObjectDelegateProvider.of(this)
+    get() {
+        DeprecationLogger.deprecate("The 'val name by registering' property delegate syntax")
+            .withAdvice("Use 'val element = register(name)' instead.")
+            .willBeRemovedInGradle10()
+            .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+            .nagUser()
+        return RegisteringDomainObjectDelegateProvider.of(this)
+    }
 
 
 /**
@@ -68,8 +76,14 @@ inline val <T : Any, C : NamedDomainObjectContainer<T>> C.registering: Registeri
  * @param C the concrete container type
  * @param action the configuration action
  */
-fun <T : Any, C : NamedDomainObjectContainer<T>> C.registering(action: T.() -> Unit): RegisteringDomainObjectDelegateProviderWithAction<out C, T> =
-    RegisteringDomainObjectDelegateProviderWithAction.of(this, action)
+fun <T : Any, C : NamedDomainObjectContainer<T>> C.registering(action: T.() -> Unit): RegisteringDomainObjectDelegateProviderWithAction<out C, T> {
+    DeprecationLogger.deprecate("The 'val name by registering { }' property delegate syntax")
+        .withAdvice("Use 'val element = register(name) { }' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
+    return RegisteringDomainObjectDelegateProviderWithAction.of(this, action)
+}
 
 
 /**
@@ -81,8 +95,14 @@ fun <T : Any, C : NamedDomainObjectContainer<T>> C.registering(action: T.() -> U
  * @param C the concrete container type
  * @param type the domain object type
  */
-fun <T : Any, C : PolymorphicDomainObjectContainer<T>, U : T> C.registering(type: KClass<U>): RegisteringDomainObjectDelegateProviderWithType<out C, U> =
-    RegisteringDomainObjectDelegateProviderWithType.of(this, type)
+fun <T : Any, C : PolymorphicDomainObjectContainer<T>, U : T> C.registering(type: KClass<U>): RegisteringDomainObjectDelegateProviderWithType<out C, U> {
+    DeprecationLogger.deprecate("The 'val name by registering(Type::class)' property delegate syntax")
+        .withAdvice("Use 'val element = register<Type>(name)' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
+    return RegisteringDomainObjectDelegateProviderWithType.of(this, type)
+}
 
 
 /**
@@ -99,8 +119,14 @@ fun <T : Any, C : PolymorphicDomainObjectContainer<T>, U : T> C.registering(type
 fun <T : Any, C : PolymorphicDomainObjectContainer<T>, U : T> C.registering(
     type: KClass<U>,
     action: U.() -> Unit
-): RegisteringDomainObjectDelegateProviderWithTypeAndAction<out C, U> =
-    RegisteringDomainObjectDelegateProviderWithTypeAndAction.of(this, type, action)
+): RegisteringDomainObjectDelegateProviderWithTypeAndAction<out C, U> {
+    DeprecationLogger.deprecate("The 'val name by registering(Type::class) { }' property delegate syntax")
+        .withAdvice("Use 'val element = register<Type>(name) { }' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
+    return RegisteringDomainObjectDelegateProviderWithTypeAndAction.of(this, type, action)
+}
 
 
 /**
@@ -109,9 +135,10 @@ fun <T : Any, C : PolymorphicDomainObjectContainer<T>, U : T> C.registering(
 operator fun <T : Any, C : NamedDomainObjectContainer<T>> RegisteringDomainObjectDelegateProvider<C>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
-) = ExistingDomainObjectDelegate.of(
-    delegateProvider.register(property.name)
-)
+): ExistingDomainObjectDelegate<NamedDomainObjectProvider<T>> =
+    ExistingDomainObjectDelegate.of(
+        delegateProvider.register(property.name)
+    )
 
 
 /**
@@ -120,9 +147,10 @@ operator fun <T : Any, C : NamedDomainObjectContainer<T>> RegisteringDomainObjec
 operator fun <T : Any, C : NamedDomainObjectContainer<T>> RegisteringDomainObjectDelegateProviderWithAction<C, T>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
-) = ExistingDomainObjectDelegate.of(
-    delegateProvider.register(property.name, action)
-)
+): ExistingDomainObjectDelegate<NamedDomainObjectProvider<T>> =
+    ExistingDomainObjectDelegate.of(
+        delegateProvider.register(property.name, action)
+    )
 
 
 /**
@@ -131,9 +159,10 @@ operator fun <T : Any, C : NamedDomainObjectContainer<T>> RegisteringDomainObjec
 operator fun <T : Any, C : PolymorphicDomainObjectContainer<T>, U : T> RegisteringDomainObjectDelegateProviderWithType<C, U>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
-) = ExistingDomainObjectDelegate.of(
-    delegateProvider.register(property.name, type.java)
-)
+): ExistingDomainObjectDelegate<NamedDomainObjectProvider<U>> =
+    ExistingDomainObjectDelegate.of(
+        delegateProvider.register(property.name, type.java)
+    )
 
 
 /**
@@ -142,9 +171,10 @@ operator fun <T : Any, C : PolymorphicDomainObjectContainer<T>, U : T> Registeri
 operator fun <T : Any, C : PolymorphicDomainObjectContainer<T>, U : T> RegisteringDomainObjectDelegateProviderWithTypeAndAction<C, U>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
-) = ExistingDomainObjectDelegate.of(
-    delegateProvider.register(property.name, type.java, action)
-)
+): ExistingDomainObjectDelegate<NamedDomainObjectProvider<U>> =
+    ExistingDomainObjectDelegate.of(
+        delegateProvider.register(property.name, type.java, action)
+    )
 
 
 /**
@@ -292,7 +322,14 @@ internal constructor(
  * Provides a property delegate that creates elements of the default collection type.
  */
 val <T : Any> NamedDomainObjectContainer<T>.creating
-    get() = NamedDomainObjectContainerCreatingDelegateProvider.of(this)
+    get(): NamedDomainObjectContainerCreatingDelegateProvider<T> {
+        DeprecationLogger.deprecate("The 'val name by creating' property delegate syntax")
+            .withAdvice("Use 'val element = create(name)' instead.")
+            .willBeRemovedInGradle10()
+            .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+            .nagUser()
+        return NamedDomainObjectContainerCreatingDelegateProvider.of(this)
+    }
 
 
 /**
@@ -300,8 +337,14 @@ val <T : Any> NamedDomainObjectContainer<T>.creating
  *
  * `val myElement by myContainer.creating { myProperty = 42 }`
  */
-fun <T : Any> NamedDomainObjectContainer<T>.creating(configuration: T.() -> Unit) =
-    NamedDomainObjectContainerCreatingDelegateProvider.of(this, configuration)
+fun <T : Any> NamedDomainObjectContainer<T>.creating(configuration: T.() -> Unit): NamedDomainObjectContainerCreatingDelegateProvider<T> {
+    DeprecationLogger.deprecate("The 'val name by creating { }' property delegate syntax")
+        .withAdvice("Use 'val element = create(name) { }' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
+    return NamedDomainObjectContainerCreatingDelegateProvider.of(this, configuration)
+}
 
 
 /**
@@ -319,26 +362,33 @@ private constructor(
             NamedDomainObjectContainerCreatingDelegateProvider(container, configuration)
     }
 
-    operator fun provideDelegate(thisRef: Any?, property: KProperty<*>) = ExistingDomainObjectDelegate.of(
-        when (configuration) {
-            null -> container.create(property.name)
-            else -> container.create(property.name, configuration)
-        }
-    )
+    operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): ExistingDomainObjectDelegate<T> =
+        ExistingDomainObjectDelegate.of(
+            when (configuration) {
+                null -> container.create(property.name)
+                else -> container.create(property.name, configuration)
+            }
+        )
 }
 
 
 /**
  * Provides a property delegate that creates elements of the given [type].
  */
-fun <T : Any, U : T> PolymorphicDomainObjectContainer<T>.creating(type: KClass<U>) =
-    PolymorphicDomainObjectContainerCreatingDelegateProvider.of(this, type.java)
+fun <T : Any, U : T> PolymorphicDomainObjectContainer<T>.creating(type: KClass<U>): PolymorphicDomainObjectContainerCreatingDelegateProvider<T, U> {
+    DeprecationLogger.deprecate("The 'val name by creating(Type::class)' property delegate syntax")
+        .withAdvice("Use 'val element = create<Type>(name)' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
+    return PolymorphicDomainObjectContainerCreatingDelegateProvider.of(this, type.java)
+}
 
 
 /**
  * Provides a property delegate that creates elements of the given [type] with the given [configuration].
  */
-fun <T : Any, U : T> PolymorphicDomainObjectContainer<T>.creating(type: KClass<U>, configuration: U.() -> Unit) =
+fun <T : Any, U : T> PolymorphicDomainObjectContainer<T>.creating(type: KClass<U>, configuration: U.() -> Unit): PolymorphicDomainObjectContainerCreatingDelegateProvider<T, U> =
     creating(type.java, configuration)
 
 
@@ -346,8 +396,14 @@ fun <T : Any, U : T> PolymorphicDomainObjectContainer<T>.creating(type: KClass<U
  * Provides a property delegate that creates elements of the given [type] expressed as a [java.lang.Class]
  * with the given [configuration].
  */
-fun <T : Any, U : T> PolymorphicDomainObjectContainer<T>.creating(type: Class<U>, configuration: U.() -> Unit) =
-    PolymorphicDomainObjectContainerCreatingDelegateProvider.of(this, type, configuration)
+fun <T : Any, U : T> PolymorphicDomainObjectContainer<T>.creating(type: Class<U>, configuration: U.() -> Unit): PolymorphicDomainObjectContainerCreatingDelegateProvider<T, U> {
+    DeprecationLogger.deprecate("The 'val name by creating(Type::class) { }' property delegate syntax")
+        .withAdvice("Use 'val element = create<Type>(name) { }' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
+    return PolymorphicDomainObjectContainerCreatingDelegateProvider.of(this, type, configuration)
+}
 
 
 /**
@@ -364,27 +420,40 @@ private constructor(
             PolymorphicDomainObjectContainerCreatingDelegateProvider(container, type, configuration)
     }
 
-    operator fun provideDelegate(thisRef: Any?, property: KProperty<*>) = ExistingDomainObjectDelegate.of(
-        when (configuration) {
-            null -> container.create(property.name, type)
-            else -> container.create(property.name, type, configuration)
-        }
-    )
+    operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): ExistingDomainObjectDelegate<U> =
+        ExistingDomainObjectDelegate.of(
+            when (configuration) {
+                null -> container.create(property.name, type)
+                else -> container.create(property.name, type, configuration)
+            }
+        )
 }
 
 
 /**
  * Provides a property delegate that gets elements of the given [type] and applies the given [configuration].
  */
-fun <T : Any, U : T> NamedDomainObjectContainer<T>.getting(type: KClass<U>, configuration: U.() -> Unit) =
-    PolymorphicDomainObjectContainerGettingDelegateProvider.of(this, type, configuration)
+fun <T : Any, U : T> NamedDomainObjectContainer<T>.getting(type: KClass<U>, configuration: U.() -> Unit): PolymorphicDomainObjectContainerGettingDelegateProvider<T, U> {
+    DeprecationLogger.deprecate("The 'val name by getting(Type::class) { }' property delegate syntax")
+        .withAdvice("Use 'val element = getByName<Type>(name) { }' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
+    return PolymorphicDomainObjectContainerGettingDelegateProvider.of(this, type, configuration)
+}
 
 
 /**
  * Provides a property delegate that gets elements of the given [type].
  */
-fun <T : Any, U : T> NamedDomainObjectContainer<T>.getting(type: KClass<U>) =
-    PolymorphicDomainObjectContainerGettingDelegateProvider.of(this, type)
+fun <T : Any, U : T> NamedDomainObjectContainer<T>.getting(type: KClass<U>): PolymorphicDomainObjectContainerGettingDelegateProvider<T, U> {
+    DeprecationLogger.deprecate("The 'val name by getting(Type::class)' property delegate syntax")
+        .withAdvice("Use 'val element = getByName<Type>(name)' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
+    return PolymorphicDomainObjectContainerGettingDelegateProvider.of(this, type)
+}
 
 
 /**
@@ -402,10 +471,11 @@ private constructor(
             PolymorphicDomainObjectContainerGettingDelegateProvider(container, type, configuration)
     }
 
-    operator fun provideDelegate(thisRef: Any?, property: KProperty<*>) = ExistingDomainObjectDelegate.of(
-        when (configuration) {
-            null -> container.getByName(property.name, type)
-            else -> container.getByName(property.name, type, configuration)
-        }
-    )
+    operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): ExistingDomainObjectDelegate<U> =
+        ExistingDomainObjectDelegate.of(
+            when (configuration) {
+                null -> container.getByName(property.name, type)
+                else -> container.getByName(property.name, type, configuration)
+            }
+        )
 }

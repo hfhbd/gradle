@@ -17,6 +17,7 @@
 package org.gradle.kotlin.dsl
 
 import org.gradle.api.provider.Property
+import org.gradle.internal.deprecation.DeprecationLogger
 
 import kotlin.reflect.KProperty
 
@@ -26,7 +27,14 @@ import kotlin.reflect.KProperty
  *
  * Example: `val someProperty by somePropertyState`
  */
-operator fun <T : Any> Property<T>.getValue(receiver: Any?, property: KProperty<*>): T = get()
+operator fun <T : Any> Property<T>.getValue(receiver: Any?, property: KProperty<*>): T {
+    DeprecationLogger.deprecate("The 'val value by property' property delegate syntax")
+        .withAdvice("Use 'val value = property.get()' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
+    return get()
+}
 
 
 /**
@@ -34,4 +42,11 @@ operator fun <T : Any> Property<T>.getValue(receiver: Any?, property: KProperty<
  *
  * Example: `var someProperty by somePropertyState`
  */
-operator fun <T : Any> Property<T>.setValue(receiver: Any?, property: KProperty<*>, value: T) = set(value)
+operator fun <T : Any> Property<T>.setValue(receiver: Any?, property: KProperty<*>, value: T) {
+    DeprecationLogger.deprecate("The 'var name by property; name = value' property delegate syntax")
+        .withAdvice("Use 'property.set(value)' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
+    set(value)
+}

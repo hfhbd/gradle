@@ -20,6 +20,7 @@ import org.gradle.api.InvalidUserCodeException
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.api.plugins.ExtraPropertiesExtension
+import org.gradle.internal.deprecation.DeprecationLogger
 
 import org.gradle.kotlin.dsl.support.uncheckedCast
 
@@ -38,9 +39,23 @@ val ExtensionAware.extra: ExtraPropertiesExtension
 /**
  * Provides property delegate for typed access to extra properties.
  */
-operator fun ExtraPropertiesExtension.provideDelegate(receiver: Any?, property: KProperty<*>): MutablePropertyDelegate =
-    if (property.returnType.isMarkedNullable) NullableExtraPropertyDelegate(this, property.name)
-    else NonNullExtraPropertyDelegate(this, property.name)
+operator fun ExtraPropertiesExtension.provideDelegate(receiver: Any?, property: KProperty<*>): MutablePropertyDelegate {
+    if (property.returnType.isMarkedNullable) {
+        DeprecationLogger.deprecate("The 'val name: Type? by extra' property delegate syntax")
+            .withAdvice("Use 'val property = extra[name] as Type?' instead.")
+            .willBeRemovedInGradle10()
+            .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+            .nagUser()
+        return NullableExtraPropertyDelegate(this, property.name)
+    } else {
+        DeprecationLogger.deprecate("The 'val name: Type by extra' property delegate syntax")
+            .withAdvice("Use 'val property = extra[name] as Type' instead.")
+            .willBeRemovedInGradle10()
+            .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+            .nagUser()
+        return NonNullExtraPropertyDelegate(this, property.name)
+    }
+}
 
 
 private
@@ -91,8 +106,14 @@ inline operator fun <T> ExtraPropertiesExtension.invoke(initialValueProvider: ()
  *
  * Usage: `val answer by extra(42)`
  */
-operator fun <T> ExtraPropertiesExtension.invoke(initialValue: T): InitialValueExtraPropertyDelegateProvider<T> =
-    InitialValueExtraPropertyDelegateProvider.of(this, initialValue)
+operator fun <T> ExtraPropertiesExtension.invoke(initialValue: T): InitialValueExtraPropertyDelegateProvider<T> {
+    DeprecationLogger.deprecate("The 'val name by extra(...)' or 'val name by extra { ... }' property delegate syntax")
+        .withAdvice("Use 'extra.set(name, value)' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
+    return InitialValueExtraPropertyDelegateProvider.of(this, initialValue)
+}
 
 
 /**

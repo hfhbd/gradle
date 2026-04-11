@@ -20,6 +20,7 @@ import org.gradle.api.tasks.TaskCollection
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 
+import org.gradle.internal.deprecation.DeprecationLogger
 import org.gradle.kotlin.dsl.support.delegates.TaskContainerDelegate
 
 import kotlin.reflect.KClass
@@ -59,9 +60,10 @@ inline operator fun TaskContainer.invoke(
 operator fun ExistingDomainObjectDelegateProvider<out TaskContainer>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
-) = ExistingDomainObjectDelegate.of(
-    delegateProvider.named(property.name)
-)
+): ExistingDomainObjectDelegate<TaskProvider<Task>> =
+    ExistingDomainObjectDelegate.of(
+        delegateProvider.named(property.name)
+    )
 
 
 /**
@@ -70,9 +72,10 @@ operator fun ExistingDomainObjectDelegateProvider<out TaskContainer>.provideDele
 operator fun ExistingDomainObjectDelegateProviderWithAction<out TaskContainer, Task>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
-) = ExistingDomainObjectDelegate.of(
-    delegateProvider.named(property.name).apply { configure(action) }
-)
+): ExistingDomainObjectDelegate<TaskProvider<Task>> =
+    ExistingDomainObjectDelegate.of(
+        delegateProvider.named(property.name).apply { configure(action) }
+    )
 
 
 /**
@@ -81,9 +84,10 @@ operator fun ExistingDomainObjectDelegateProviderWithAction<out TaskContainer, T
 operator fun <U : Task> ExistingDomainObjectDelegateProviderWithType<out TaskContainer, U>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
-) = ExistingDomainObjectDelegate.of(
-    delegateProvider.named(property.name, type)
-)
+): ExistingDomainObjectDelegate<TaskProvider<U>> =
+    ExistingDomainObjectDelegate.of(
+        delegateProvider.named(property.name, type)
+    )
 
 
 /**
@@ -92,9 +96,10 @@ operator fun <U : Task> ExistingDomainObjectDelegateProviderWithType<out TaskCon
 operator fun <U : Task> ExistingDomainObjectDelegateProviderWithTypeAndAction<out TaskContainer, U>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
-) = ExistingDomainObjectDelegate.of(
-    delegateProvider.named(property.name, type).apply { configure(action) }
-)
+): ExistingDomainObjectDelegate<TaskProvider<U>> =
+    ExistingDomainObjectDelegate.of(
+        delegateProvider.named(property.name, type).apply { configure(action) }
+    )
 
 
 /**
@@ -103,9 +108,10 @@ operator fun <U : Task> ExistingDomainObjectDelegateProviderWithTypeAndAction<ou
 operator fun RegisteringDomainObjectDelegateProvider<out TaskContainer>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
-) = ExistingDomainObjectDelegate.of(
-    delegateProvider.register(property.name)
-)
+): ExistingDomainObjectDelegate<TaskProvider<Task>> =
+    ExistingDomainObjectDelegate.of(
+        delegateProvider.register(property.name)
+    )
 
 
 /**
@@ -114,9 +120,10 @@ operator fun RegisteringDomainObjectDelegateProvider<out TaskContainer>.provideD
 operator fun RegisteringDomainObjectDelegateProviderWithAction<out TaskContainer, Task>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
-) = ExistingDomainObjectDelegate.of(
-    delegateProvider.register(property.name, action)
-)
+): ExistingDomainObjectDelegate<TaskProvider<Task>> =
+    ExistingDomainObjectDelegate.of(
+        delegateProvider.register(property.name, action)
+    )
 
 
 /**
@@ -125,9 +132,10 @@ operator fun RegisteringDomainObjectDelegateProviderWithAction<out TaskContainer
 operator fun <U : Task> RegisteringDomainObjectDelegateProviderWithType<out TaskContainer, U>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
-) = ExistingDomainObjectDelegate.of(
-    delegateProvider.register(property.name, type.java)
-)
+): ExistingDomainObjectDelegate<TaskProvider<U>> =
+    ExistingDomainObjectDelegate.of(
+        delegateProvider.register(property.name, type.java)
+    )
 
 
 /**
@@ -136,9 +144,10 @@ operator fun <U : Task> RegisteringDomainObjectDelegateProviderWithType<out Task
 operator fun <U : Task> RegisteringDomainObjectDelegateProviderWithTypeAndAction<out TaskContainer, U>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
-) = ExistingDomainObjectDelegate.of(
-    delegateProvider.register(property.name, type.java, action)
-)
+): ExistingDomainObjectDelegate<TaskProvider<U>> =
+    ExistingDomainObjectDelegate.of(
+        delegateProvider.register(property.name, type.java, action)
+    )
 
 
 /**
@@ -278,7 +287,14 @@ inline fun <reified T : Task> TaskContainer.create(name: String, noinline config
  */
 @Deprecated("Use registering instead. See https://docs.gradle.org/current/userguide/task_configuration_avoidance.html for more information.", ReplaceWith("registering"))
 val TaskContainer.creating
-    get() = NamedDomainObjectContainerCreatingDelegateProvider.of(this)
+    get(): NamedDomainObjectContainerCreatingDelegateProvider<Task> {
+        DeprecationLogger.deprecate("The 'val name by creating' property delegate syntax")
+            .withAdvice("Use 'val element = create(name)' instead.")
+            .willBeRemovedInGradle10()
+            .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+            .nagUser()
+        return NamedDomainObjectContainerCreatingDelegateProvider.of(this)
+    }
 
 /**
  * Provides a property delegate that creates tasks of the default type with the given [configuration].
@@ -286,15 +302,27 @@ val TaskContainer.creating
  * `val someTask by tasks.creating { onlyIf = true }`
  */
 @Deprecated("Use registering instead. See https://docs.gradle.org/current/userguide/task_configuration_avoidance.html for more information.", ReplaceWith("registering(configuration)"))
-fun TaskContainer.creating(configuration: Task.() -> Unit) =
-    NamedDomainObjectContainerCreatingDelegateProvider.of(this, configuration)
+fun TaskContainer.creating(configuration: Task.() -> Unit): NamedDomainObjectContainerCreatingDelegateProvider<Task> {
+    DeprecationLogger.deprecate("The 'val name by creating { }' property delegate syntax")
+        .withAdvice("Use 'val element = create(name) { }' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
+    return NamedDomainObjectContainerCreatingDelegateProvider.of(this, configuration)
+}
 
 /**
  * Provides a property delegate that creates tasks of the given [type].
  */
 @Deprecated("Use registering instead. See https://docs.gradle.org/current/userguide/task_configuration_avoidance.html for more information.", ReplaceWith("registering(type)"))
-fun <U : Task> TaskContainer.creating(type: KClass<U>) =
-    PolymorphicDomainObjectContainerCreatingDelegateProvider.of(this, type.java)
+fun <U : Task> TaskContainer.creating(type: KClass<U>): PolymorphicDomainObjectContainerCreatingDelegateProvider<Task, U> {
+    DeprecationLogger.deprecate("The 'val name by creating(Type::class)' property delegate syntax")
+        .withAdvice("Use 'val element = create<Type>(name)' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
+    return PolymorphicDomainObjectContainerCreatingDelegateProvider.of(this, type.java)
+}
 
 
 /**
@@ -311,6 +339,12 @@ fun <U : Task> TaskContainer.creating(type: KClass<U>, configuration: U.() -> Un
  * with the given [configuration].
  */
 @Deprecated("Use registering instead. See https://docs.gradle.org/current/userguide/task_configuration_avoidance.html for more information.", ReplaceWith("registering(type, configuration)"))
-fun <U : Task> TaskContainer.creating(type: Class<U>, configuration: U.() -> Unit) =
-    PolymorphicDomainObjectContainerCreatingDelegateProvider.of(this, type, configuration)
+fun <U : Task> TaskContainer.creating(type: Class<U>, configuration: U.() -> Unit): PolymorphicDomainObjectContainerCreatingDelegateProvider<Task, U> {
+    DeprecationLogger.deprecate("The 'val name by creating(Type::class) { }' property delegate syntax")
+        .withAdvice("Use 'val element = create<Type>(name) { }' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
+    return PolymorphicDomainObjectContainerCreatingDelegateProvider.of(this, type, configuration)
+}
 

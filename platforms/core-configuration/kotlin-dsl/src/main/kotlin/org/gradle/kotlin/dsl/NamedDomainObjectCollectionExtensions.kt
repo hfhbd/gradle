@@ -20,6 +20,7 @@ import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.UnknownDomainObjectException
 
+import org.gradle.internal.deprecation.DeprecationLogger
 import org.gradle.kotlin.dsl.support.illegalElementType
 
 import kotlin.reflect.KClass
@@ -50,7 +51,14 @@ inline fun <reified S : Any> NamedDomainObjectCollection<in S>.withType(): Named
  * @param C the concrete container type
  */
 inline val <T : Any, C : NamedDomainObjectCollection<T>> C.existing: ExistingDomainObjectDelegateProvider<out C>
-    get() = ExistingDomainObjectDelegateProvider.of(this)
+    get() {
+        DeprecationLogger.deprecate("The 'val name by existing' property delegate syntax")
+            .withAdvice("Use 'val element = named(name)' instead.")
+            .willBeRemovedInGradle10()
+            .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+            .nagUser()
+        return ExistingDomainObjectDelegateProvider.of(this)
+    }
 
 
 /**
@@ -62,8 +70,14 @@ inline val <T : Any, C : NamedDomainObjectCollection<T>> C.existing: ExistingDom
  * @param C the concrete container type
  * @param action the configuration action
  */
-fun <T : Any, C : NamedDomainObjectCollection<T>> C.existing(action: T.() -> Unit): ExistingDomainObjectDelegateProviderWithAction<out C, T> =
-    ExistingDomainObjectDelegateProviderWithAction.of(this, action)
+fun <T : Any, C : NamedDomainObjectCollection<T>> C.existing(action: T.() -> Unit): ExistingDomainObjectDelegateProviderWithAction<out C, T> {
+    DeprecationLogger.deprecate("The 'val name by existing { }' property delegate syntax")
+        .withAdvice("Use 'val element = named(name) { }' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
+    return ExistingDomainObjectDelegateProviderWithAction.of(this, action)
+}
 
 
 /**
@@ -75,8 +89,14 @@ fun <T : Any, C : NamedDomainObjectCollection<T>> C.existing(action: T.() -> Uni
  * @param C the concrete container type
  * @param type the domain object type
  */
-fun <T : Any, C : NamedDomainObjectCollection<T>, U : T> C.existing(type: KClass<U>): ExistingDomainObjectDelegateProviderWithType<out C, U> =
-    ExistingDomainObjectDelegateProviderWithType.of(this, type)
+fun <T : Any, C : NamedDomainObjectCollection<T>, U : T> C.existing(type: KClass<U>): ExistingDomainObjectDelegateProviderWithType<out C, U> {
+    DeprecationLogger.deprecate("The 'val name by existing(Type::class)' property delegate syntax")
+        .withAdvice("Use 'val element = named<Type>(name)' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
+    return ExistingDomainObjectDelegateProviderWithType.of(this, type)
+}
 
 
 /**
@@ -89,8 +109,14 @@ fun <T : Any, C : NamedDomainObjectCollection<T>, U : T> C.existing(type: KClass
  * @param type the domain object type
  * @param action the configuration action
  */
-fun <T : Any, C : NamedDomainObjectCollection<T>, U : T> C.existing(type: KClass<U>, action: U.() -> Unit): ExistingDomainObjectDelegateProviderWithTypeAndAction<out C, U> =
-    ExistingDomainObjectDelegateProviderWithTypeAndAction.of(this, type, action)
+fun <T : Any, C : NamedDomainObjectCollection<T>, U : T> C.existing(type: KClass<U>, action: U.() -> Unit): ExistingDomainObjectDelegateProviderWithTypeAndAction<out C, U> {
+    DeprecationLogger.deprecate("The 'val name by existing(Type::class) { }' property delegate syntax")
+        .withAdvice("Use 'val element = named<Type>(name) { }' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
+    return ExistingDomainObjectDelegateProviderWithTypeAndAction.of(this, type, action)
+}
 
 
 /**
@@ -168,9 +194,10 @@ private constructor(
 operator fun <T : Any, C : NamedDomainObjectCollection<T>> ExistingDomainObjectDelegateProvider<C>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
-) = ExistingDomainObjectDelegate.of(
-    delegateProvider.named(property.name)
-)
+): ExistingDomainObjectDelegate<NamedDomainObjectProvider<T>> =
+    ExistingDomainObjectDelegate.of(
+        delegateProvider.named(property.name)
+    )
 
 
 /**
@@ -180,9 +207,10 @@ operator fun <T : Any, C : NamedDomainObjectCollection<T>> ExistingDomainObjectD
 operator fun <T : Any, C : NamedDomainObjectCollection<T>> ExistingDomainObjectDelegateProviderWithAction<C, T>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
-) = ExistingDomainObjectDelegate.of(
-    delegateProvider.named(property.name).apply { configure(action) }
-)
+): ExistingDomainObjectDelegate<NamedDomainObjectProvider<T>> =
+    ExistingDomainObjectDelegate.of(
+        delegateProvider.named(property.name).apply { configure(action) }
+    )
 
 
 /**
@@ -192,9 +220,10 @@ operator fun <T : Any, C : NamedDomainObjectCollection<T>> ExistingDomainObjectD
 operator fun <T : Any, C : NamedDomainObjectCollection<T>, U : T> ExistingDomainObjectDelegateProviderWithType<C, U>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
-) = ExistingDomainObjectDelegate.of(
-    delegateProvider.named(property.name, type)
-)
+): ExistingDomainObjectDelegate<NamedDomainObjectProvider<U>> =
+    ExistingDomainObjectDelegate.of(
+        delegateProvider.named(property.name, type)
+    )
 
 
 /**
@@ -204,9 +233,10 @@ operator fun <T : Any, C : NamedDomainObjectCollection<T>, U : T> ExistingDomain
 operator fun <T : Any, C : NamedDomainObjectCollection<T>, U : T> ExistingDomainObjectDelegateProviderWithTypeAndAction<C, U>.provideDelegate(
     receiver: Any?,
     property: KProperty<*>
-) = ExistingDomainObjectDelegate.of(
-    delegateProvider.named(property.name, type, action)
-)
+): ExistingDomainObjectDelegate<NamedDomainObjectProvider<U>> =
+    ExistingDomainObjectDelegate.of(
+        delegateProvider.named(property.name, type, action)
+    )
 
 
 /**
@@ -349,8 +379,16 @@ inline fun <reified T : Any> NamedDomainObjectCollection<out Any>.getByName(name
  *
  * `tasks { val jar by getting }`
  */
-inline val <T : Any, U : NamedDomainObjectCollection<out T>> U.getting
-    get() = NamedDomainObjectCollectionDelegateProvider.of(this)
+@Suppress("unchecked_cast")
+inline val <T : Any, U : NamedDomainObjectCollection<out T>> U.getting: NamedDomainObjectCollectionDelegateProvider<T>
+    get() {
+        DeprecationLogger.deprecate("The 'val name by getting' property delegate syntax")
+            .withAdvice("Use 'val element = getByName(name)' instead.")
+            .willBeRemovedInGradle10()
+            .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+            .nagUser()
+        return NamedDomainObjectCollectionDelegateProvider.of(this) as NamedDomainObjectCollectionDelegateProvider<T>
+    }
 
 
 /**
@@ -359,8 +397,14 @@ inline val <T : Any, U : NamedDomainObjectCollection<out T>> U.getting
  *
  * `tasks { val jar by getting { group = "My" } }`
  */
-fun <T : Any, U : NamedDomainObjectCollection<T>> U.getting(configuration: T.() -> Unit) =
-    NamedDomainObjectCollectionDelegateProvider.of(this, configuration)
+fun <T : Any, U : NamedDomainObjectCollection<T>> U.getting(configuration: T.() -> Unit): NamedDomainObjectCollectionDelegateProvider<T> {
+    DeprecationLogger.deprecate("The 'val name by getting { }' property delegate syntax")
+        .withAdvice("Use 'val element = getByName(name) { }' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
+    return NamedDomainObjectCollectionDelegateProvider.of(this, configuration)
+}
 
 
 /**
@@ -379,12 +423,13 @@ private constructor(
             NamedDomainObjectCollectionDelegateProvider(collection, configuration)
     }
 
-    operator fun provideDelegate(thisRef: Any?, property: kotlin.reflect.KProperty<*>) = ExistingDomainObjectDelegate.of(
-        when (configuration) {
-            null -> collection.getByName(property.name)
-            else -> collection.getByName(property.name, configuration)
-        }
-    )
+    operator fun provideDelegate(thisRef: Any?, property: kotlin.reflect.KProperty<*>): ExistingDomainObjectDelegate<T> =
+        ExistingDomainObjectDelegate.of(
+            when (configuration) {
+                null -> collection.getByName(property.name)
+                else -> collection.getByName(property.name, configuration)
+            }
+        )
 }
 
 
@@ -406,8 +451,14 @@ operator fun <T : Any> NamedDomainObjectCollection<T>.get(name: String): T =
  *
  * @see [NamedDomainObjectCollection.named]
  */
-operator fun <T : Any> NamedDomainObjectCollection<T>.provideDelegate(thisRef: Any?, property: KProperty<*>): NamedDomainObjectProvider<T> =
-    named(property.name)
+operator fun <T : Any> NamedDomainObjectCollection<T>.provideDelegate(thisRef: Any?, property: KProperty<*>): NamedDomainObjectProvider<T> {
+    DeprecationLogger.deprecate("The 'val name by container' property delegate syntax")
+        .withAdvice("Use 'val element = getByName(name)' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
+    return named(property.name)
+}
 
 
 /**
@@ -416,11 +467,17 @@ operator fun <T : Any> NamedDomainObjectCollection<T>.provideDelegate(thisRef: A
  * @see [NamedDomainObjectProvider.get]
  */
 @Suppress("nothing_to_inline", "unchecked_cast")
-inline operator fun <T : Any, reified U : T> NamedDomainObjectProvider<out T>.getValue(thisRef: Any?, property: KProperty<*>): U =
-    get().let {
+inline operator fun <T : Any, reified U : T> NamedDomainObjectProvider<out T>.getValue(thisRef: Any?, property: KProperty<*>): U {
+    DeprecationLogger.deprecate("The 'val name by provider' property delegate syntax")
+        .withAdvice("Use 'val value = provider.get()' instead.")
+        .willBeRemovedInGradle10()
+        .withUpgradeGuideSection(9, "kotlin_dsl_delegated_properties")
+        .nagUser()
+    return get().let {
         it as? U
             ?: throw illegalElementType(this, property.name, U::class, it::class)
     }
+}
 
 
 /**
