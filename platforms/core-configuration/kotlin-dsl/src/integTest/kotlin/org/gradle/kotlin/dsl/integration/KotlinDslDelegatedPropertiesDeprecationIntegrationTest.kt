@@ -28,11 +28,11 @@ import org.junit.Test
 class KotlinDslDelegatedPropertiesDeprecationIntegrationTest : AbstractKotlinIntegrationTest() {
 
     private
-    fun expectDeprecation(feature: String, advice: String) {
+    fun expectDeprecation(feature: String, advice: String? = null) {
         executer.expectDocumentedDeprecationWarning(
             "$feature has been deprecated. " +
                 "This is scheduled to be removed in Gradle 10. " +
-                "$advice " +
+                (if (advice != null) "$advice " else "") +
                 "Consult the upgrading guide for further information: " +
                 "https://docs.gradle.org/${GradleVersion.current().version}/userguide/upgrading_version_9.html#kotlin_dsl_delegated_properties"
         )
@@ -500,4 +500,47 @@ class KotlinDslDelegatedPropertiesDeprecationIntegrationTest : AbstractKotlinInt
 
         build("help")
     }
+
+    @Test
+    fun `direct use of delegate provider factory methods emits deprecation warnings`() {
+        withBuildScript(
+            """
+            // Direct factory calls, bypassing the entry-point functions
+            val rdp = RegisteringDomainObjectDelegateProvider.of(configurations)
+            val rdpa = RegisteringDomainObjectDelegateProviderWithAction.of<ConfigurationContainer, Configuration>(configurations) { }
+            val rdpt = RegisteringDomainObjectDelegateProviderWithType.of(tasks, Copy::class)
+            val rdpta = RegisteringDomainObjectDelegateProviderWithTypeAndAction.of(tasks, Copy::class) { }
+            val edp = ExistingDomainObjectDelegateProvider.of(configurations)
+            val edpa = ExistingDomainObjectDelegateProviderWithAction.of<ConfigurationContainer, Configuration>(configurations) { }
+            val edpt = ExistingDomainObjectDelegateProviderWithType.of(tasks, Copy::class)
+            val edpta = ExistingDomainObjectDelegateProviderWithTypeAndAction.of(tasks, Copy::class) { }
+            val cdp = NamedDomainObjectContainerCreatingDelegateProvider.of(configurations)
+            val pcdp = PolymorphicDomainObjectContainerCreatingDelegateProvider.of(tasks, Copy::class.java)
+            val pgdp = PolymorphicDomainObjectContainerGettingDelegateProvider.of(configurations, Configuration::class)
+            val ndocdp = NamedDomainObjectCollectionDelegateProvider.of(configurations)
+            val edd = ExistingDomainObjectDelegate.of("value")
+            val ivdp = InitialValueExtraPropertyDelegateProvider.of(extra, "value")
+            val ivd = InitialValueExtraPropertyDelegate.of<String>(extra)
+        """
+        )
+
+        expectDeprecation("The org.gradle.kotlin.dsl.RegisteringDomainObjectDelegateProvider type")
+        expectDeprecation("The org.gradle.kotlin.dsl.RegisteringDomainObjectDelegateProviderWithAction type")
+        expectDeprecation("The org.gradle.kotlin.dsl.RegisteringDomainObjectDelegateProviderWithType type")
+        expectDeprecation("The org.gradle.kotlin.dsl.RegisteringDomainObjectDelegateProviderWithTypeAndAction type")
+        expectDeprecation("The org.gradle.kotlin.dsl.ExistingDomainObjectDelegateProvider type")
+        expectDeprecation("The org.gradle.kotlin.dsl.ExistingDomainObjectDelegateProviderWithAction type")
+        expectDeprecation("The org.gradle.kotlin.dsl.ExistingDomainObjectDelegateProviderWithType type")
+        expectDeprecation("The org.gradle.kotlin.dsl.ExistingDomainObjectDelegateProviderWithTypeAndAction type")
+        expectDeprecation("The org.gradle.kotlin.dsl.NamedDomainObjectContainerCreatingDelegateProvider type")
+        expectDeprecation("The org.gradle.kotlin.dsl.PolymorphicDomainObjectContainerCreatingDelegateProvider type")
+        expectDeprecation("The org.gradle.kotlin.dsl.PolymorphicDomainObjectContainerGettingDelegateProvider type")
+        expectDeprecation("The org.gradle.kotlin.dsl.NamedDomainObjectCollectionDelegateProvider type")
+        expectDeprecation("The org.gradle.kotlin.dsl.ExistingDomainObjectDelegate type")
+        expectDeprecation("The org.gradle.kotlin.dsl.InitialValueExtraPropertyDelegateProvider type")
+        expectDeprecation("The org.gradle.kotlin.dsl.InitialValueExtraPropertyDelegate type")
+
+        build("help")
+    }
+
 }
