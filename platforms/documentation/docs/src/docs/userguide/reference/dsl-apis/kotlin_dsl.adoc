@@ -444,18 +444,12 @@ include::sample[dir="snippets/reference/dsl-apis/containers-scope/kotlin",files=
 // ====
 
 [[kotdsl:properties]]
-== Working with runtime properties
-
-Gradle has two main sources of properties defined at runtime: <<build_environment.adoc#sec:project_properties,_project properties_>> and <<writing_build_scripts_intermediate.adoc#sec:extra_properties,_extra properties_>>.
-
-The Kotlin DSL provides specific syntax for working with these property types, which we will explore in the following sections.
-
-=== Extra properties
+== Working with extra properties
 
 Extra properties are available on any object that implements the
 link:{groovyDslPath}/org.gradle.api.plugins.ExtensionAware.html#org.gradle.api.plugins.ExtensionAware[ExtensionAware] interface.
 
-In Kotlin DSL, you can access and create extra properties using the `extra` accessor as a map as demonstrated in the following sample:
+The Kotlin DSL provides the `extra` accessor for working with extra properties as a map:
 
 ====
 include::sample[dir="snippets/reference/dsl-apis/basics/kotlin",files="build.gradle.kts[tags=extra]"]
@@ -471,7 +465,7 @@ You can also access extra properties on a root project from a subproject using t
 ====
 include::sample[dir="snippets/reference/dsl-apis/basics/kotlin",files="my-sub-project/build.gradle.kts[tags=prop]"]
 ====
-<1> Binds the root project's `myNewProperty` extra property to a reference of the same name
+<1> Reads the root project's `myNewProperty` extra property
 
 Extra properties aren't just limited to projects.
 For example, `Task` extends `ExtensionAware`, so you can attach extra properties to tasks as well.
