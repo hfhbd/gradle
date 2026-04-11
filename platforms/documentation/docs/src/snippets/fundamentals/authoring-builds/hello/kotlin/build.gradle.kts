@@ -1,1 +1,5 @@
-ant.importBuild("build.xml")
+tasks.register("hello") {
+    doLast {
+        println("Hello world!")
+    }
+}

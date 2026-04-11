@@ -155,7 +155,7 @@ samples {
     val snippetDirs = mutableListOf<File>()
     fun findSnippets(dir: File) {
         for (child in dir.listFiles(directoriesOnly).orEmpty()) {
-            if (child.name in variantDirNames || child.name == "integration-tests") continue
+            if (child.name in variantDirNames || child.name == "integration-tests" || child.name == "unused") continue
             if (File(child, "kotlin").exists() || File(child, "groovy").exists()) {
                 snippetDirs.add(child)
             } else {
