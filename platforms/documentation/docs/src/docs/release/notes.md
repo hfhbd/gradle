@@ -12,13 +12,13 @@
 
 We are excited to announce Gradle @version@ (released [@releaseDate@](https://gradle.org/releases/)).
 
-This release improves [diagnostics and reporting](#diagnostics-and-reporting-improvements) with task provenance in errors and reports, plus clearer logging when the client JVM is incompatible with daemon requirements.
+This release improves [diagnostics and reporting](#diagnostics-and-reporting-improvements) with task provenance in errors and reports that helps to quickly locate the source of a failing task, plus clearer logging when the client JVM is incompatible with daemon requirements, which makes it easier to diagnose unexpected daemon behavior.
 
-[Plugin authors](#core-plugin-and-plugin-authoring-enhancements) gain type-safe Kotlin accessors for precompiled Settings convention plugins and automatic retry support for Wrapper downloads.
+[Plugin authors](#core-plugin-and-plugin-authoring-enhancements) gain type-safe Kotlin accessors for precompiled Settings convention plugins that provide IDE autocompletion and compile-time checking, automatic retry support for Wrapper downloads, and the ability to lock Domain Object Collections so that plugins can protect their configured elements from being modified by other plugins.
 
-[Build authoring](#build-authoring-improvements) is enhanced with the ability to lock Domain Object Collections and a new environment variable to specify the network address used for client-daemon communication.
-
-Other [improvements](#general-improvements) include additional `gradle init` option, easier Develocity integration, and grouped `--help` output. Finally, the [Tooling API](#tooling-and-ide-integration) now exposes help and version information.
+[Build authoring](#build-authoring-improvements) adds a new environment variable to specify the network address used for client-daemon communication in environments with restrictive network configurations.
+Other [improvements](#general-improvements) include an additional `gradle init` option that specifies a target directory, easier Develocity integration, and improved `--help` output.
+Finally, the [Tooling API](#tooling-and-ide-integration) now exposes help and version information.
 
 We would like to thank the following community members for their contributions to this release of Gradle:
 [atm1020](https://github.com/atm1020),
