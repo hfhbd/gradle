@@ -71,9 +71,11 @@ When a [task](userguide/more_about_tasks.html) fails, Gradle now includes proven
 Execution failed for task ':app:compileJava' (registered by plugin 'org.gradle.api.plugins.JavaPlugin').
 ```
 
-Provenance is omitted from failure messages for verification failures (e.g., test failures), since those are expected outcomes rather than configuration issues.
+Provenance is omitted from failure messages for [verification failures](userguide/custom_tasks.html#verification_failures) (e.g., test failures), since those are expected outcomes rather than configuration issues.
 
-In addition, the outputs of the tasks and [help --task](userguide/command_line_interface.html#sec:show_task_details) have been enhanced with that same provenance information:
+In addition, the outputs of some reports have been enhanced with provenance information.
+
+When running the [help](userguide/command_line_interface.html#sec:show_task_details) task with the  --task argument, task provenance information will be printed:
 
 ```bash
 > ./gradlew help --task processUrl
@@ -87,7 +89,7 @@ Type
      UrlProcess (UrlProcess)
 ```
 
-The [tasks list](userguide/command_line_interface.html#sec:listing_tasks) now supports a `--provenance` option that shows where each task was registered:
+When running the [tasks](userguide/command_line_interface.html#sec:listing_tasks report, there is now a --provenance option available that will display the same information:
 
 ```bash
 > ./gradlew tasks --provenance
