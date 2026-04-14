@@ -123,7 +123,7 @@ Gradle provides a comprehensive plugin system, including built-in [Core Plugins]
 
 The [Gradle Wrapper](userguide/gradle_wrapper.html) now supports automatic retries when downloading the Gradle distribution.
 This helps reduce build failures caused by unstable network connections or temporary server issues.
-By default, no retries are attempted.
+By default, retries are disabled to preserve existing behavior
 
 To enable retries, add the following properties to `gradle-wrapper.properties`:
 
