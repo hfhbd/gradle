@@ -200,14 +200,12 @@ gradle init
 
 See [Build Init Plugin](userguide/build_init_plugin.html) to learn more.
 
-### Build authoring improvements
-
-Gradle provides [rich APIs](userguide/getting_started_dev.html) for build engineers and plugin authors, enabling the creation of custom, reusable build logic and better maintainability.
-
 #### Domain Object Collections can be made immutable
 
 [Domain Object Collections](userguide/collections.html#available_collections) are the typed containers Gradle uses to manage groups of related build model elements (such as tasks, configurations, source sets, and custom objects contributed by plugins).
-Plugin and build authors can now lock Domain Object Collections to prevent further modifications using the new [`disallowChanges()` method](javadoc/org/gradle/api/DomainObjectCollection.html#disallowChanges()):
+Plugin authors can now lock Domain Object Collections to prevent further modifications using the new [disallowChanges() method](javadoc/org/gradle/api/DomainObjectCollection.html#disallowChanges()).
+For example, a plugin that populates a collection during configuration can lock it to prevent other plugins from adding unexpected elements or removing existing ones.
+This is also useful for preventing modifications after execution has started, when changes would no longer take effect:
 
 - Once `disallowChanges()` is called, elements can no longer be added to or removed from the collection.
 - Invoking this method does not force the realization of lazy items previously added to the collection.
@@ -228,6 +226,10 @@ myCollection.remove(main)         // this will fail
 ```
 
 See the [Javadocs](javadoc/org/gradle/api/DomainObjectCollection.html#disallowChanges()) to learn more.
+
+### Build authoring improvements
+
+Gradle provides [rich APIs](userguide/getting_started_dev.html) for build engineers and plugin authors, enabling the creation of custom, reusable build logic and better maintainability.
 
 #### Explicit bind address for client-daemon and cross-daemon communication
 
