@@ -12,13 +12,13 @@
 
 We are excited to announce Gradle @version@ (released [@releaseDate@](https://gradle.org/releases/)).
 
-This release improves [diagnostics and reporting](#diagnostics-and-reporting-improvements) with task provenance in errors and reports, plus clearer logging when the client JVM is incompatible with daemon requirements.
+This release improves [diagnostics and reporting](#diagnostics-and-reporting-improvements) with task provenance in errors and reports that helps to quickly locate the source of a failing task, plus clearer logging when the client JVM is incompatible with daemon requirements, which makes it easier to diagnose unexpected daemon behavior.
 
-[Plugin authors](#core-plugin-and-plugin-authoring-enhancements) gain type-safe Kotlin accessors for precompiled Settings convention plugins and automatic retry support for Wrapper downloads.
+[Plugin authors](#core-plugin-and-plugin-authoring-enhancements) gain type-safe Kotlin accessors for precompiled Settings convention plugins that provide IDE autocompletion and compile-time checking, automatic retry support for Wrapper downloads, and the ability to lock Domain Object Collections so that plugins can protect their configured elements from being modified by other plugins.
 
-[Build authoring](#build-authoring-improvements) is enhanced with the ability to lock Domain Object Collections and a new environment variable to specify the network address used for client-daemon communication.
-
-Other [improvements](#general-improvements) include additional `gradle init` option, easier Develocity integration, and grouped `--help` output. Finally, the [Tooling API](#tooling-and-ide-integration) now exposes help and version information.
+[Build authoring](#build-authoring-improvements) adds a new environment variable to specify the network address used for client-daemon communication in environments with restrictive network configurations.
+Other [improvements](#general-improvements) include an additional `gradle init` option that specifies a target directory, easier Develocity integration, and improved `--help` output.
+Finally, the [Tooling API](#tooling-and-ide-integration) now exposes help and version information.
 
 We would like to thank the following community members for their contributions to this release of Gradle:
 [atm1020](https://github.com/atm1020),
@@ -71,9 +71,11 @@ When a [task](userguide/more_about_tasks.html) fails, Gradle now includes proven
 Execution failed for task ':app:compileJava' (registered by plugin 'org.gradle.api.plugins.JavaPlugin').
 ```
 
-Provenance is omitted from failure messages for verification failures (e.g., test failures), since those are expected outcomes rather than configuration issues.
+Provenance is omitted from failure messages for [verification failures](userguide/custom_tasks.html#verification_failures) (e.g., test failures), since those are expected outcomes rather than configuration issues.
 
-In addition, the outputs of the tasks and [help --task](userguide/command_line_interface.html#sec:show_task_details) have been enhanced with that same provenance information:
+In addition, the outputs of some reports have been enhanced with provenance information.
+
+When running the [help](userguide/command_line_interface.html#sec:show_task_details) task with the  --task argument, task provenance information will be printed:
 
 ```bash
 > ./gradlew help --task processUrl
@@ -87,7 +89,7 @@ Type
      UrlProcess (UrlProcess)
 ```
 
-The [tasks list](userguide/command_line_interface.html#sec:listing_tasks) now supports a `--provenance` option that shows where each task was registered:
+When running the [tasks](userguide/command_line_interface.html#sec:listing_tasks report, there is now a --provenance option available that will display the same information:
 
 ```bash
 > ./gradlew tasks --provenance
@@ -123,7 +125,7 @@ Gradle provides a comprehensive plugin system, including built-in [Core Plugins]
 
 The [Gradle Wrapper](userguide/gradle_wrapper.html) now supports automatic retries when downloading the Gradle distribution.
 This helps reduce build failures caused by unstable network connections or temporary server issues.
-By default, no retries are attempted.
+By default, retries are disabled to preserve existing behavior
 
 To enable retries, add the following properties to `gradle-wrapper.properties`:
 
@@ -200,14 +202,12 @@ gradle init
 
 See [Build Init Plugin](userguide/build_init_plugin.html) to learn more.
 
-### Build authoring improvements
-
-Gradle provides [rich APIs](userguide/getting_started_dev.html) for build engineers and plugin authors, enabling the creation of custom, reusable build logic and better maintainability.
-
 #### Domain Object Collections can be made immutable
 
 [Domain Object Collections](userguide/collections.html#available_collections) are the typed containers Gradle uses to manage groups of related build model elements (such as tasks, configurations, source sets, and custom objects contributed by plugins).
-Plugin and build authors can now lock Domain Object Collections to prevent further modifications using the new [`disallowChanges()` method](javadoc/org/gradle/api/DomainObjectCollection.html#disallowChanges()):
+Plugin authors can now lock Domain Object Collections to prevent further modifications using the new [disallowChanges() method](javadoc/org/gradle/api/DomainObjectCollection.html#disallowChanges()).
+For example, a plugin that populates a collection during configuration can lock it to prevent other plugins from adding unexpected elements or removing existing ones.
+This is also useful for preventing modifications after execution has started, when changes would no longer take effect:
 
 - Once `disallowChanges()` is called, elements can no longer be added to or removed from the collection.
 - Invoking this method does not force the realization of lazy items previously added to the collection.
@@ -228,6 +228,10 @@ myCollection.remove(main)         // this will fail
 ```
 
 See the [Javadocs](javadoc/org/gradle/api/DomainObjectCollection.html#disallowChanges()) to learn more.
+
+### Build authoring improvements
+
+Gradle provides [rich APIs](userguide/getting_started_dev.html) for build engineers and plugin authors, enabling the creation of custom, reusable build logic and better maintainability.
 
 #### Explicit bind address for client-daemon and cross-daemon communication
 
@@ -284,6 +288,9 @@ For example, in IntelliJ IDEA, users can run `--help` and `--version` via the `E
 ### Documentation
 
 #### User Manual
+
+The [Isolated Projects](userguide/isolated_projects.html) page has been significantly revised. 
+If you are considering adopting this experimental feature, the updated documentation provides a comprehensive overview.
 
 The samples page has been removed.
 Code examples can now be found on their corresponding documentation pages, with links to the repository for full project files.
