@@ -158,6 +158,8 @@ public class StreamingResolutionResultBuilder implements DependencyGraphVisitor 
     public void start(final RootGraphNode root) {
         this.rootAttributes = root.getMetadata().getAttributes();
         this.mayHaveVirtualPlatforms = root.getResolveOptimizations().mayHaveVirtualPlatforms();
+        // TODO: We should write the size of the graph at the beginning of traversal
+        // so we can initialize the GraphStructureBuilder to avoid resizes/copying
         store.write(encoder -> {
             encoder.writeSmallLong(root.getNodeId());
         });

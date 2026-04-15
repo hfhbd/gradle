@@ -205,12 +205,12 @@ public class GraphStructureBuilder {
     // TODO: Would probably be better if a node already knew its real capabilities instead of
     // correcting for them at the API surface.
     private ImmutableCapabilities capabilitiesFor(ImmutableCapabilities capabilities, int ownerIndex) {
-        if (!capabilities.asSet().isEmpty()) {
+        if (!capabilities.isEmpty()) {
             return capabilities;
         }
 
         ModuleVersionIdentifier moduleVersionId = componentModuleVersionIds.get(ownerIndex);
-        return ImmutableCapabilities.of(DefaultImmutableCapability.defaultCapabilityForComponent(moduleVersionId));
+        return new ImmutableCapabilities(ImmutableSet.of(DefaultImmutableCapability.defaultCapabilityForComponent(moduleVersionId)));
     }
 
     /**
