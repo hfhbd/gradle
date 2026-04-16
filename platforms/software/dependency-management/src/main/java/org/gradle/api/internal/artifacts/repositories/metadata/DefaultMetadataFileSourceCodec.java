@@ -39,9 +39,9 @@ import java.io.IOException;
  */
 public class DefaultMetadataFileSourceCodec implements PersistentModuleSource.Codec<MetadataFileSource> {
     private final ImmutableModuleIdentifierFactory moduleIdentifierFactory;
-    private final ArtifactIdentifierFileStore<ModuleComponentArtifactIdentifier> fileStore;
+    private final ArtifactIdentifierFileStore fileStore;
 
-    public DefaultMetadataFileSourceCodec(ImmutableModuleIdentifierFactory moduleIdentifierFactory, ArtifactIdentifierFileStore<ModuleComponentArtifactIdentifier> fileStore) {
+    public DefaultMetadataFileSourceCodec(ImmutableModuleIdentifierFactory moduleIdentifierFactory, ArtifactIdentifierFileStore fileStore) {
         this.moduleIdentifierFactory = moduleIdentifierFactory;
         this.fileStore = fileStore;
     }
