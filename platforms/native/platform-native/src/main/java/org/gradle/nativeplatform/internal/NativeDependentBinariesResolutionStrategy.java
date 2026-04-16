@@ -153,10 +153,10 @@ public class NativeDependentBinariesResolutionStrategy extends AbstractDependent
     private State buildState() {
         State state = new State();
 
-        projectRegistry.withMutableStateOfAllProjects(() -> {
+        projectRegistry.applyToMutableStateOfAllProjects(access -> {
             List<? extends ProjectState> orderedProjects = Ordering.usingToString().sortedCopy(projectRegistry.getAllProjects());
             for (ProjectState projectState : orderedProjects) {
-                if (projectState.fromMutableState(project -> project.getPlugins().hasPlugin(ComponentModelBasePlugin.class))) {
+                if (access.getMutableModel(projectState).getPlugins().hasPlugin(ComponentModelBasePlugin.class)) {
                     ModelRegistry modelRegistry = projectModelResolver.resolveProjectModel(projectState.getProjectPath().toString());
                     ModelMap<NativeComponentSpec> components = modelRegistry.realize("components", ModelTypes.modelMap(NativeComponentSpec.class));
                     for (NativeBinarySpecInternal binary : allBinariesOf(components.withType(VariantComponentSpec.class))) {

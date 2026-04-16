@@ -25,6 +25,7 @@ import org.gradle.api.internal.project.ProjectState;
 import org.gradle.api.internal.properties.GradleProperties;
 import org.gradle.api.internal.properties.GradlePropertiesController;
 import org.gradle.initialization.properties.FilteringGradleProperties;
+import org.gradle.internal.build.AllProjectsAccess;
 import org.gradle.internal.build.BuildProjectRegistry;
 
 import java.util.Set;
@@ -46,26 +47,24 @@ public class ProjectPropertySettingBuildLoader implements BuildLoader {
     public void load(SettingsInternal settings, GradleInternal gradle) {
         buildLoader.load(settings, gradle);
         BuildProjectRegistry projectRegistry = gradle.getOwner().getProjects();
-        projectRegistry.withMutableStateOfAllProjects(() ->
-            setProjectProperties(projectRegistry.getRootProject())
+        projectRegistry.applyToMutableStateOfAllProjects(access ->
+            setProjectProperties(access, projectRegistry.getRootProject())
         );
     }
 
-    private void setProjectProperties(ProjectState project) {
-        addPropertiesToProject(project);
+    private void setProjectProperties(AllProjectsAccess access, ProjectState project) {
+        addPropertiesToProject(project, access.getMutableModel(project));
         for (ProjectState childProject : project.getChildProjects()) {
-            setProjectProperties(childProject);
+            setProjectProperties(access, childProject);
         }
     }
 
-    private void addPropertiesToProject(ProjectState project) {
+    private void addPropertiesToProject(ProjectState project, ProjectInternal mutableProject) {
         gradlePropertiesController.loadGradleProperties(project.getIdentity(), project.getProjectDir());
         GradleProperties projectGradleProperties = gradlePropertiesController.getGradleProperties(project.getIdentity());
 
-        project.applyToMutableState(mutableProject -> {
-            Set<String> consumedProperties = assignSelectedPropertiesDirectly(mutableProject, projectGradleProperties);
-            installProjectExtraPropertiesDefaults(mutableProject, projectGradleProperties, consumedProperties);
-        });
+        Set<String> consumedProperties = assignSelectedPropertiesDirectly(mutableProject, projectGradleProperties);
+        installProjectExtraPropertiesDefaults(mutableProject, projectGradleProperties, consumedProperties);
     }
 
     /**

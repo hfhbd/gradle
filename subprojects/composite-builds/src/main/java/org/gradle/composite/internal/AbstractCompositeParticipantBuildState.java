@@ -21,6 +21,7 @@ import org.gradle.api.artifacts.component.ProjectComponentIdentifier;
 import org.gradle.api.internal.BuildDefinition;
 import org.gradle.api.internal.artifacts.DefaultModuleVersionIdentifier;
 import org.gradle.api.internal.artifacts.configurations.DependencyMetaDataProvider;
+import org.gradle.api.internal.project.ProjectInternal;
 import org.gradle.api.internal.project.ProjectState;
 import org.gradle.internal.Pair;
 import org.gradle.internal.build.AbstractBuildState;
@@ -51,9 +52,9 @@ public abstract class AbstractCompositeParticipantBuildState extends AbstractBui
             ensureChildBuildConfigured();
             availableModules = new LinkedHashSet<>();
             BuildProjectRegistry projectRegistry = getProjects();
-            projectRegistry.withMutableStateOfAllProjects(() -> {
+            projectRegistry.applyToMutableStateOfAllProjects(access -> {
                 for (ProjectState project : projectRegistry.getAllProjects()) {
-                    registerProject(availableModules, project);
+                    registerProject(availableModules, project, access.getMutableModel(project));
                 }
             });
         }
@@ -66,12 +67,11 @@ public abstract class AbstractCompositeParticipantBuildState extends AbstractBui
 
     private static void registerProject(
         Set<Pair<ModuleVersionIdentifier, ProjectComponentIdentifier>> availableModules,
-        ProjectState projectState
+        ProjectState projectState,
+        ProjectInternal project
     ) {
         ProjectComponentIdentifier projectIdentifier = projectState.getComponentIdentifier();
-        ModuleVersionIdentifier moduleId = projectState.fromMutableState(project ->
-            DefaultModuleVersionIdentifier.newId(project.getServices().get(DependencyMetaDataProvider.class).getModule())
-        );
+        ModuleVersionIdentifier moduleId = DefaultModuleVersionIdentifier.newId(project.getServices().get(DependencyMetaDataProvider.class).getModule());
         LOGGER.info("Registering {} in composite build. Will substitute for module '{}'.", projectState, moduleId.getModule());
         availableModules.add(Pair.of(moduleId, projectIdentifier));
     }

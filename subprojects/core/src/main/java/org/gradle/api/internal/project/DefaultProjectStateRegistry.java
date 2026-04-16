@@ -25,10 +25,10 @@ import org.gradle.initialization.ProjectDescriptorInternal;
 import org.gradle.initialization.ProjectDescriptorRegistry;
 import org.gradle.internal.Describables;
 import org.gradle.internal.DisplayName;
-import org.gradle.internal.Factories;
 import org.gradle.internal.Factory;
 import org.gradle.internal.build.BuildProjectRegistry;
 import org.gradle.internal.build.BuildState;
+import org.gradle.internal.build.AllProjectsAccess;
 import org.gradle.internal.concurrent.CompositeStoppable;
 import org.gradle.internal.model.CalculatedModelValue;
 import org.gradle.internal.model.ModelContainer;
@@ -202,6 +202,7 @@ public class DefaultProjectStateRegistry implements ProjectStateRegistry, Closea
         CompositeStoppable.stoppable(projectsByPath.values()).stop();
     }
 
+    @NullMarked
     private static class DefaultBuildProjectRegistry implements BuildProjectRegistry {
         private final BuildState owner;
         private final WorkerLeaseService workerLeaseService;
@@ -244,15 +245,45 @@ public class DefaultProjectStateRegistry implements ProjectStateRegistry, Closea
         }
 
         @Override
-        public void withMutableStateOfAllProjects(Runnable runnable) {
-            withMutableStateOfAllProjects(Factories.toFactory(runnable));
+        public <T extends @Nullable Object> T fromMutableStateOfAllProjects(Function<AllProjectsAccess, T> factory) {
+            ResourceLock allProjectsLock = workerLeaseService.getAllProjectsLock(owner.getIdentityPath());
+            Collection<? extends ResourceLock> locks = workerLeaseService.getCurrentProjectLocks();
+            return workerLeaseService.withReplacedLocks(locks, allProjectsLock, () -> {
+                AllProjectsAccessImpl fetcher = new AllProjectsAccessImpl(owner);
+                try {
+                    return factory.apply(fetcher);
+                } finally {
+                    fetcher.disallowAccess();
+                }
+            });
+        }
+    }
+
+    @NullMarked
+    private static final class AllProjectsAccessImpl implements AllProjectsAccess {
+        private final BuildState owner;
+        private volatile boolean canAccessMutableState = true;
+
+        private AllProjectsAccessImpl(BuildState owner) {
+            this.owner = owner;
+        }
+
+        void disallowAccess() {
+            canAccessMutableState = false;
         }
 
         @Override
-        public <T> T withMutableStateOfAllProjects(Factory<T> factory) {
-            ResourceLock allProjectsLock = workerLeaseService.getAllProjectsLock(owner.getIdentityPath());
-            Collection<? extends ResourceLock> locks = workerLeaseService.getCurrentProjectLocks();
-            return workerLeaseService.withReplacedLocks(locks, allProjectsLock, factory);
+        public ProjectInternal getMutableModel(ProjectState project) {
+            if (!project.getOwner().getIdentityPath().equals(owner.getIdentityPath())) {
+                throw new IllegalArgumentException(
+                    "Attempting to access mutable state of " + project.getIdentityPath() + " using AllProjectsAccess for " + owner.getIdentityPath() + "." +
+                        " AllProjectsAccess can only be used to access the mutable state of projects in the same build.");
+            }
+            if (!canAccessMutableState) {
+                throw new IllegalStateException("Cannot access mutable project state outside of the action passed to ProjectStateRegistry.withMutableStateOfAllProjects().");
+            }
+            // SAFETY: The caller is only allowed to call this method while holding the all projects lock
+            return project.getMutableModel();
         }
     }
 

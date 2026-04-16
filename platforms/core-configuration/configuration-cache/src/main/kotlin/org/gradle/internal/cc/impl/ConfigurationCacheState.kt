@@ -29,6 +29,7 @@ import org.gradle.api.internal.SettingsInternal.BUILD_SRC
 import org.gradle.api.internal.artifacts.transform.TransformStepNode
 import org.gradle.api.internal.cache.CacheConfigurationsInternal
 import org.gradle.api.internal.cache.CacheResourceConfigurationInternal.EntryRetention
+import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.internal.project.ProjectState
 import org.gradle.api.provider.Provider
 import org.gradle.api.services.BuildServiceRegistry
@@ -43,7 +44,6 @@ import org.gradle.initialization.BuildStructureOperationProject
 import org.gradle.initialization.ProjectsIdentifiedProgressDetails
 import org.gradle.initialization.RootBuildCacheControllerSettingsProcessor
 import org.gradle.internal.Actions
-import org.gradle.internal.Factory
 import org.gradle.internal.build.BuildProjectRegistry
 import org.gradle.internal.build.BuildState
 import org.gradle.internal.build.IncludedBuildState
@@ -647,13 +647,11 @@ class ConfigurationCacheState(
 
     private
     fun applyProjectStates(projects: List<CachedProjectState>, gradle: GradleInternal, projectRegistry: BuildProjectRegistry) {
-        projectRegistry.withMutableStateOfAllProjects {
+        projectRegistry.applyToMutableStateOfAllProjects { access ->
             for (project in projects) {
                 if (project is ProjectWithWork && project.normalizationState != null) {
                     val projectState = gradle.owner.projects.getProject(project.path)
-                    projectState.applyToMutableState {
-                        it.normalization.configureFromCachedState(project.normalizationState)
-                    }
+                    access.getMutableModel(projectState).normalization.configureFromCachedState(project.normalizationState)
                 }
             }
         }
@@ -906,18 +904,21 @@ class ConfigurationCacheState(
         transformInputProjects: Set<Path>
     ): List<CachedProjectState> {
         val relevantProjects = relevantProjectsRegistry.relevantProjects(nodes)
-        return projects.withMutableStateOfAllProjects(Factory<List<CachedProjectState>> {
+        return projects.fromMutableStateOfAllProjects { access ->
             projects.allProjects
                 .filter(shouldStoreProject)
-                .map { project -> collectCachedProjectState(relevantProjects, transformInputProjects, project) }
-        })
+                .map { project ->
+                    collectCachedProjectState(relevantProjects, transformInputProjects, project, access.getMutableModel(project))
+                }
+        }
     }
 
     private fun collectCachedProjectState(
         relevantProjects: Set<ProjectState>,
         transformInputProjects: Set<Path>,
-        project: ProjectState
-    ): CachedProjectState = project.fromMutableState { mutableModel ->
+        project: ProjectState,
+        mutableModel: ProjectInternal,
+    ): CachedProjectState {
         // Relevant projects are those observed during dependency resolution or owning scheduled nodes.
         // A build-logic build may have no scheduled nodes since it has already been executed by this point.
         // However, if one of its projects is used as a transform input in another build, we still need
@@ -926,7 +927,7 @@ class ConfigurationCacheState(
         // So we explicitly include it (along with its parent hierarchy) via transformInputProjects.
         if (relevantProjects.contains(project) || project.projectPath in transformInputProjects) {
             mutableModel.layout.buildDirectory.finalizeValue()
-            ProjectWithWork(
+            return ProjectWithWork(
                 project.projectPath,
                 project.projectDir,
                 mutableModel.buildFile,
@@ -934,7 +935,7 @@ class ConfigurationCacheState(
                 mutableModel.normalization.computeCachedState()
             )
         } else {
-            ProjectWithNoWork(project.projectPath, project.projectDir, mutableModel.buildFile)
+            return ProjectWithNoWork(project.projectPath, project.projectDir, mutableModel.buildFile)
         }
     }
 
