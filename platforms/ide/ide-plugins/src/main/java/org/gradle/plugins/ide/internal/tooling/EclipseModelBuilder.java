@@ -202,8 +202,7 @@ public class EclipseModelBuilder implements ParameterizedToolingModelBuilder<Ecl
             children.add(buildHierarchy(child));
         }
 
-        record NameAndDescription(String name, String description) {
-        }
+        record NameAndDescription(String name, String description) {}
 
         NameAndDescription data = projectState.fromMutableState(project -> {
             EclipseModel eclipseModel = project.getExtensions().getByType(EclipseModel.class);

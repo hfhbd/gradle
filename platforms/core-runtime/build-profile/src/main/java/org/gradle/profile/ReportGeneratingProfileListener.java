@@ -15,7 +15,6 @@
  */
 package org.gradle.profile;
 
-import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.logging.LogLevel;
 import org.gradle.initialization.StartParameterBuildOptions;
 import org.gradle.internal.build.BuildStateRegistry;
@@ -59,8 +58,7 @@ public class ReportGeneratingProfileListener {
             .getRootProject()
             .fromMutableState(project ->
                 project
-                    .getServices()
-                    .get(ProjectLayout.class)
+                    .getLayout()
                     .getBuildDirectory()
                     .getAsFile()
                     .get()
