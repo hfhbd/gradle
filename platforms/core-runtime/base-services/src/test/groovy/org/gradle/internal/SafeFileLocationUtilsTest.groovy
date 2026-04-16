@@ -19,6 +19,7 @@ package org.gradle.internal
 import com.google.common.base.Utf8
 import org.apache.commons.lang3.RandomStringUtils
 import org.gradle.api.GradleException
+import org.gradle.internal.os.OperatingSystem
 import spock.lang.Specification
 
 import java.nio.charset.StandardCharsets
@@ -223,7 +224,7 @@ class SafeFileLocationUtilsTest extends Specification {
 
     def "PathLimitChecker returns WITHIN_LIMIT for short paths"() {
         expect:
-        new SafeFileLocationUtils.PathLimitChecker('/base').check(buildSegmentsToFile('a', 'b', 'c.html')) == SafeFileLocationUtils.PathLimitCheckResult.WITHIN_LIMIT
+        new SafeFileLocationUtils.PathLimitChecker(absolutePrefix() + 'base').check(buildSegmentsToFile('a', 'b', 'c.html')) == SafeFileLocationUtils.PathLimitCheckResult.WITHIN_LIMIT
     }
 
     def "PathLimitChecker returns EXCEEDS_LIMIT when path exceeds limit but can be shrunk"() {
@@ -412,7 +413,12 @@ class SafeFileLocationUtilsTest extends Specification {
     }
 
     private static String basePathWithRoom(int room) {
-        return '/' + 'B' * (MAX_PATH_LENGTH - 1 - room)
+        def prefix = absolutePrefix()
+        return prefix + 'B' * (MAX_PATH_LENGTH - prefix.length() - room)
+    }
+
+    private static absolutePrefix() {
+        OperatingSystem.current().isWindows() ? 'C:/' : '/'
     }
 
     private static List<SafeFileLocationUtils.Segment> buildSegmentsToFile(String... names) {
