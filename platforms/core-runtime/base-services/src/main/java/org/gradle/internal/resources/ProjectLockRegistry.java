@@ -28,33 +28,19 @@ public class ProjectLockRegistry extends AbstractResourceLockRegistry<Path, Proj
         allProjectsLocks = new LockCache<>(coordinationService, this);
     }
 
-    /**
-     * Checks if any project lock is currently held that is associated with the given "all projects" lock, and is held by another thread.
-     * This is effectively a proxy for checking if any of the project locks have the same {@code buildIdentityPath} as the given "all projects" lock.
-     *
-     * @param relevantAllProjectsLock the "all projects" lock for which to check if any project locks are currently held by another thread
-     * @return {@code true} if any project lock is currently held by another thread that is associated with the given "all projects" lock, {@code false} otherwise
-     */
-    private boolean isAnyProjectLockHeldByAnotherThread(AllProjectsLock relevantAllProjectsLock) {
-        for (ProjectLock projectLock : getAllResourceLocks()) {
-            if (projectLock.getAllProjectsLock() != relevantAllProjectsLock) {
-                continue;
-            }
-            if (projectLock.isLocked() && !projectLock.isLockedByCurrentThread()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public boolean getAllowsParallelExecution() {
         return parallelEnabled;
     }
 
     public ResourceLock getAllProjectsLock(final Path buildIdentityPath) {
+        return getAllProjectsLockInternal(buildIdentityPath);
+    }
+
+    // Provides more specific return type that can't be public
+    private AllProjectsLock getAllProjectsLockInternal(Path buildIdentityPath) {
         return allProjectsLocks.getOrRegisterResourceLock(buildIdentityPath, (key, coordinationService, owner) -> {
             String displayName = "All projects of " + buildIdentityPath;
-            return new AllProjectsLock(displayName, coordinationService, owner, this::isAnyProjectLockHeldByAnotherThread);
+            return new AllProjectsLock(displayName, coordinationService, owner, this::getCachedResourceLocks);
         });
     }
 
@@ -65,7 +51,7 @@ public class ProjectLockRegistry extends AbstractResourceLockRegistry<Path, Proj
     private ProjectLock doGetResourceLock(final Path buildIdentityPath, final Path lockPath) {
         return getOrRegisterResourceLock(lockPath, (projectPath, coordinationService, owner) -> {
             String displayName = parallelEnabled ? "state of project " + lockPath : "state of build " + lockPath;
-            return new ProjectLock(displayName, coordinationService, owner, getAllProjectsLock(buildIdentityPath));
+            return new ProjectLock(displayName, coordinationService, owner, getAllProjectsLockInternal(buildIdentityPath));
         });
     }
 }

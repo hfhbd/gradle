@@ -17,14 +17,14 @@
 package org.gradle.internal.resources;
 
 public class ProjectLock extends ExclusiveAccessResourceLock {
-    private final ResourceLock allProjectsLock;
+    private final AllProjectsLock allProjectsLock;
 
-    public ProjectLock(String displayName, ResourceLockCoordinationService coordinationService, ResourceLockContainer owner, ResourceLock allProjectsLock) {
+    ProjectLock(String displayName, ResourceLockCoordinationService coordinationService, ResourceLockContainer owner, AllProjectsLock allProjectsLock) {
         super(displayName, coordinationService, owner);
         this.allProjectsLock = allProjectsLock;
     }
 
-    ResourceLock getAllProjectsLock() {
+    AllProjectsLock getAllProjectsLock() {
         return allProjectsLock;
     }
 

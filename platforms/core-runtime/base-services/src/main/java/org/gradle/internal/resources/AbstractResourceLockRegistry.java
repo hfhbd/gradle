@@ -83,7 +83,11 @@ public abstract class AbstractResourceLockRegistry<K, T extends ResourceLock> im
         lockDetails.locks.add(Cast.<T>uncheckedCast(resourceLock));
     }
 
-    protected Iterable<T> getAllResourceLocks() {
+    /**
+     * {@return all locks currently cached} Locks are removed from the cache when they are no longer referenced,
+     * so this can only be relied upon to return locks that are currently held, but it may also include locks that are not currently held.
+     */
+    protected Iterable<T> getCachedResourceLocks() {
         return resourceLocks.values();
     }
 

@@ -16,18 +16,27 @@
 
 package org.gradle.internal.resources;
 
-import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 class AllProjectsLock extends ExclusiveAccessResourceLock {
-    private final Predicate<AllProjectsLock> anyProjectLockHeldByOtherThreads;
+    private final Supplier<Iterable<ProjectLock>> cachedProjectLocks;
 
-    public AllProjectsLock(String displayName, ResourceLockCoordinationService coordinationService, ResourceLockContainer owner, Predicate<AllProjectsLock> anyProjectLockHeldByOtherThreads) {
+    public AllProjectsLock(String displayName, ResourceLockCoordinationService coordinationService, ResourceLockContainer owner, Supplier<Iterable<ProjectLock>> cachedProjectLocks) {
         super(displayName, coordinationService, owner);
-        this.anyProjectLockHeldByOtherThreads = anyProjectLockHeldByOtherThreads;
+        this.cachedProjectLocks = cachedProjectLocks;
     }
 
     @Override
     protected boolean canAcquire() {
-        return !anyProjectLockHeldByOtherThreads.test(this);
+        for (ProjectLock projectLock : cachedProjectLocks.get()) {
+            if (projectLock.getAllProjectsLock() != this) {
+                // We only care about locks that are associated with this "all projects" lock.
+                continue;
+            }
+            if (projectLock.isLocked() && !projectLock.isLockedByCurrentThread()) {
+                return false;
+            }
+        }
+        return true;
     }
 }
