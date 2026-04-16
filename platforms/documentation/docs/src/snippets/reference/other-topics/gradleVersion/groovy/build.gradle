@@ -9,7 +9,7 @@ dependencies {
 
 dependencies {
     testImplementation('org.spockframework:spock-core:2.3-groovy-4.0') {
-        exclude group: 'org.codehaus.groovy'
+        exclude group: 'org.apache.groovy'
     }
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
