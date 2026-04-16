@@ -82,6 +82,25 @@ public class TestSelectionMatcher {
     }
 
     /**
+     * Returns true if the given class and method matches the include patterns (build-script and command-line).
+     * Exclude patterns are <strong>not</strong> consulted.
+     *
+     * @see ClassTestSelectionMatcher#matchesIncludeTest(String, String)
+     */
+    public boolean matchesIncludeTest(String className, @Nullable String methodName) {
+        return classTestSelectionMatcher.matchesIncludeTest(className, methodName);
+    }
+
+    /**
+     * Returns true if the given class and method matches any exclude pattern. Include patterns are not consulted.
+     *
+     * @see ClassTestSelectionMatcher#matchesExcludeTest(String, String)
+     */
+    public boolean matchesExcludeTest(String className, @Nullable String methodName) {
+        return classTestSelectionMatcher.matchesExcludeTest(className, methodName);
+    }
+
+    /**
      * Returns true if the given fully qualified class name may be included in test execution. This is more optimistic than {@link #matchesTest(String, String)}
      * because some classes may still be excluded later for other reasons.
      *

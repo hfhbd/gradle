@@ -61,9 +61,28 @@ class ClassTestSelectionMatcher {
 
 
     public boolean matchesTest(String className, @Nullable String methodName) {
+        return matchesIncludeTest(className, methodName) && !matchesExcludeTest(className, methodName);
+    }
+
+    /**
+     * Returns true iff the given (className, methodName) pair matches the include patterns.
+     *
+     * <p>The result is the conjunction of the build-script include patterns and the command-line
+     * include patterns. An empty include set is treated as "everything matches" (vacuously true).
+     * Exclude patterns are <strong>not</strong> consulted.</p>
+     */
+    public boolean matchesIncludeTest(String className, @Nullable String methodName) {
         return matchesPattern(buildScriptIncludePatterns, className, methodName)
-            && matchesPattern(commandLineIncludePatterns, className, methodName)
-            && !matchesExcludePattern(className, methodName);
+            && matchesPattern(commandLineIncludePatterns, className, methodName);
+    }
+
+    /**
+     * Returns true iff the given (className, methodName) pair matches any exclude pattern.
+     *
+     * <p>An empty exclude set returns false. Include patterns are not consulted.</p>
+     */
+    public boolean matchesExcludeTest(String className, @Nullable String methodName) {
+        return matchesExcludePattern(className, methodName);
     }
 
     public boolean mayIncludeClass(String fullQualifiedClassName) {

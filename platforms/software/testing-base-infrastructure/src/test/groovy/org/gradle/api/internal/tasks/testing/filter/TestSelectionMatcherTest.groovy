@@ -17,6 +17,7 @@
 package org.gradle.api.internal.tasks.testing.filter
 
 
+import spock.lang.Issue
 import spock.lang.Specification
 
 class TestSelectionMatcherTest extends Specification {
@@ -255,6 +256,50 @@ class TestSelectionMatcherTest extends Specification {
         []                      | []                              | 'anything'            | true
         ['org.gradle.FooTest*'] | ['org.gradle.BarTest*']         | 'org.gradle.FooTest'  | false
         ['org.gradle.FooTest*'] | ['*org.gradle.BarTest*']        | 'org.gradle.FooTest'  | true
+    }
+
+    @Issue("https://github.com/gradle/gradle/issues/37539")
+    def "matchesIncludeTest ignores exclude patterns"() {
+        expect:
+        matcher(includes, excludes, []).matchesIncludeTest(className, methodName) == match
+
+        where:
+        includes           | excludes           | className         | methodName       | match
+        []                 | []                 | "FooTest"         | "aaa"            | true
+        []                 | ["FooTest"]        | "FooTest"         | "aaa"            | true
+        ["FooTest"]        | []                 | "FooTest"         | "aaa"            | true
+        ["FooTest"]        | ["FooTest"]        | "FooTest"         | "aaa"            | true
+        ["FooTest"]        | []                 | "BarTest"         | "aaa"            | false
+    }
+
+    @Issue("https://github.com/gradle/gradle/issues/37539")
+    def "matchesIncludeTest combines build-script and command-line includes"() {
+        expect:
+        matcher(buildScript, [], commandLine).matchesIncludeTest(className, null) == match
+
+        where:
+        buildScript        | commandLine       | className         | match
+        []                 | []                | "FooTest"         | true
+        ["FooTest"]        | []                | "FooTest"         | true
+        []                 | ["FooTest"]       | "FooTest"         | true
+        ["FooTest"]        | ["FooTest"]       | "FooTest"         | true
+        ["FooTest"]        | ["BarTest"]       | "FooTest"         | false
+        ["FooTest"]        | ["BarTest"]       | "BarTest"         | false
+    }
+
+    @Issue("https://github.com/gradle/gradle/issues/37539")
+    def "matchesExcludeTest ignores include patterns"() {
+        expect:
+        matcher(includes, excludes, []).matchesExcludeTest(className, methodName) == match
+
+        where:
+        includes           | excludes                   | className                        | methodName         | match
+        []                 | []                         | "FooTest"                        | null               | false
+        []                 | ["FooTest"]                | "FooTest"                        | null               | true
+        ["BarTest"]        | ["FooTest"]                | "FooTest"                        | null               | true
+        []                 | ["FooTest"]                | "BarTest"                        | null               | false
+        []                 | ["FooTest.doThing"]        | "FooTest"                        | "doThing"          | true
+        []                 | ["FooTest.doThing"]        | "FooTest"                        | "doOther"          | false
     }
 
     def matcher(Collection<String> includedTests, Collection<String> excludedTests, Collection<String> includedTestsCommandLine) {
