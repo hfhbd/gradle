@@ -87,8 +87,7 @@ class ClassTestSelectionMatcher {
 
     public boolean mayIncludeClass(String fullQualifiedClassName) {
         return mayIncludeClass(buildScriptIncludePatterns, fullQualifiedClassName)
-            && mayIncludeClass(commandLineIncludePatterns, fullQualifiedClassName)
-            && !mayExcludeClass(fullQualifiedClassName);
+            && mayIncludeClass(commandLineIncludePatterns, fullQualifiedClassName);
     }
 
     private boolean mayIncludeClass(List<ClassTestPattern> includePatterns, String fullQualifiedName) {
@@ -96,22 +95,6 @@ class ClassTestSelectionMatcher {
             return true;
         }
         return mayMatchClass(includePatterns, fullQualifiedName);
-    }
-
-    public boolean mayExcludeClass(String fullQualifiedName) {
-        if (buildScriptExcludePatterns.isEmpty()) {
-            return false;
-        }
-        return matchesClass(buildScriptExcludePatterns, fullQualifiedName);
-    }
-
-    private boolean matchesClass(List<ClassTestPattern> patterns, String fullQualifiedName) {
-        for (ClassTestPattern pattern : patterns) {
-            if (pattern.matchesClass(fullQualifiedName)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private boolean mayMatchClass(List<ClassTestPattern> patterns, String fullQualifiedName) {
