@@ -16,7 +16,9 @@
 
 package org.gradle.internal.cc.impl
 
+import org.gradle.api.internal.project.CrossBuildModelAccess
 import org.gradle.api.internal.project.CrossProjectModelAccess
+import org.gradle.api.internal.project.DefaultCrossBuildModelAccess
 import org.gradle.api.internal.project.DefaultCrossProjectModelAccess
 import org.gradle.api.internal.project.DefaultDynamicLookupRoutine
 import org.gradle.api.internal.project.DynamicLookupRoutine
@@ -32,7 +34,6 @@ import org.gradle.configuration.project.ProjectEvaluator
 import org.gradle.initialization.BuildCancellationToken
 import org.gradle.initialization.VintageBuildModelController
 import org.gradle.internal.build.BuildModelController
-import org.gradle.internal.buildoption.InternalOptions
 import org.gradle.internal.buildtree.BuildModelParameters
 import org.gradle.internal.cc.base.services.ProjectRefResolver
 import org.gradle.internal.cc.impl.fingerprint.ConfigurationCacheFingerprintController
@@ -50,6 +51,7 @@ internal object BuildModelControllerServices : ServiceRegistrationProvider {
         if (buildModelParameters.isVintage) {
             // region ALL MODES
             registration.add(BuildModelController::class.java, VintageBuildModelController::class.java)
+            registration.add(CrossBuildModelAccess::class.java, DefaultCrossBuildModelAccess::class.java)
             registration.add(CrossProjectModelAccess::class.java, DefaultCrossProjectModelAccess::class.java)
             registration.add(DynamicLookupRoutine::class.java, DefaultDynamicLookupRoutine::class.java)
             // endregion
@@ -62,9 +64,11 @@ internal object BuildModelControllerServices : ServiceRegistrationProvider {
             registration.add(ProjectRefResolver::class.java)
 
             if (!buildModelParameters.isIsolatedProjects) {
+                registration.add(CrossBuildModelAccess::class.java, DefaultCrossBuildModelAccess::class.java)
                 registration.add(CrossProjectModelAccess::class.java, DefaultCrossProjectModelAccess::class.java)
                 registration.add(DynamicLookupRoutine::class.java, DefaultDynamicLookupRoutine::class.java)
             } else { // IP
+                registration.add(CrossBuildModelAccess::class.java, ProblemReportingCrossBuildModelAccess::class.java)
                 registration.add(CrossProjectModelAccess::class.java, ProblemReportingCrossProjectModelAccess::class.java)
                 registration.add(DynamicLookupRoutine::class.java, TrackingDynamicLookupRoutine::class.java)
                 registration.add(DynamicCallContextTracker::class.java, DefaultDynamicCallContextTracker::class.java)
