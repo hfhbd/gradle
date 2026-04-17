@@ -47,39 +47,39 @@ import org.gradle.internal.service.ServiceRegistrationProvider
 internal object BuildModelControllerServices : ServiceRegistrationProvider {
 
     @Provides
-    fun configure(registration: ServiceRegistration, buildModelParameters: BuildModelParameters) {
+    fun configure(registration: ServiceRegistration, buildModelParameters: BuildModelParameters) = with(registration) {
         if (buildModelParameters.isVintage) {
             // region ALL MODES
-            registration.add(BuildModelController::class.java, VintageBuildModelController::class.java)
-            registration.add(CrossBuildModelAccess::class.java, DefaultCrossBuildModelAccess::class.java)
-            registration.add(CrossProjectModelAccess::class.java, DefaultCrossProjectModelAccess::class.java)
-            registration.add(DynamicLookupRoutine::class.java, DefaultDynamicLookupRoutine::class.java)
+            add(BuildModelController::class.java, VintageBuildModelController::class.java)
+            add(CrossBuildModelAccess::class.java, DefaultCrossBuildModelAccess::class.java)
+            add(CrossProjectModelAccess::class.java, DefaultCrossProjectModelAccess::class.java)
+            add(DynamicLookupRoutine::class.java, DefaultDynamicLookupRoutine::class.java)
             // endregion
         } else if (buildModelParameters.isConfigurationCache) {
             // region ALL MODES
-            registration.add(BuildModelController::class.java, ConfigurationCacheAwareBuildModelController::class.java)
+            add(BuildModelController::class.java, ConfigurationCacheAwareBuildModelController::class.java)
             // endregion
 
             // region CC and IP
-            registration.add(ProjectRefResolver::class.java)
+            add(ProjectRefResolver::class.java)
 
             if (!buildModelParameters.isIsolatedProjects) {
-                registration.add(CrossBuildModelAccess::class.java, DefaultCrossBuildModelAccess::class.java)
-                registration.add(CrossProjectModelAccess::class.java, DefaultCrossProjectModelAccess::class.java)
-                registration.add(DynamicLookupRoutine::class.java, DefaultDynamicLookupRoutine::class.java)
+                add(CrossBuildModelAccess::class.java, DefaultCrossBuildModelAccess::class.java)
+                add(CrossProjectModelAccess::class.java, DefaultCrossProjectModelAccess::class.java)
+                add(DynamicLookupRoutine::class.java, DefaultDynamicLookupRoutine::class.java)
             } else { // IP
-                registration.add(CrossBuildModelAccess::class.java, ProblemReportingCrossBuildModelAccess::class.java)
-                registration.add(CrossProjectModelAccess::class.java, ProblemReportingCrossProjectModelAccess::class.java)
-                registration.add(DynamicLookupRoutine::class.java, TrackingDynamicLookupRoutine::class.java)
-                registration.add(DynamicCallContextTracker::class.java, DefaultDynamicCallContextTracker::class.java)
+                add(CrossBuildModelAccess::class.java, ProblemReportingCrossBuildModelAccess::class.java)
+                add(CrossProjectModelAccess::class.java, ProblemReportingCrossProjectModelAccess::class.java)
+                add(DynamicLookupRoutine::class.java, TrackingDynamicLookupRoutine::class.java)
+                add(DynamicCallContextTracker::class.java, DefaultDynamicCallContextTracker::class.java)
             }
             // endregion
         } else error("no other modes are supported")
 
         if (buildModelParameters.isCachingModelBuilding) {
-            registration.addProvider(ConfigurationCacheModelProvider())
+            addProvider(ConfigurationCacheModelProvider())
         } else {
-            registration.addProvider(VintageModelProvider())
+            addProvider(VintageModelProvider())
         }
     }
 
