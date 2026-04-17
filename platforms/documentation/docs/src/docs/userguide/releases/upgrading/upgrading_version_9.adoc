@@ -233,7 +233,9 @@ Use the explicit API instead.
 The container delegates (`registering`, `creating`, `existing`, `getting`)
 are defined on `NamedDomainObjectContainer` and
 `NamedDomainObjectCollection`. They apply to any container, not just
-`tasks` or `configurations`. The examples below use a generic
+`tasks` or `configurations`. 
+
+The examples below use a generic
 `container` placeholder; replace it with `tasks`, `configurations`,
 `sourceSets`, or whichever container you use.
 
