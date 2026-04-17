@@ -129,6 +129,8 @@ public final class JUnitPlatformTestDefinitionProcessor extends AbstractJUnitTes
         private final JUnitPlatformSpec spec;
         private final IdGenerator<?> idGenerator;
         private final Clock clock;
+        @Nullable
+        private TestSelectionMatcher cachedMatcher;
 
         CollectThenExecuteTestDefinitionConsumer(TestResultProcessor resultProcessor, BackwardsCompatibleLauncherSession launcherSession, ClassLoader junitClassLoader, JUnitPlatformSpec spec, IdGenerator<?> idGenerator, Clock clock) {
             this.resultProcessor = resultProcessor;
@@ -170,10 +172,18 @@ public final class JUnitPlatformTestDefinitionProcessor extends AbstractJUnitTes
             if (filterSpec.getExcludedTests().isEmpty()) {
                 return false;
             }
-            TestSelectionMatcher matcher = new TestSelectionMatcher(filterSpec);
-            return matcher.matchesExcludeClass(klass.getName()) && klass.getDeclaredClasses().length == 0;
+            // Conservative: any declared class (even non-test inner classes) is treated as a
+            // potential nested test class, so we keep the selector to let JUnit Platform discover
+            // nested tests. The post-discovery filter handles any extra class that slips through.
+            return matcher().matchesExcludeClass(klass.getName()) && klass.getDeclaredClasses().length == 0;
         }
 
+        private TestSelectionMatcher matcher() {
+            if (cachedMatcher == null) {
+                cachedMatcher = new TestSelectionMatcher(spec.getFilter());
+            }
+            return cachedMatcher;
+        }
 
         private void executeDirectory(DirectoryBasedTestDefinition testDefinition) {
             selectors.add(DiscoverySelectors.selectDirectory(testDefinition.getTestDefinitionsDir()));

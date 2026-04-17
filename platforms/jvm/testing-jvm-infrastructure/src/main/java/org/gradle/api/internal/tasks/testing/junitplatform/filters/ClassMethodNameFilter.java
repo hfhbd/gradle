@@ -139,6 +139,9 @@ public final class ClassMethodNameFilter implements PostDiscoveryFilter {
     private boolean classMatch(TestDescriptor descriptor) {
         TestDescriptor current = descriptor;
         String methodName = null;
+        // Records the lowest-level class in the chain that matches an exclude pattern.
+        // Used to block re-inclusion via the walk-up only for enclosing-class ancestors;
+        // unrelated ancestors (e.g. test suites) can still re-include.
         String excludedClassName = null;
         while (true) {
             Optional<TestDescriptor> parent = current.getParent();
@@ -152,9 +155,11 @@ public final class ClassMethodNameFilter implements PostDiscoveryFilter {
                 if (excludedClassName == null && matcher.matchesExcludeTest(name, methodName)) {
                     excludedClassName = name;
                 }
-                boolean encloseExclude = excludedClassName != null
+                // True when this ancestor is an enclosing class of the excluded class
+                // (same class, or a $-parent), as opposed to an unrelated ancestor.
+                boolean ancestorEnclosesExclude = excludedClassName != null
                     && (excludedClassName.equals(name) || excludedClassName.startsWith(name + "$"));
-                if (!encloseExclude && matcher.matchesIncludeTest(name, methodName)) {
+                if (!ancestorEnclosesExclude && matcher.matchesIncludeTest(name, methodName)) {
                     return true;
                 }
             }

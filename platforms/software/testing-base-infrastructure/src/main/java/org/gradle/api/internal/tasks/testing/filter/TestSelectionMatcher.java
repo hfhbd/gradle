@@ -110,7 +110,7 @@ public class TestSelectionMatcher {
     }
 
     /**
-     * Returns true iff the given class name exactly matches an exclude pattern's class component.
+     * Returns true if the given class name exactly matches an exclude pattern's class component.
      * Unlike {@link #matchesExcludeTest(String, String)}, this does <em>not</em> apply the fuzzy
      * {@code mayMatchClass} heuristic.
      *

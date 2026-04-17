@@ -76,13 +76,16 @@ class ClassTestSelectionMatcher {
             .collect(Collectors.toList());
     }
 
-
+    /**
+     * Returns true if the given (className, methodName) pair matches the include patterns and is not excluded by the
+     * exclude patterns.
+     */
     public boolean matchesTest(String className, @Nullable String methodName) {
         return matchesIncludeTest(className, methodName) && !matchesExcludeTest(className, methodName);
     }
 
     /**
-     * Returns true iff the given (className, methodName) pair matches the include patterns.
+     * Returns true if the given (className, methodName) pair matches the include patterns.
      *
      * <p>The result is the conjunction of the build-script include patterns and the command-line
      * include patterns. An empty include set is treated as "everything matches" (vacuously true).
@@ -94,7 +97,7 @@ class ClassTestSelectionMatcher {
     }
 
     /**
-     * Returns true iff the given (className, methodName) pair matches any exclude pattern.
+     * Returns true if the given (className, methodName) pair matches any exclude pattern.
      *
      * <p>An empty exclude set returns false. Include patterns are not consulted.</p>
      */
@@ -145,7 +148,7 @@ class ClassTestSelectionMatcher {
     }
 
     /**
-     * Returns true iff the class name exactly matches an exclude pattern's class component.
+     * Returns true if the class name exactly matches an exclude pattern's class component.
      *
      * <p>Unlike {@link #matchesExcludeTest(String, String)}, this does <em>not</em> consult
      * the fuzzy {@code mayMatchClass} heuristic: pattern {@code Parent} does not match
