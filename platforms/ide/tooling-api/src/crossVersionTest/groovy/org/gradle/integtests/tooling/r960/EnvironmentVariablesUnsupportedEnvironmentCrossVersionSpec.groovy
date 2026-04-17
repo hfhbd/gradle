@@ -19,10 +19,14 @@ package org.gradle.integtests.tooling.r960
 import org.gradle.integtests.tooling.fixture.TargetGradleVersion
 import org.gradle.integtests.tooling.fixture.ToolingApiSpecification
 import org.gradle.test.fixtures.file.TestFile
+import org.gradle.test.precondition.Requires
+import org.gradle.test.preconditions.OsTestPreconditions
 import org.gradle.tooling.ProjectConnection
 import spock.lang.Issue
 
 @TargetGradleVersion(">=9.6.0")
+// The test uses a workaround overwriting the native lib files on disk, which are locked on Windows while the daemon that loaded them is alive
+@Requires(OsTestPreconditions.NotWindows)
 class EnvironmentVariablesUnsupportedEnvironmentCrossVersionSpec extends ToolingApiSpecification {
 
     TestFile userHome
