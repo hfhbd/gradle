@@ -58,9 +58,6 @@ internal object BuildModelControllerServices : ServiceRegistrationProvider {
     fun configure(registration: ServiceRegistration, buildModelParameters: BuildModelParameters) = with(registration) {
         // region ALL MODES
         add(RelevantProjectsRegistry::class.java)
-        add(ConfigurationCacheHost::class.java, DefaultConfigurationCacheHost::class.java)
-        add(ConfigurationCacheCodecs::class.java, DefaultConfigurationCacheCodecs::class.java)
-        add(ConfigurationCacheBuildTreeIO::class.java, ConfigurationCacheIncludedBuildIO::class.java, DefaultConfigurationCacheIO::class.java)
         // endregion
 
         if (buildModelParameters.isVintage) {
@@ -77,6 +74,9 @@ internal object BuildModelControllerServices : ServiceRegistrationProvider {
 
             // region CC and IP
             add(ProjectRefResolver::class.java)
+            add(ConfigurationCacheHost::class.java, DefaultConfigurationCacheHost::class.java)
+            add(ConfigurationCacheCodecs::class.java, DefaultConfigurationCacheCodecs::class.java)
+            add(ConfigurationCacheBuildTreeIO::class.java, ConfigurationCacheIncludedBuildIO::class.java, DefaultConfigurationCacheIO::class.java)
 
             if (!buildModelParameters.isIsolatedProjects) {
                 add(CrossBuildModelAccess::class.java, DefaultCrossBuildModelAccess::class.java)
