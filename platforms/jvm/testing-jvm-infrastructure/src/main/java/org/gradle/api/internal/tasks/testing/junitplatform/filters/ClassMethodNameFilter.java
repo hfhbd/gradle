@@ -101,20 +101,45 @@ public final class ClassMethodNameFilter implements PostDiscoveryFilter {
             .isPresent();
     }
 
+    /**
+     * Walks up the descriptor chain looking for an ancestor class whose name matches an include
+     * pattern. An ancestor-level include may re-include a descendant, but an exclude on a nested
+     * class must not be bypassed by walking up to its enclosing class.
+     *
+     * <p>An ancestor is an <em>enclosing class</em> of the excluded class when the excluded
+     * class's fully qualified name starts with the ancestor's name followed by {@code $}
+     * (e.g. {@code SampleTest} encloses {@code SampleTest$NestedTestClass}). Re-inclusion
+     * via an enclosing ancestor is forbidden. Re-inclusion via an unrelated ancestor
+     * (e.g. a JUnit Platform suite that references a separate excluded class) is allowed.
+     *
+     * <p>This asymmetry is intentional:
+     * <ul>
+     *   <li>{@code --tests Parent} should pull in tests from {@code Parent$Nested} transitively.</li>
+     *   <li>{@code excludeTest("Parent$Nested", null)} must not be bypassed because the
+     *       enclosing class {@code Parent} happens not to match the exclude.</li>
+     *   <li>{@code excludeTestsMatching("Foo")} excludes standalone {@code Foo} tests, but
+     *       should still allow {@code Foo} tests to run when wrapped in an unrelated suite.</li>
+     * </ul>
+     */
     private boolean classMatch(TestDescriptor descriptor) {
         TestDescriptor current = descriptor;
         String methodName = null;
+        String excludedClassName = null;
         while (true) {
-
             Optional<TestDescriptor> parent = current.getParent();
             if (!parent.isPresent()) {
                 break;
             }
 
-            // If the current descriptor is a class, check if it matches the test selection criteria
             Optional<String> className = className(current);
             if (className.isPresent()) {
-                if (matcher.matchesTest(className.get(), methodName)) {
+                String name = className.get();
+                if (excludedClassName == null && matcher.matchesExcludeTest(name, methodName)) {
+                    excludedClassName = name;
+                }
+                boolean encloseExclude = excludedClassName != null
+                    && (excludedClassName.equals(name) || excludedClassName.startsWith(name + "$"));
+                if (!encloseExclude && matcher.matchesIncludeTest(name, methodName)) {
                     return true;
                 }
             }
