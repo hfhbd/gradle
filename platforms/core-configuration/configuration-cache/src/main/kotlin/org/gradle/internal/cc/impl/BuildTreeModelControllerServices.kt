@@ -85,6 +85,7 @@ object BuildTreeModelControllerServices : ServiceRegistrationProvider {
         modelParameters: BuildModelParameters,
         requirements: BuildActionModelRequirements,
     ): Unit = with(registration) {
+
         // region ALL MODES
         add(BuildNameProvider::class.java)
         add(ToolingModelParameterCarrier.Factory::class.java, DefaultToolingModelParameterCarrierFactory::class.java)
