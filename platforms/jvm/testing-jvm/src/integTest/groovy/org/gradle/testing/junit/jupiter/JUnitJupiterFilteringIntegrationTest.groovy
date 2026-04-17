@@ -40,43 +40,7 @@ class JUnitJupiterFilteringIntegrationTest extends AbstractTestFilteringIntegrat
             }
         """
 
-        file("src/test/java/SampleTest.java") << """
-            import static org.junit.jupiter.api.Assertions.fail;
-
-            import org.junit.jupiter.api.Nested;
-            import org.junit.jupiter.api.Test;
-            import org.junit.jupiter.params.ParameterizedTest;
-            import org.junit.jupiter.params.provider.ValueSource;
-
-            public class SampleTest {
-                @Test
-                public void regularTest() {
-                    fail();
-                }
-
-                @Nested
-                public class NestedTestClass {
-                    @Nested
-                    public class SubNestedTestClass {
-                        @Test
-                        public void subNestedTest() {
-                            fail();
-                        }
-
-                        @ParameterizedTest
-                        @ValueSource(strings = { "racecar", "radar", "able was I ere I saw elba" })
-                        public void palindromes(String candidate) {
-                            fail();
-                        }
-                    }
-
-                    @Test
-                    public void nestedTest() {
-                      fail();
-                    }
-                }
-            }
-        """
+        file("src/test/java/SampleTest.java") << sampleClassWithNestedTests
         file("src/test/java/TestSomethingTest.java") << """
             import static org.junit.jupiter.api.Assertions.fail;
 
@@ -105,10 +69,10 @@ class JUnitJupiterFilteringIntegrationTest extends AbstractTestFilteringIntegrat
         fails "test", "--tests", commandLineFilter
 
         then:
-        assertExpectedTestsAndCounts(expectedTests as Map<String, Integer>)
+        assertExpectedTestsAndCounts(expectedTestsAndCounts as Map<String, Integer>)
 
         where:
-        commandLineFilter                                 | withConfiguredFilters | expectedTests
+        commandLineFilter                                 | withConfiguredFilters | expectedTestsAndCounts
         'SampleTest'                                      | false                 | ['SampleTest': 1, 'SampleTest$NestedTestClass': 1, 'SampleTest$NestedTestClass$SubNestedTestClass': 4]
         'SampleTest'                                      | true                  | ['SampleTest': 1, 'SampleTest$NestedTestClass': 1, 'SampleTest$NestedTestClass$SubNestedTestClass': 4]
         'SampleTest$NestedTestClass'                      | false                 | ['SampleTest$NestedTestClass': 1, 'SampleTest$NestedTestClass$SubNestedTestClass': 4]
@@ -132,7 +96,35 @@ class JUnitJupiterFilteringIntegrationTest extends AbstractTestFilteringIntegrat
             }
         """
 
-        file("src/test/java/SampleTest.java") << """
+        file("src/test/java/SampleTest.java") << sampleClassWithNestedTests
+
+        when:
+        fails "test"
+
+        then:
+        result.assertTaskExecuted(":test")
+        assertExpectedTestsAndCounts(expectedTestsAndCounts as Map<String, Integer>)
+
+        where:
+        excludeFilter                                       | expectedTestsAndCounts
+        'SampleTest'                                        | ['SampleTest$NestedTestClass': 1, 'SampleTest$NestedTestClass$SubNestedTestClass': 4]
+        'SampleTest$NestedTestClass'                        | ['SampleTest': 1, 'SampleTest$NestedTestClass$SubNestedTestClass': 4]
+        'SampleTest$NestedTestClass$SubNestedTestClass'     | ['SampleTest': 1, 'SampleTest$NestedTestClass': 1]
+        'SampleTest*'                                       | [:]
+    }
+
+    private void assertExpectedTestsAndCounts(Map<String, Integer> expectedTestsAndCounts) {
+        Map<String, Integer> executedClasses = file("build/executed-classes.txt").readLines().collectEntries { it.split(' ', 2).with { [(it[0]): it[1] as Integer] } }
+        def executedClassNames = executedClasses.keySet()
+        def expectedClassNames = expectedTestsAndCounts.keySet()
+        assert executedClassNames == expectedClassNames
+        expectedTestsAndCounts.each { className, expectedCount ->
+            assert executedClasses[className] == expectedCount
+        }
+    }
+
+    private static String getSampleClassWithNestedTests() {
+        return """
             import static org.junit.jupiter.api.Assertions.fail;
 
             import org.junit.jupiter.api.Nested;
@@ -169,30 +161,6 @@ class JUnitJupiterFilteringIntegrationTest extends AbstractTestFilteringIntegrat
                 }
             }
         """
-
-        when:
-        fails "test"
-
-        then:
-        result.assertTaskExecuted(":test")
-        assertExpectedTestsAndCounts(expectedTestsAndCounts as Map<String, Integer>)
-
-        where:
-        excludeFilter                                       | expectedTestsAndCounts
-        'SampleTest'                                        | ['SampleTest$NestedTestClass': 1, 'SampleTest$NestedTestClass$SubNestedTestClass': 4]
-        'SampleTest$NestedTestClass'                        | ['SampleTest': 1, 'SampleTest$NestedTestClass$SubNestedTestClass': 4]
-        'SampleTest$NestedTestClass$SubNestedTestClass'     | ['SampleTest': 1, 'SampleTest$NestedTestClass': 1]
-        'SampleTest*'                                       | [:]
-    }
-
-    private void assertExpectedTestsAndCounts(Map<String, Integer> expectedTestsAndCounts) {
-        Map<String, Integer> executedClasses = file("build/executed-classes.txt").readLines().collectEntries { it.split(' ', 2).with { [(it[0]): it[1] as Integer] } }
-        def executedClassNames = executedClasses.keySet()
-        def expectedClassNames = expectedTestsAndCounts.keySet()
-        assert executedClassNames == expectedClassNames
-        expectedTestsAndCounts.each { className, expectedCount ->
-            assert executedClasses[className] == expectedCount
-        }
     }
 
     private static String getTestClassAndCountListener() {

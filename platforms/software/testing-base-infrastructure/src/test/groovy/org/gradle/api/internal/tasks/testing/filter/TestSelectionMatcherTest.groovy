@@ -258,7 +258,6 @@ class TestSelectionMatcherTest extends Specification {
         ['org.gradle.FooTest*'] | ['*org.gradle.BarTest*']        | 'org.gradle.FooTest'  | true
     }
 
-    @Issue("https://github.com/gradle/gradle/issues/37539")
     def "matchesIncludeTest ignores exclude patterns"() {
         expect:
         matcher(includes, excludes, []).matchesIncludeTest(className, methodName) == match
@@ -272,7 +271,6 @@ class TestSelectionMatcherTest extends Specification {
         ["FooTest"]        | []                 | "BarTest"         | "aaa"            | false
     }
 
-    @Issue("https://github.com/gradle/gradle/issues/37539")
     def "matchesIncludeTest combines build-script and command-line includes"() {
         expect:
         matcher(buildScript, [], commandLine).matchesIncludeTest(className, null) == match
@@ -287,7 +285,6 @@ class TestSelectionMatcherTest extends Specification {
         ["FooTest"]        | ["BarTest"]       | "BarTest"         | false
     }
 
-    @Issue("https://github.com/gradle/gradle/issues/37539")
     def "matchesExcludeTest ignores include patterns"() {
         expect:
         matcher(includes, excludes, []).matchesExcludeTest(className, methodName) == match
@@ -298,8 +295,11 @@ class TestSelectionMatcherTest extends Specification {
         []                 | ["FooTest"]                | "FooTest"                        | null               | true
         ["BarTest"]        | ["FooTest"]                | "FooTest"                        | null               | true
         []                 | ["FooTest"]                | "BarTest"                        | null               | false
+        ["BarTest"]        | ["FooTest"]                | "BarTest"                        | null               | false
         []                 | ["FooTest.doThing"]        | "FooTest"                        | "doThing"          | true
+        ["BarTest"]        | ["FooTest.doThing"]        | "FooTest"                        | "doThing"          | true
         []                 | ["FooTest.doThing"]        | "FooTest"                        | "doOther"          | false
+        ["BarTest"]        | ["FooTest.doThing"]        | "FooTest"                        | "doOther"          | false
     }
 
     @Issue("https://github.com/gradle/gradle/issues/37539")
@@ -308,15 +308,19 @@ class TestSelectionMatcherTest extends Specification {
         matcher([], [excludePattern], []).matchesExcludeClass(className) == match
 
         where:
-        excludePattern                                 | className                                        | match
-        "SampleTest"                                   | "SampleTest"                                     | true
-        "SampleTest"                                   | "SampleTest\$NestedTestClass"                    | false
-        "SampleTest"                                   | "SampleTest\$NestedTestClass\$SubNestedTestClass" | false
-        "SampleTest\$NestedTestClass"                  | "SampleTest"                                     | false
-        "SampleTest\$NestedTestClass"                  | "SampleTest\$NestedTestClass"                    | true
-        "SampleTest\$NestedTestClass"                  | "SampleTest\$NestedTestClass\$SubNestedTestClass" | false
-        "SampleTest*"                                  | "SampleTest"                                     | true
-        "SampleTest*"                                  | "SampleTest\$NestedTestClass"                    | true
+        excludePattern                                    | className                                         | match
+        "SampleTest"                                      | "SampleTest"                                      | true
+        "SampleTest"                                      | "SampleTest\$NestedTestClass"                     | false
+        "SampleTest"                                      | "SampleTest\$NestedTestClass\$SubNestedTestClass" | false
+        "SampleTest\$NestedTestClass"                     | "SampleTest"                                      | false
+        "SampleTest\$NestedTestClass"                     | "SampleTest\$NestedTestClass"                     | true
+        "SampleTest\$NestedTestClass"                     | "SampleTest\$NestedTestClass\$SubNestedTestClass" | false
+        "SampleTest\$NestedTestClass\$SubNestedTestClass" | "SampleTest"                                      | false
+        "SampleTest\$NestedTestClass\$SubNestedTestClass" | "SampleTest\$NestedTestClass"                     | false
+        "SampleTest\$NestedTestClass\$SubNestedTestClass" | "SampleTest\$NestedTestClass\$SubNestedTestClass" | true
+        "SampleTest*"                                     | "SampleTest"                                      | true
+        "SampleTest*"                                     | "SampleTest\$NestedTestClass"                     | true
+        "SampleTest*"                                     | "SampleTest\$NestedTestClass\$SubNestedTestClass" | true
     }
 
     def matcher(Collection<String> includedTests, Collection<String> excludedTests, Collection<String> includedTestsCommandLine) {
