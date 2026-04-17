@@ -127,6 +127,23 @@ class ClassTestSelectionMatcher {
         return matchesClassAndMethod(buildScriptExcludePatterns, className, methodName);
     }
 
+    /**
+     * Returns true iff the class name exactly matches an exclude pattern's class component.
+     *
+     * <p>Unlike {@link #matchesExcludeTest(String, String)}, this does <em>not</em> consult
+     * the fuzzy {@code mayMatchClass} heuristic: pattern {@code Parent} does not match
+     * class {@code Parent$Nested} here. Used by callers that need a definitive
+     * "is this class excluded?" answer rather than a "might this class match?" hint.</p>
+     */
+    public boolean matchesExcludeClass(String className) {
+        for (ClassTestPattern pattern : buildScriptExcludePatterns) {
+            if (pattern.matchesClass(className)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean matchesClassAndMethod(List<ClassTestPattern> patterns, String className, @Nullable String methodName) {
         for (ClassTestPattern pattern : patterns) {
             if (pattern.matchesClassAndMethod(className, methodName)) {

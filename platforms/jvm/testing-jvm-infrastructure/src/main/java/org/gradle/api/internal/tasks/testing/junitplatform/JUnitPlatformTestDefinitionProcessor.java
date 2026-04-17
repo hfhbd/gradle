@@ -155,7 +155,23 @@ public final class JUnitPlatformTestDefinitionProcessor extends AbstractJUnitTes
             if (isInnerClass(klass) || (supportsVintageTests() && isNestedClassInsideEnclosedRunner(klass))) {
                 return;
             }
+            if (isExcludedAndHasNoNestedClasses(klass)) {
+                // Class is explicitly excluded by name and has no nested classes that would
+                // need it as a discovery root. Skip registering as a selector so that
+                // engine-level test generation (e.g. ArchUnit's field-based tests) does not
+                // bypass the exclude filter. See issue #37539.
+                return;
+            }
             selectors.add(DiscoverySelectors.selectClass(klass));
+        }
+
+        private boolean isExcludedAndHasNoNestedClasses(Class<?> klass) {
+            TestFilterSpec filterSpec = spec.getFilter();
+            if (filterSpec.getExcludedTests().isEmpty()) {
+                return false;
+            }
+            TestSelectionMatcher matcher = new TestSelectionMatcher(filterSpec);
+            return matcher.matchesExcludeClass(klass.getName()) && klass.getDeclaredClasses().length == 0;
         }
 
 

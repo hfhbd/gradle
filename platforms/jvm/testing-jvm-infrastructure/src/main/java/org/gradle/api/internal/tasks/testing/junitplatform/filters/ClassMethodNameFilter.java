@@ -54,24 +54,40 @@ public final class ClassMethodNameFilter implements PostDiscoveryFilter {
 
     private boolean shouldRun(TestDescriptor descriptor, boolean checkingParent) {
         Optional<TestSource> source = descriptor.getSource();
-        if (!source.isPresent()) {
-            return true;
+        if (source.isPresent()) {
+            TestSource testSource = source.get();
+            if (testSource instanceof MethodSource) {
+                return shouldRun(descriptor, (MethodSource) testSource);
+            }
+            if (testSource instanceof ClassSource) {
+                return shouldRun(descriptor, checkingParent, (ClassSource) testSource);
+            }
         }
 
-        TestSource testSource = source.get();
-        if (testSource instanceof MethodSource) {
-            return shouldRun(descriptor, (MethodSource) testSource);
+        // Source is absent or of a custom type (e.g. ArchUnit field-based tests).
+        // Walk up to the first ancestor with a class source and honor its exclude status:
+        // if that enclosing class exactly matches an exclude pattern, this descriptor is also
+        // excluded (as a member of the class). Otherwise default to included (original behavior
+        // preserved — the filter's status quo for custom sources is inclusive).
+        TestDescriptor current = descriptor.getParent().orElse(null);
+        while (current != null) {
+            Optional<String> enclosingClassName = className(current);
+            if (enclosingClassName.isPresent()) {
+                return !matcher.matchesExcludeClass(enclosingClassName.get());
+            }
+            current = current.getParent().orElse(null);
         }
-
-        if (testSource instanceof ClassSource) {
-            return shouldRun(descriptor, checkingParent, (ClassSource) testSource);
-        }
-
-        Optional<TestDescriptor> parent = descriptor.getParent();
-        return parent.isPresent() && shouldRun(parent.get(), true);
+        return true;
     }
 
     private boolean shouldRun(TestDescriptor descriptor, boolean checkingParent, ClassSource classSource) {
+        String className = classSource.getClassName();
+        if (matcher.matchesExcludeClass(className)) {
+            // This class exactly matches an exclude pattern (not merely a fuzzy may-match).
+            // Don't let children-recursion re-include the container. Ancestors that are
+            // themselves included by pattern (e.g. a test suite) are handled by classMatch.
+            return false;
+        }
         Set<? extends TestDescriptor> children = descriptor.getChildren();
         if (!checkingParent) {
             for (TestDescriptor child : children) {
@@ -81,7 +97,6 @@ public final class ClassMethodNameFilter implements PostDiscoveryFilter {
             }
         }
         if (children.isEmpty()) {
-            String className = classSource.getClassName();
             return matcher.matchesTest(className, null)
                 || matcher.matchesTest(className, descriptor.getLegacyReportingName());
         }

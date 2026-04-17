@@ -302,6 +302,23 @@ class TestSelectionMatcherTest extends Specification {
         []                 | ["FooTest.doThing"]        | "FooTest"                        | "doOther"          | false
     }
 
+    @Issue("https://github.com/gradle/gradle/issues/37539")
+    def "matchesExcludeClass is exact and does not treat parent pattern as matching nested class"() {
+        expect:
+        matcher([], [excludePattern], []).matchesExcludeClass(className) == match
+
+        where:
+        excludePattern                                 | className                                        | match
+        "SampleTest"                                   | "SampleTest"                                     | true
+        "SampleTest"                                   | "SampleTest\$NestedTestClass"                    | false
+        "SampleTest"                                   | "SampleTest\$NestedTestClass\$SubNestedTestClass" | false
+        "SampleTest\$NestedTestClass"                  | "SampleTest"                                     | false
+        "SampleTest\$NestedTestClass"                  | "SampleTest\$NestedTestClass"                    | true
+        "SampleTest\$NestedTestClass"                  | "SampleTest\$NestedTestClass\$SubNestedTestClass" | false
+        "SampleTest*"                                  | "SampleTest"                                     | true
+        "SampleTest*"                                  | "SampleTest\$NestedTestClass"                    | true
+    }
+
     def matcher(Collection<String> includedTests, Collection<String> excludedTests, Collection<String> includedTestsCommandLine) {
         return new TestSelectionMatcher(new TestFilterSpec(includedTests as Set, excludedTests as Set, includedTestsCommandLine as Set))
     }
