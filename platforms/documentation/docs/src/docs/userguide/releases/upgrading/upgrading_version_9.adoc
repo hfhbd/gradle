@@ -167,10 +167,10 @@ def value = providers.gradleProperty("myProp")
 ----
 val myProp: String by project.properties
 ----
-| Delegate from `project` directly:
+| Get the project property directly:
 [source,kotlin]
 ----
-val myProp: String by project
+val myProp = project.property("myProp") as String
 ----
 
 | Forwarding properties as system properties:
@@ -233,7 +233,7 @@ Use the explicit API instead.
 The container delegates (`registering`, `creating`, `existing`, `getting`)
 are defined on `NamedDomainObjectContainer` and
 `NamedDomainObjectCollection`. They apply to any container, not just
-`tasks` or `configurations`. 
+`tasks` or `configurations`.
 
 The examples below use a generic
 `container` placeholder; replace it with `tasks`, `configurations`,
