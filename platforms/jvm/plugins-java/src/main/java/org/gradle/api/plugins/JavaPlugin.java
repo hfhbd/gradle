@@ -395,6 +395,7 @@ public abstract class JavaPlugin implements Plugin<Project> {
         });
     }
 
+    @SuppressWarnings("deprecation")
     private static void configureBuild(Project project) {
         project.getTasks().named(JavaBasePlugin.BUILD_NEEDED_TASK_NAME, task ->
             task.dependsOn(buildNeededTaskDependency(task))
@@ -404,6 +405,7 @@ public abstract class JavaPlugin implements Plugin<Project> {
         );
     }
 
+    @Deprecated
     private static TaskDependency buildDependentsTaskDependency(Task task) {
         ProjectInternal project = (ProjectInternal) task.getProject();
         Configuration configuration = project.getConfigurations().getByName(JvmConstants.TEST_RUNTIME_CLASSPATH_CONFIGURATION_NAME);
@@ -414,6 +416,7 @@ public abstract class JavaPlugin implements Plugin<Project> {
         );
     }
 
+    @Deprecated
     private static TaskDependency buildNeededTaskDependency(Task task) {
         ProjectInternal project = (ProjectInternal) task.getProject();
         final Configuration configuration = project.getConfigurations().getByName(JvmConstants.TEST_RUNTIME_CLASSPATH_CONFIGURATION_NAME);

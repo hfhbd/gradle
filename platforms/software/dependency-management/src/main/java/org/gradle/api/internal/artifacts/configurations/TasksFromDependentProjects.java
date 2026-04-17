@@ -30,6 +30,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Set;
 
+@Deprecated
 public class TasksFromDependentProjects implements TaskDependencyContainerInternal {
 
     private final String taskName;
@@ -103,4 +104,5 @@ public class TasksFromDependentProjects implements TaskDependencyContainerIntern
     public String getConfigurationName() {
         return configurationName;
     }
+
 }
