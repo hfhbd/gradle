@@ -438,7 +438,7 @@ include::sample[dir="snippets/reference/dsl-apis/configurations-and-dependencies
 ====
 
 Note that we can only use the `db(...)` and `integTestImplementation(...)` notation within the `dependencies {}` block in the above example because both configurations are created and referenced beforehand via the `create()` method.
-If the configurations were defined elsewhere, you could only reference them either by first creating direct reference via `configurations`  — as opposed to `configurations.create()` — or by using string literals within the `dependencies {}` block.
+If the configurations were defined elsewhere, you could only reference them either by first accessing them via `configurations`  — as opposed to `configurations.create()` — or by using string literals within the `dependencies {}` block.
 The following example demonstrates both approaches:
 
 ====

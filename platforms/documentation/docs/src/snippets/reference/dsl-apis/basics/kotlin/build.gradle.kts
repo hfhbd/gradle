@@ -52,11 +52,12 @@ val mainSourceSetProvider: NamedDomainObjectProvider<SourceSet> = sourceSets.nam
 the<SourceSetContainer>()["main"].java.srcDir("src/main/java")
 // end::source[]
 
+extra["myNullableProperty"] = null
 // tag::extra[]
 extra["myNewProperty"] = "initial value"  // <1>
 
 val myExtraProperty = extra["myNewProperty"] as String  // <2>
-val myExtraNullableProperty = extra.properties["nonExistent"] as String?  // <3>
+val myExtraNullableProperty = extra["myNullableProperty"] as String?  // <3>
 // end::extra[]
 
 // tag::test-task[]

@@ -455,7 +455,7 @@ The Kotlin DSL provides the `extra` accessor for working with extra properties a
 include::sample[dir="snippets/reference/dsl-apis/basics/kotlin",files="build.gradle.kts[tags=extra]"]
 ====
 <1> Creates a new extra property called `myNewProperty` in the current context (the project in this case) and initializes it with the value `"initial value"`
-<2> Binds an existing extra property from the current context (the project in this case) to a `myProperty` reference
+<2> Access an existing extra property from the current context (the project in this case)
 <3> Does the same as the previous line but allows the property to have a null value
 
 This approach works for all Gradle scripts: project build scripts, script plugins, settings scripts, and initialization scripts.
@@ -470,7 +470,7 @@ include::sample[dir="snippets/reference/dsl-apis/basics/kotlin",files="my-sub-pr
 Extra properties aren't just limited to projects.
 For example, `Task` extends `ExtensionAware`, so you can attach extra properties to tasks as well.
 
-Here's an example that defines a new `myNewTaskProperty` on the `test` task and then uses that property to initialize another task:
+Here's an example that defines a new `reportType` on the `test` task and then uses that property to initialize another task:
 
 ====
 include::sample[dir="snippets/reference/dsl-apis/basics/kotlin",files="build.gradle.kts[tags=test-task]"]
