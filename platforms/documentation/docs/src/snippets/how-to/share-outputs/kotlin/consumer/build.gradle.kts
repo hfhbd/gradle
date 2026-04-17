@@ -30,7 +30,7 @@ dependencies {
 // tag::task[]
 tasks.register<JavaExec>("runWithInstrumentation") {
     // Use the resolved instrumented classpath
-    classpath = instrumentedRuntime
+    classpath = instrumentedRuntime.get()
     mainClass.set("com.example.Main")
 }
 // end::task[]
