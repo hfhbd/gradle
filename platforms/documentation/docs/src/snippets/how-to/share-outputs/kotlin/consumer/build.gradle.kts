@@ -17,7 +17,7 @@ val instrumentedRuntime = configurations.resolvable("instrumentedRuntime") {
     attributes {
         attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named("instrumented-jar"))
     }
-}.get()
+}
 // end::custom-config[]
 
 // tag::dependency[]
