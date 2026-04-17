@@ -22,6 +22,9 @@ import org.gradle.api.internal.project.DefaultCrossBuildModelAccess
 import org.gradle.api.internal.project.DefaultCrossProjectModelAccess
 import org.gradle.api.internal.project.DefaultDynamicLookupRoutine
 import org.gradle.api.internal.project.DynamicLookupRoutine
+import org.gradle.api.internal.provider.ConfigurationTimeBarrier
+import org.gradle.api.internal.tasks.TaskExecutionAccessChecker
+import org.gradle.api.internal.tasks.execution.TaskExecutionAccessListener
 import org.gradle.configuration.ScriptPluginFactory
 import org.gradle.configuration.internal.DefaultDynamicCallContextTracker
 import org.gradle.configuration.internal.DynamicCallContextTracker
@@ -37,6 +40,11 @@ import org.gradle.internal.build.BuildModelController
 import org.gradle.internal.buildtree.BuildModelParameters
 import org.gradle.internal.cc.base.services.ProjectRefResolver
 import org.gradle.internal.cc.impl.fingerprint.ConfigurationCacheFingerprintController
+import org.gradle.internal.cc.impl.initialization.ConfigurationCacheStartParameter
+import org.gradle.internal.cc.impl.serialize.ConfigurationCacheCodecs
+import org.gradle.internal.cc.impl.serialize.DefaultConfigurationCacheCodecs
+import org.gradle.internal.event.ListenerManager
+import org.gradle.internal.execution.WorkExecutionTracker
 import org.gradle.internal.operations.BuildOperationRunner
 import org.gradle.internal.service.CachingServiceLocator
 import org.gradle.internal.service.Provides
@@ -48,6 +56,13 @@ internal object BuildModelControllerServices : ServiceRegistrationProvider {
 
     @Provides
     fun configure(registration: ServiceRegistration, buildModelParameters: BuildModelParameters) = with(registration) {
+        // region ALL MODES
+        add(RelevantProjectsRegistry::class.java)
+        add(ConfigurationCacheHost::class.java, DefaultConfigurationCacheHost::class.java)
+        add(ConfigurationCacheCodecs::class.java, DefaultConfigurationCacheCodecs::class.java)
+        add(ConfigurationCacheBuildTreeIO::class.java, ConfigurationCacheIncludedBuildIO::class.java, DefaultConfigurationCacheIO::class.java)
+        // endregion
+
         if (buildModelParameters.isVintage) {
             // region ALL MODES
             add(BuildModelController::class.java, VintageBuildModelController::class.java)
@@ -125,5 +140,41 @@ internal object BuildModelControllerServices : ServiceRegistrationProvider {
             )
             return LifecycleProjectEvaluator(buildOperationRunner, withActionsEvaluator, cancellationToken)
         }
+    }
+
+    // TODO:configuration-cache simplify after https://github.com/gradle/gradle/issues/37567 is addressed
+    @Provides
+    fun createTaskExecutionAccessChecker(
+        /** In non-CC builds, [BuildTreeConfigurationCache] is not registered; accepting a list here is a way to ignore its absence. */
+        configurationCache: List<BuildTreeConfigurationCache>,
+        configurationTimeBarrier: ConfigurationTimeBarrier,
+        modelParameters: BuildModelParameters,
+        /** In non-CC builds, [ConfigurationCacheStartParameter] is not registered; accepting a list here is a way to ignore its absence. */
+        configurationCacheStartParameter: List<ConfigurationCacheStartParameter>,
+        listenerManager: ListenerManager,
+        workExecutionTracker: WorkExecutionTracker,
+    ): TaskExecutionAccessChecker {
+        val broadcast = listenerManager.getBroadcaster(TaskExecutionAccessListener::class.java)
+        val workGraphLoadingState = workGraphLoadingStateFrom(configurationCache)
+        return when {
+            !modelParameters.isConfigurationCache -> TaskExecutionAccessCheckers.TaskStateBased(workGraphLoadingState, broadcast, workExecutionTracker)
+            configurationCacheStartParameter.single().taskExecutionAccessPreStable -> TaskExecutionAccessCheckers.TaskStateBased(
+                workGraphLoadingState,
+                broadcast,
+                workExecutionTracker
+            )
+
+            else -> TaskExecutionAccessCheckers.ConfigurationTimeBarrierBased(configurationTimeBarrier, workGraphLoadingState, broadcast, workExecutionTracker)
+        }
+    }
+
+    private
+    fun workGraphLoadingStateFrom(maybeConfigurationCache: List<BuildTreeConfigurationCache>): WorkGraphLoadingState {
+        if (maybeConfigurationCache.isEmpty()) {
+            return WorkGraphLoadingState { false }
+        }
+
+        val configurationCache = maybeConfigurationCache.single()
+        return WorkGraphLoadingState { configurationCache.isLoaded }
     }
 }
