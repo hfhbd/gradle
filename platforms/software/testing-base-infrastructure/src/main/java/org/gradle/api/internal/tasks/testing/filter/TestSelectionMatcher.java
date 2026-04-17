@@ -24,22 +24,31 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * This class has three public APIs:
+ * Entry point for matching test descriptors against include and exclude patterns.
  *
+ * <p>Provides the following queries:
  * <ul>
- * <li>Judge whether a test class might be matched.
- * <li>Judge whether a test class or class+method is definitely matched.
- * <li>Judge whether a test file is definitely matched for resource-based tests.
+ *   <li>{@link #mayIncludeClass(String)} — may a class be included (permissive scan-time check)?</li>
+ *   <li>{@link #matchesTest(String, String)} — does a (class, method) pair match includes and not
+ *       match excludes? Equivalent to {@code matchesIncludeTest && !matchesExcludeTest}.</li>
+ *   <li>{@link #matchesIncludeTest(String, String)} — does a (class, method) match the include
+ *       patterns alone? Empty include sets are treated as vacuously true.</li>
+ *   <li>{@link #matchesExcludeTest(String, String)} — does a (class, method) match any exclude
+ *       pattern? Uses a fuzzy heuristic at the class level (no method) so callers that iterate
+ *       into individual methods can still find exact exclude matches.</li>
+ *   <li>{@link #matchesExcludeClass(String)} — exact variant: only returns true when the class
+ *       name is directly matched by an exclude pattern's class component. Unlike the fuzzy
+ *       {@code matchesExcludeTest}, pattern {@code Parent} does <em>not</em> match nested class
+ *       {@code Parent$Nested} here.</li>
+ *   <li>{@link #matchesFile(java.io.File)} — does a resource-based test file match?</li>
  * </ul>
  *
- * For example, class 'org.gradle.Test' can't be matched by pattern 'org.apache.Test', so
+ * <p>For example, class 'org.gradle.Test' can't be matched by pattern 'org.apache.Test', so
  * {@link #mayIncludeClass(String)} will return false when given 'org.gradle.Test'.
  *
- * In all cases, if the pattern starts with an uppercase letter, matching is performed on the
+ * <p>In all cases, if the pattern starts with an uppercase letter, matching is performed on the
  * simple name of the test. For classes, this is the class name. For resource files, this is
- * the file name without an extension.
- *
- * Otherwise, the pattern will be used to match the fully qualified name of the test.
+ * the file name without an extension. Otherwise, the pattern matches the fully qualified name.
  *
  * @see ClassTestSelectionMatcher
  * @see FileTestSelectionMatcher

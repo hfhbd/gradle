@@ -29,17 +29,34 @@ import static org.apache.commons.lang3.StringUtils.splitPreserveAllTokens;
 import static org.apache.commons.lang3.StringUtils.substringAfterLast;
 
 /**
- * This class has two responsibilities:
+ * Class-and-method pattern matcher used by {@link TestSelectionMatcher}.
  *
+ * <p>Separates three kinds of queries:
  * <ul>
- * <li>Judge whether a test class might be included. For example, class 'org.gradle.Test' can't
- * be included by pattern 'org.apache.Test'
- * <li>Judge whether a test method is matched exactly.
+ *   <li><strong>Permissive scan-time check</strong> ({@link #mayIncludeClass(String)}) — may this
+ *       class possibly contribute tests that match the includes? Used to prune scanning; false
+ *       positives are acceptable, false negatives are not.</li>
+ *   <li><strong>Combined test-level check</strong> ({@link #matchesTest(String, String)}) — the
+ *       AND of {@link #matchesIncludeTest(String, String)} and the negation of
+ *       {@link #matchesExcludeTest(String, String)}. What most callers want for a leaf test.</li>
+ *   <li><strong>Separated include / exclude queries</strong>
+ *       ({@link #matchesIncludeTest(String, String)} / {@link #matchesExcludeTest(String, String)}
+ *       / {@link #matchesExcludeClass(String)}) — lets callers reason about include and exclude
+ *       semantics independently. Needed by walkers that must distinguish "excluded at this
+ *       descriptor" from "include matched via a non-excluded ancestor".</li>
  * </ul>
  *
- * In both cases, if the pattern starts with an upper-case letter, it will be used to match
- * the simple class name;
- * otherwise, it will be used to match the fully qualified class name.
+ * <p>Pattern interpretation:
+ * <ul>
+ *   <li>A pattern that starts with an upper-case letter matches the simple class name.</li>
+ *   <li>Otherwise, it matches the fully qualified class name.</li>
+ *   <li>{@link #matchesExcludeTest(String, String)} applies a fuzzy {@code mayMatchClass}
+ *       heuristic at the class level (when method name is null), so callers that iterate
+ *       into individual methods can still find exact exclude matches without giving up the
+ *       entire class prematurely.</li>
+ *   <li>{@link #matchesExcludeClass(String)} does <em>not</em> apply the fuzzy heuristic —
+ *       pattern {@code Parent} matches {@code Parent} but not {@code Parent$Nested}.</li>
+ * </ul>
  */
 @NullMarked
 class ClassTestSelectionMatcher {
