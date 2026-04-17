@@ -297,7 +297,7 @@ object IsolatedScriptsModelBuilder : ToolingModelBuilder {
 
 private
 fun isolatedScriptsModelFor(project: ProjectInternal): IsolatedScriptsModel {
-    val models = buildList {
+    val models = mutableListOf<IntermediateScriptModel>().apply {
         addNotNull(buildScriptModelFor(project))
         addAll(precompiledScriptModelsFor(project))
     }
