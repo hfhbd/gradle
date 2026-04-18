@@ -33,7 +33,7 @@ import org.gradle.internal.buildtree.BuildOperationFiringBuildTreeWorkExecutor;
 import org.gradle.internal.buildtree.BuildTreeFinishExecutor;
 import org.gradle.internal.buildtree.BuildTreeLifecycleController;
 import org.gradle.internal.buildtree.BuildTreeLifecycleControllerFactory;
-import org.gradle.internal.buildtree.BuildTreeState;
+import org.gradle.internal.buildtree.BuildTreeServices;
 import org.gradle.internal.buildtree.BuildTreeWorkExecutor;
 import org.gradle.internal.buildtree.DefaultBuildTreeFinishExecutor;
 import org.gradle.internal.buildtree.DefaultBuildTreeWorkExecutor;
@@ -55,10 +55,10 @@ class DefaultRootBuildState extends AbstractCompositeParticipantBuildState imple
 
     DefaultRootBuildState(
         BuildDefinition buildDefinition,
-        BuildTreeState buildTree,
+        BuildTreeServices buildTreeServices,
         ListenerManager listenerManager
     ) {
-        super(buildTree, buildDefinition, null);
+        super(buildTreeServices, buildDefinition, null);
         this.listenerManager = listenerManager;
 
         CloseableServiceRegistry buildScopeServices = getBuildServices();

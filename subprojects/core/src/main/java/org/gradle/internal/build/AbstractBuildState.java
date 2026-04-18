@@ -24,7 +24,7 @@ import org.gradle.initialization.IncludedBuildSpec;
 import org.gradle.initialization.layout.BuildLayout;
 import org.gradle.internal.Describables;
 import org.gradle.internal.DisplayName;
-import org.gradle.internal.buildtree.BuildTreeState;
+import org.gradle.internal.buildtree.BuildTreeServices;
 import org.gradle.internal.lazy.Lazy;
 import org.gradle.internal.service.CloseableServiceRegistry;
 import org.gradle.internal.service.ServiceRegistryBuilder;
@@ -44,13 +44,13 @@ public abstract class AbstractBuildState implements BuildState, Closeable {
     private final Lazy<ProjectStateRegistry> projectStateRegistry;
     private final Lazy<BuildWorkGraphController> workGraphController;
 
-    public AbstractBuildState(BuildTreeState buildTree, BuildDefinition buildDefinition, @Nullable BuildState parent) {
+    public AbstractBuildState(BuildTreeServices buildTreeServices, BuildDefinition buildDefinition, @Nullable BuildState parent) {
         this.parent = parent;
 
         buildServices = ServiceRegistryBuilder.builder()
             .displayName("Build-scoped services")
             .scopeStrictly(Scope.Build.class)
-            .parent(buildTree.getServices())
+            .parent(buildTreeServices.getServices())
             .provider(new BuildScopeServices(buildDefinition, this))
             .build();
 
