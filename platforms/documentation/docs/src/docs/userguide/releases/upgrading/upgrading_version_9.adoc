@@ -86,6 +86,38 @@ ProjectDependency dependency = project.getDependencyFactory().createProjectDepen
 implementation.getDependencies().add(dependency);
 ----
 
+[[deprecate_build_needed_build_dependents_tasks]]
+==== Deprecation of `buildNeeded` and `buildDependents` tasks
+
+The `buildNeeded` and `buildDependents` tasks registered by the Java plugins have been deprecated and will be removed in Gradle 10.
+
+`buildNeeded` intends to build all projects that the current project depends on, while `buildDependents` intends to build all projects that depend on the current project.
+These tasks were introduced back in Gradle 0.8, and while they serve valid use cases, they are particularly inflexible and are implemented in a manner incompatible with Configure on Demand and Isolated Projects.
+Rather than modernize these tasks, we have decided to deprecate and remove them in favor of existing Gradle functionality.
+
+`buildNeeded` depends on the `build` task of the current project, and all `buildNeeded` tasks of all projects that are direct dependencies of the `testRuntimeClasspath` configuration.
+
+The following options may replace existing usages of this task:
+
+- Run the specific tasks you would like to execute (e.g., `./gradlew :proj:test` or `./gradlew :proj:build`), and rely on task dependency resolution to automatically execute required task dependencies.
+- Use <<test_report_aggregation_plugin.adoc#test_report_aggregation_plugin, test report aggregation>> to execute tests across all projects that the current project depends on.
+- Use <<artifact_views.adoc#artifact-views, Artifact Views>> to select and depend on work associated with all projects in a particular dependency graph.
+
+`buildDependents` depends on the `build` task of the current project, then configures all projects in the build and depends on all `buildDependents` tasks in all projects where the `testRuntimeClasspath` configuration in that project depends on the current project.
+
+To replace `buildDependents`, instead execute the desired tasks directly (e.g., `./gradlew test` or `./gradlew build`) and rely on up-to-date checks and build caching to avoid executing work not affected by current changes.
+
+[[deprecate_getTaskDependencyFromProjectDependency]]
+==== Deprecation of `Configuration.getTaskDependencyFromProjectDependency()`
+
+The link:{javadocPath}/org/gradle/api/artifacts/Configuration.html#getTaskDependencyFromProjectDependency(boolean,java.lang.String)[`Configuration.getTaskDependencyFromProjectDependency(boolean, String)`] method has been deprecated and will be removed in Gradle 10.
+
+This method is used to implement the above deprecated `buildNeeded` and `buildDependents` tasks.
+The implementation of this method is fundamentally incompatible with Isolated Projects and Configure on Demand.
+There is no direct replacement for this method.
+
+To run tasks across different projects in a build, prefer <<artifact_views.adoc#artifact-views, Artifact Views>> to select particular artifacts from projects that the current project depends on.
+
 [[deprecate_problem_spec_severity]]
 ==== Deprecation of `ProblemSpec.severity()`
 
