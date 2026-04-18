@@ -165,8 +165,21 @@ class JUnitJupiterFilteringIntegrationTest extends AbstractTestFilteringIntegrat
 
     private static String getTestClassAndCountListener() {
         return """
-            def classListener = new TestListener() {
+            abstract class TestClassCounter implements BuildService<org.gradle.api.services.BuildServiceParameters.None> {
                 def executedClasses = [:].withDefault { 0 }
+
+                Map<String, Integer> getExecutedClasses() {
+                    return executedClasses
+                }
+            }
+
+            class TestClassListener implements TestListener {
+                private Provider<TestClassCounter> testClassCounter
+
+                @Inject
+                public TestClassListener(Provider<TestClassCounter> testClassCounter) {
+                    this.testClassCounter = testClassCounter
+                }
 
                 @Override
                 void beforeSuite(TestDescriptor descriptor) { }
@@ -180,16 +193,27 @@ class JUnitJupiterFilteringIntegrationTest extends AbstractTestFilteringIntegrat
                 @Override
                 void afterTest(TestDescriptor descriptor, TestResult result) {
                     if (descriptor.className) {
-                        executedClasses[descriptor.className]++
+                        testClassCounter.get().executedClasses[descriptor.className]++
                     }
                 }
             }
 
-            gradle.buildFinished {
-                project.layout.buildDirectory.file("executed-classes.txt").get().asFile.text = classListener.executedClasses.collect { k, v -> "\${k} \${v}" }.join("\\n")
+            def testClassCounterService = project.getGradle().getSharedServices().registerIfAbsent("testClassCounter", TestClassCounter)
+
+            test {
+                usesService(testClassCounterService)
+                test.addTestListener(new TestClassListener(testClassCounterService))
             }
 
-            test.addTestListener(classListener)
+            def writeTestCounts = tasks.register("writeTestCounts") {
+                def outputFile = project.layout.buildDirectory.file("executed-classes.txt")
+                usesService(testClassCounterService)
+                doLast {
+                    outputFile.get().asFile.text = testClassCounterService.get().executedClasses.collect { k, v -> "\${k} \${v}" }.join("\\n")
+                }
+            }
+
+            test.finalizedBy(writeTestCounts)
         """
     }
 
