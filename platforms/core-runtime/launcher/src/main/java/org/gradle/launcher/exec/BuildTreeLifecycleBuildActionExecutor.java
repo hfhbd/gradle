@@ -71,38 +71,20 @@ public class BuildTreeLifecycleBuildActionExecutor implements BuildSessionAction
 
             BuildActionModelRequirements actionRequirements = buildActionModelRequirementsFor(action);
             BuildModelParameters buildModelParameters = buildModelParametersFactory.parametersForRootBuildTree(actionRequirements, options);
-            result = runRootBuildAction(action, buildSession.getServices(), actionRequirements, buildModelParameters);
-        } catch (Throwable t) {
-            if (result == null) {
-                // Did not create a result
-                // Note: throw the failure rather than returning a result object containing the failure, as console failure logging based on the _result_ happens down in the root build scope
-                // whereas console failure logging based on the _thrown exception_ happens up outside session scope. It would be better to refactor so that a result can be returned from here
-                throw UncheckedException.throwAsUncheckedException(t);
-            } else {
-                // Cleanup has failed, combine the cleanup failure with other failures that may be packed in the result
-                // Note: throw the failure rather than returning a result object containing the failure, as console failure logging based on the _result_ happens down in the root build scope
-                // whereas console failure logging based on the _thrown exception_ happens up outside session scope. It would be better to refactor so that a result can be returned from here
-                throw UncheckedException.throwAsUncheckedException(result.addFailure(t).getBuildFailure());
+            ServiceRegistry buildSessionServices = buildSession.getServices();
+            BuildInvocationScopeId buildInvocationScopeId = new BuildInvocationScopeId(UniqueId.generate());
+            try (BuildTreeState buildTree = new BuildTreeState(buildSessionServices, actionRequirements, buildModelParameters, buildInvocationScopeId)) {
+                // assign instead of return to allow combining build failures with cleanup failures below
+                result = buildTree.getServices().get(RootBuildLifecycleBuildActionExecutor.class).execute(action);
             }
+        } catch (Throwable t) {
+            // If cleanup has failed, combine the cleanup failure with other failures that may be packed in the result
+            Throwable failure = result == null ? t : result.addFailure(t).getBuildFailure();
+            // Note: throw the failure rather than returning a result object containing the failure, as console failure logging based on the _result_ happens down in the root build scope
+            // whereas console failure logging based on the _thrown exception_ happens up outside session scope. It would be better to refactor so that a result can be returned from here
+            throw UncheckedException.throwAsUncheckedException(failure);
         }
         return result;
-    }
-
-    /**
-     * Creates a new build tree and runs the action on behalf of the root build in that tree.
-     * <p>
-     * The build tree and its services are disposed of before this method returns.
-     */
-    private static BuildActionRunner.Result runRootBuildAction(
-        BuildAction action,
-        ServiceRegistry buildSessionServices,
-        BuildActionModelRequirements buildActionRequirements,
-        BuildModelParameters buildModelParameters
-    ) {
-        BuildInvocationScopeId buildInvocationScopeId = new BuildInvocationScopeId(UniqueId.generate());
-        try (BuildTreeState buildTree = new BuildTreeState(buildSessionServices, buildActionRequirements, buildModelParameters, buildInvocationScopeId)) {
-            return buildTree.getServices().get(RootBuildLifecycleBuildActionExecutor.class).execute(action);
-        }
     }
 
     private BuildActionModelRequirements buildActionModelRequirementsFor(BuildAction action) {
