@@ -28,12 +28,10 @@ import org.gradle.internal.problems.failure.Failure;
 import org.gradle.internal.session.BuildSessionActionExecutor;
 import org.gradle.internal.session.BuildSessionContext;
 import org.jspecify.annotations.Nullable;
-import org.jspecify.annotations.NullMarked;
 
 /**
  * An {@link BuildActionRunner} that wraps all work in a build operation.
  */
-@NullMarked
 public class RunAsBuildOperationBuildActionExecutor implements BuildSessionActionExecutor {
     private static final RunBuildBuildOperationType.Details DETAILS = new RunBuildBuildOperationType.Details() {
     };
