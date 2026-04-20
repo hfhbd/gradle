@@ -1,4 +1,5 @@
 import gradlebuild.basics.buildCommitId
+import gradlebuild.basics.scriptTemplateCommitIdViaFileSystemQuery
 import gradlebuild.identity.tasks.BuildReceipt
 
 plugins {
@@ -76,13 +77,14 @@ tasks.isolatedProjectsIntegTest {
 
 // TODO: Base services should not be responsible for generating the build receipt.
 //       Perhaps :api-metadata is a better fit
-val createBuildReceipt by tasks.registering(BuildReceipt::class) {
+val createBuildReceipt = tasks.register<BuildReceipt>("createBuildReceipt") {
     this.version = gradleModule.identity.version.map { it.version }
     this.baseVersion = gradleModule.identity.version.map { it.baseVersion.version }
     this.snapshot = gradleModule.identity.snapshot
     this.promotionBuild = gradleModule.identity.promotionBuild
     this.buildTimestampFrom(gradleModule.identity.buildTimestamp)
     this.commitId = project.buildCommitId
+    this.scriptTemplateCommitId = project.scriptTemplateCommitIdViaFileSystemQuery()
     this.receiptFolder = project.layout.buildDirectory.dir("generated-resources/build-receipt")
 }
 

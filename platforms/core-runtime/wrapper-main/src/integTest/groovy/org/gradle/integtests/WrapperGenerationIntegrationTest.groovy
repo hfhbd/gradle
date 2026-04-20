@@ -24,7 +24,7 @@ import org.gradle.test.fixtures.ConcurrentTestUtil
 import org.gradle.test.fixtures.archive.ZipTestFixture
 import org.gradle.test.fixtures.server.http.HttpServer
 import org.gradle.test.precondition.Requires
-import org.gradle.test.preconditions.IntegTestPreconditions
+import org.gradle.test.preconditions.TestExecutionPreconditions
 import org.gradle.util.internal.TextUtil
 import org.junit.Rule
 import spock.lang.Issue
@@ -35,7 +35,7 @@ import java.util.jar.Manifest
 import static org.hamcrest.CoreMatchers.containsString
 
 class WrapperGenerationIntegrationTest extends AbstractIntegrationSpec {
-    private static final HashCode EXPECTED_WRAPPER_JAR_HASH = HashCode.fromString("f307680272dffdb8e636f1169adfbf693513005c80aa06e8d381f20390a06e6a")
+    private static final HashCode EXPECTED_WRAPPER_JAR_HASH = HashCode.fromString("497c8c2a7e5031f6aa847f88104aa80a93532ec32ee17bdb8d1d2f67a194a9c7")
 
     def "generated wrapper scripts use correct line separators"() {
         buildFile << """
@@ -51,6 +51,21 @@ class WrapperGenerationIntegrationTest extends AbstractIntegrationSpec {
         file("gradlew").text.split(TextUtil.unixLineSeparator).length > 1
         file("gradlew").text.split(TextUtil.windowsLineSeparator).length == 1
         file("gradlew.bat").text.split(TextUtil.windowsLineSeparator).length > 1
+    }
+
+    @Issue('https://github.com/gradle/gradle/issues/35905')
+    def "generated wrapper script contains correct application name"() {
+        buildFile << """
+            wrapper {
+                distributionUrl = 'http://localhost:8080/gradlew/dist'
+            }
+        """
+
+        when:
+        run "wrapper", "--no-validate-url"
+
+        then:
+        file("gradlew").text.contains("ksh gradlew")
     }
 
     def "wrapper jar is small"() {
@@ -180,12 +195,12 @@ class WrapperGenerationIntegrationTest extends AbstractIntegrationSpec {
         file("gradle/wrapper/gradle-wrapper.properties").text.contains("retries=5")
     }
 
-    def "generated wrapper scripts for given retry timeout from command-line"() {
+    def "generated wrapper scripts for given retry back off from command-line"() {
         when:
-        run "wrapper", "--retry-timeout-ms", "5000"
+        run "wrapper", "--retry-back-off-ms", "1000"
 
         then:
-        file("gradle/wrapper/gradle-wrapper.properties").text.contains("retryTimeoutMs=5000")
+        file("gradle/wrapper/gradle-wrapper.properties").text.contains("retryBackOffMs=1000")
     }
 
     def "wrapper JAR does not contain version in manifest"() {
@@ -211,7 +226,7 @@ class WrapperGenerationIntegrationTest extends AbstractIntegrationSpec {
     @Rule
     HttpServer httpServer = new HttpServer()
 
-    @Requires(IntegTestPreconditions.NotEmbeddedExecutor)
+    @Requires(TestExecutionPreconditions.NotEmbeddedExecutor)
     def "wrapper task fails if http distribution url from command-line is invalid"() {
         given:
         def path = "/distributions/8.0-RC-5"
@@ -243,7 +258,7 @@ class WrapperGenerationIntegrationTest extends AbstractIntegrationSpec {
         succeeds()
     }
 
-    @Requires(IntegTestPreconditions.NotEmbeddedExecutor)
+    @Requires(TestExecutionPreconditions.NotEmbeddedExecutor)
     def "wrapper task fails if file distribution url from command-line is invalid"() {
         given:
         def target = file("/distributions/8.0-rc-5")

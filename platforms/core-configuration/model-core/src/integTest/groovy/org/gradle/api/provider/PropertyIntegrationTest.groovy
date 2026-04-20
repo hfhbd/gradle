@@ -20,7 +20,7 @@ import org.gradle.integtests.fixtures.AbstractIntegrationSpec
 import org.gradle.integtests.fixtures.UnsupportedWithConfigurationCache
 import org.gradle.integtests.fixtures.executer.GradleContextualExecuter
 import org.gradle.test.precondition.Requires
-import org.gradle.test.preconditions.IntegTestPreconditions
+import org.gradle.test.preconditions.TestExecutionPreconditions
 import spock.lang.Issue
 
 class PropertyIntegrationTest extends AbstractIntegrationSpec {
@@ -531,7 +531,7 @@ assert custom.prop.get() == "value 4"
     }
 
     @Requires(
-        value = IntegTestPreconditions.NotParallelExecutor,
+        value = TestExecutionPreconditions.NotParallelExecutor,
         reason = "--parallel is specified explicitly, no need to run with multiple executor types"
     )
     @Issue("https://github.com/gradle/gradle/issues/12811")
@@ -568,7 +568,7 @@ assert custom.prop.get() == "value 4"
                 def m = extensions.create('model', Model)
                 m.prop.finalizeValueOnRead()
                 def c = configurations.create("incoming")
-                dependencies.incoming(project(":producer"))
+                dependencies.incoming(dependencies.project(":producer"))
                 m.prop = c.elements.map { files -> files*.asFile*.text.join(",") }
                 task consumer1(type: SomeTask) {
                     prop = m.prop
@@ -590,7 +590,7 @@ assert custom.prop.get() == "value 4"
     }
 
     @Requires(
-        value = IntegTestPreconditions.NotParallelExecutor,
+        value = TestExecutionPreconditions.NotParallelExecutor,
         reason = "--parallel is specified explicitly, no need to run with multiple executor types"
     )
     @Issue("https://github.com/gradle/gradle/issues/12969")
@@ -627,7 +627,7 @@ assert custom.prop.get() == "value 4"
                 def m = extensions.create('model', Model)
                 m.prop.finalizeValueOnRead()
                 def c = configurations.create("incoming")
-                dependencies.incoming(project(":producer"))
+                dependencies.incoming(dependencies.project(":producer"))
                 m.prop = c.elements.map { files -> files*.asFile*.text.join(",") }
                 task consumer1 {
                     inputs.files(c)
