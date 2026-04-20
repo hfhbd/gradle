@@ -58,6 +58,7 @@ import org.gradle.internal.buildprocess.BuildProcessScopeServices;
 import org.gradle.internal.buildtree.BuildModelParameters;
 import org.gradle.internal.buildtree.BuildModelParametersFactory;
 import org.gradle.internal.buildtree.BuildTreeLifecycleController;
+import org.gradle.internal.buildtree.BuildTreeServices;
 import org.gradle.internal.buildtree.BuildTreeState;
 import org.gradle.internal.buildtree.RunTasksRequirements;
 import org.gradle.internal.classpath.ClassPath;
@@ -179,7 +180,8 @@ public class ProjectBuilderImpl {
         BuildModelParameters buildModelParameters = buildSessionServices.get(BuildModelParametersFactory.class).parametersForRootBuildTree(buildActionRequirements, internalOptions);
         BuildInvocationScopeId buildInvocationScopeId = new BuildInvocationScopeId(UniqueId.generate());
         BuildTreeState buildTreeState = new BuildTreeState(buildSessionServices, buildActionRequirements, buildModelParameters, buildInvocationScopeId);
-        TestRootBuild build = new TestRootBuild(projectDir, startParameter, buildTreeState);
+        BuildTreeServices buildTreeServices = buildTreeState.getServices().get(BuildTreeServices.class);
+        TestRootBuild build = new TestRootBuild(projectDir, startParameter, buildTreeServices);
 
         CloseableServiceRegistry buildServices = build.getBuildServices();
         buildServices.get(BuildStateRegistry.class).attachRootBuild(build);
@@ -298,8 +300,8 @@ public class ProjectBuilderImpl {
 
     private static class TestRootBuild extends AbstractBuildState implements RootBuildState {
 
-        public TestRootBuild(File rootProjectDir, StartParameterInternal startParameter, BuildTreeState buildTreeState) {
-            super(buildTreeState, BuildDefinition.fromStartParameter(startParameter, rootProjectDir, null), null);
+        public TestRootBuild(File rootProjectDir, StartParameterInternal startParameter, BuildTreeServices buildTreeServices) {
+            super(buildTreeServices, BuildDefinition.fromStartParameter(startParameter, rootProjectDir, null), null);
         }
 
         @Override
