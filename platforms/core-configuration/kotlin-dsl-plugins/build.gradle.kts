@@ -52,7 +52,6 @@ fun<T: ExternalModuleDependency> Provider<T>.relaxRestriction() = map {
     it.copy().apply {
         version {
             require(strictVersion)
-            strictly("")
         }
     }
 }
