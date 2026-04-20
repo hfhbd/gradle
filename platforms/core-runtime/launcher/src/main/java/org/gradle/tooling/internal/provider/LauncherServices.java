@@ -70,7 +70,7 @@ import org.gradle.internal.watch.vfs.FileChangeListeners;
 import org.gradle.internal.work.ProjectParallelExecutionController;
 import org.gradle.launcher.exec.BuildCompletionNotifyingBuildActionRunner;
 import org.gradle.launcher.exec.BuildOutcomeReportingBuildActionRunner;
-import org.gradle.launcher.exec.BuildTreeLifecycleBuildActionExecutor;
+import org.gradle.launcher.exec.DefaultBuildTreeActionExecutor;
 import org.gradle.launcher.exec.ChainingBuildActionRunner;
 import org.gradle.launcher.exec.RootBuildLifecycleBuildActionExecutor;
 import org.gradle.problems.buildtree.ProblemDiagnosticsFactory;
@@ -93,7 +93,7 @@ public class LauncherServices extends AbstractGradleModuleServices {
     @Override
     public void registerBuildSessionServices(ServiceRegistration registration) {
         registration.addProvider(new ToolingBuildSessionScopeServices());
-        registration.add(BuildTreeActionExecutor.class, BuildTreeLifecycleBuildActionExecutor.class);
+        registration.add(BuildTreeActionExecutor.class, DefaultBuildTreeActionExecutor.class);
     }
 
     @Override

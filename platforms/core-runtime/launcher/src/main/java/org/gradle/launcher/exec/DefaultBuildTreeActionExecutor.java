@@ -49,7 +49,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.function.Supplier;
 
-public class BuildTreeLifecycleBuildActionExecutor implements BuildTreeActionExecutor {
+public class DefaultBuildTreeActionExecutor implements BuildTreeActionExecutor {
 
     private static final RunBuildBuildOperationType.Details DETAILS = new RunBuildBuildOperationType.Details() {
     };
@@ -63,7 +63,7 @@ public class BuildTreeLifecycleBuildActionExecutor implements BuildTreeActionExe
     private final LoggingBuildOperationProgressBroadcaster loggingBuildOperationProgressBroadcaster;
     private final BuildOperationNotificationValve buildOperationNotificationValve;
 
-    public BuildTreeLifecycleBuildActionExecutor(
+    public DefaultBuildTreeActionExecutor(
         BuildModelParametersFactory modelParametersFactory,
         BuildLayoutValidator buildLayoutValidator,
         ValueSnapshotter valueSnapshotter,
