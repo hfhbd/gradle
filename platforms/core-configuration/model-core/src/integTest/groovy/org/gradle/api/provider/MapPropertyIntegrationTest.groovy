@@ -17,7 +17,7 @@
 package org.gradle.api.provider
 
 import org.gradle.integtests.fixtures.AbstractIntegrationSpec
-import org.gradle.integtests.fixtures.ToBeFixedForConfigurationCache
+import org.gradle.integtests.fixtures.UnsupportedWithConfigurationCache
 import spock.lang.Issue
 
 class MapPropertyIntegrationTest extends AbstractIntegrationSpec {
@@ -234,7 +234,6 @@ class MapPropertyIntegrationTest extends AbstractIntegrationSpec {
         outputContains("value: [key1:value1, key2:value2, key3:value3]")
     }
 
-    @ToBeFixedForConfigurationCache(because = "https://github.com/gradle/gradle/issues/36664")
     def "task ad hoc input property is implicitly finalized and changes ignored when task starts execution"() {
         given:
         buildFile << '''
@@ -554,49 +553,30 @@ task thing {
         failure.assertHasCause('Cannot set the value of a property of type java.util.Map with key type java.lang.String and value type java.lang.String using a provider with key type java.lang.String and value type java.lang.Integer.')
     }
 
-    @ToBeFixedForConfigurationCache(because = "https://github.com/gradle/gradle/issues/36664")
+    @UnsupportedWithConfigurationCache(because = "Changing property values at execution time for another task is not supported with configuration cache.")
     def "later entries replace earlier entries"() {
         given:
-        buildFile << '''
+        buildFile """
             verify.prop = ['key': 'value']
 
-            task replacingPut {
+            tasks.register("replacing") {
                 doLast {
-                    verify.prop.put('key', 'newValue')
-                    verify.expected = ['key': 'newValue']
+                    verify.prop.$updateAction
+                    verify.expected = $expectedValues
                 }
             }
-
-            task replacingPutWithProvider {
-                doLast {
-                    verify.prop.put('key', provider { 'newValue' })
-                    verify.expected = ['key': 'newValue']
-                }
-            }
-
-            task replacingPutAll {
-                doLast {
-                    verify.prop.putAll(['key': 'newValue', 'otherKey': 'otherValue'])
-                    verify.expected = ['key': 'newValue', 'otherKey': 'otherValue']
-                }
-            }
-
-            task replacingPutAllWithProvider {
-                doLast {
-                    verify.prop.putAll(provider { ['key': 'newValue', 'otherKey': 'otherValue'] })
-                    verify.expected = ['key': 'newValue', 'otherKey': 'otherValue']
-                }
-            }
-        '''.stripIndent()
+        """
 
         expect:
-        succeeds('replacingPut', 'verify')
-        and:
-        succeeds('replacingPutWithProvider', 'verify')
-        and:
-        succeeds('replacingPutAll', 'verify')
-        and:
-        succeeds('replacingPutAllWithProvider', 'verify')
+        succeeds('replacing', 'verify')
+
+        where:
+        updateAction                                                         | expectedValues
+        "put('key', 'newValue')"                                             | "['key': 'newValue']"
+        "put('key', provider { 'newValue' })"                                | "['key': 'newValue']"
+        "putAll(['key': 'newValue', 'otherKey': 'otherValue'])"              | "['key': 'newValue', 'otherKey': 'otherValue']"
+        "putAll(provider { ['key': 'newValue', 'otherKey': 'otherValue'] })" | "['key': 'newValue', 'otherKey': 'otherValue']"
+
     }
 
     def "puts to non-defined property do nothing"() {

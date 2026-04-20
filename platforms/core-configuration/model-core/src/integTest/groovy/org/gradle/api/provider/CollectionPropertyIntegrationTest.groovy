@@ -17,7 +17,6 @@
 package org.gradle.api.provider
 
 import org.gradle.integtests.fixtures.AbstractIntegrationSpec
-import org.gradle.integtests.fixtures.ToBeFixedForConfigurationCache
 
 class CollectionPropertyIntegrationTest extends AbstractIntegrationSpec {
     def setup() {
@@ -204,7 +203,6 @@ afterEvaluate {
         outputContains("value: value 1, value 2, value 3")
     }
 
-    @ToBeFixedForConfigurationCache(because = "https://github.com/gradle/gradle/issues/36664")
     def "task ad hoc input property is implicitly finalized when task starts execution"() {
         given:
         buildFile """
