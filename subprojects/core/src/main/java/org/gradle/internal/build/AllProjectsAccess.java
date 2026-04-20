@@ -26,5 +26,20 @@ import org.gradle.api.internal.project.ProjectState;
  * fail after the lock has been released.
  */
 public interface AllProjectsAccess {
+    /**
+     * Returns the mutable model for the given project.
+     *
+     * <p>
+     * This differs from calling {@link ProjectState#getMutableModel()} because this method has additional checks to ensure that the caller still holds the all projects lock.
+     * The other method does not perform any lock checks at all, and so may introduce race conditions if used directly.
+     * </p>
+     *
+     * <p>
+     * The return value and any mutable state derived from it that is not explicitly documented as thread-safe must not be returned from the lambda that was given this access.
+     * </p>
+     *
+     * @param project the project to get the mutable model for
+     * @return the mutable model for the given project
+     */
     ProjectInternal getMutableModel(ProjectState project);
 }
