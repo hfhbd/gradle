@@ -106,8 +106,8 @@ Depending on what you were using `buildNeeded` for, one of the following may rep
 - For running tests across all projects the current project depends on, use <<test_report_aggregation_plugin.adoc#test_report_aggregation_plugin, test report aggregation>>.
 - For plugin authors and advanced build logic, use <<artifact_views.adoc#artifact-views, Artifact Views>> to select artifacts from projects in a dependency graph and wire their producer tasks as dependencies.
 
-
-To replace `buildDependents`, instead execute the desired tasks directly (e.g., `./gradlew test` or `./gradlew build`) and rely on up-to-date checks and build caching to avoid executing work not affected by current changes.
+There is no direct replacement for `buildDependents`.
+For most workflows, running all tasks with a given name (e.g., `./gradlew test`) combined with up-to-date checks and build caching will skip work for unaffected projects, at the cost of configuring all projects.
 
 [[deprecate_getTaskDependencyFromProjectDependency]]
 ==== Deprecation of `Configuration.getTaskDependencyFromProjectDependency()`
