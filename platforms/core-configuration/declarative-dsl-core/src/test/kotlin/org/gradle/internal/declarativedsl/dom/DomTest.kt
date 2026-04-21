@@ -119,6 +119,46 @@ class DomTest {
         )
     }
 
+    @Test
+    fun `reports AssignmentWithExplicitReceiver for augmenting assignment with dotted lhs`() {
+        val tree = parseAsTopLevelBlock("a.x += 1")
+        assertEquals(
+            "error(UnsupportedSyntax(AssignmentWithExplicitReceiver)[0..7]\n",
+            prettyPrint(tree)
+        )
+    }
+
+    @Test
+    fun `reports ElementArgumentFormat for function call with named argument`() {
+        val tree = parseAsTopLevelBlock("myFun(x = 1)")
+        assertEquals(
+            "error(UnsupportedSyntax(ElementArgumentFormat)[0..11]\n",
+            prettyPrint(tree)
+        )
+    }
+
+    @Test
+    fun `reports ValueFactoryCallWithComplexReceiver for value factory with non-name receiver`() {
+        val tree = parseAsTopLevelBlock("a = f().g(1)")
+        assertEquals(
+            "error(UnsupportedSyntax(ValueFactoryCallWithComplexReceiver)[0..11]\n",
+            prettyPrint(tree)
+        )
+    }
+
+    @Test
+    fun `reports NamedReferenceWithExplicitReceiver for qualified name in value position`() {
+        val tree = parseAsTopLevelBlock("a = x.y")
+        assertEquals(
+            "error(UnsupportedSyntax(NamedReferenceWithExplicitReceiver)[0..6]\n",
+            prettyPrint(tree)
+        )
+    }
+
+    private
+    fun prettyPrint(tree: org.gradle.internal.declarativedsl.language.Block): String =
+        DomPrettyPrinter(withSourceData = true).domAsString(convertBlockToDocument(tree))
+
     internal
     class DomPrettyPrinter(private val withSourceData: Boolean) {
         fun domAsString(document: DeclarativeDocument) = buildString {
