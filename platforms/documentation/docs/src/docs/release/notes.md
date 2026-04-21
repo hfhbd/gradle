@@ -129,7 +129,7 @@ By default, retries are disabled to preserve existing behavior
 
 To enable retries, add the following properties to `gradle-wrapper.properties`:
 
-```properties
+```text
 retries=3 # Sets the maximum number of retry attempts
 retryBackOffMs=1000 # Sets the initial delay between retries (doubles on each failure)
 ```
