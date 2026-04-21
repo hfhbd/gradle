@@ -35,6 +35,7 @@ class DomTest {
                 nested {
                     x = "y"
                 }
+                d = listOf(FOO, BAR)
                 factory(1)
             }
             """.trimIndent()
@@ -42,13 +43,14 @@ class DomTest {
 
         assertEquals(
             """
-            element(myFun)[0..106]
+            element(myFun)[0..131]
                 property(a, literal(1)[16..16])[12..16]
                 property(b, valueFactory(f, literal(x)[28..30], valueFactory(z.f, literal(y)[37..39])[35..40])[26..41])[22..41]
                 property(c, literal(true)[51..54])[47..54]
                 element(nested)[60..89]
                     property(x, literal(y)[81..83])[77..83]
-                element(factory, literal(1)[103..103])[95..104]
+                property(d, valueFactory(listOf, namedReference(FOO)[106..108], namedReference(BAR)[111..113])[99..114])[95..114]
+                element(factory, literal(1)[128..128])[120..129]
 
             """.trimIndent(),
             DomPrettyPrinter(withSourceData = true).domAsString(convertBlockToDocument(tree))
