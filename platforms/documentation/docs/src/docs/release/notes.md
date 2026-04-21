@@ -89,7 +89,7 @@ Type
      UrlProcess (UrlProcess)
 ```
 
-When running the [tasks](userguide/command_line_interface.html#sec:listing_tasks report, there is now a --provenance option available that will display the same information:
+When running the [tasks](userguide/command_line_interface.html#sec:listing_tasks) report, there is now a --provenance option available that will display the same information:
 
 ```bash
 > ./gradlew tasks --provenance
