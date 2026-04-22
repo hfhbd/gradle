@@ -402,11 +402,13 @@ Make sure to use the latest available version of Gradle and that you are reading
 [[sec:ip_before_migration]]
 === Before the migration
 
+Before addressing constraint violations, make sure your build setup is up to date to get the best adoption experience.
+
 * Upgrade the build to the latest version of Gradle
 +
 If available, consider a pre-release version such as a milestone or a nightly to get the best experience while Isolated Projects is experimental.
 
-* Migrate third-party plugins to their latest versions
+* Update third-party plugins to their latest versions
 +
 Ecosystem plugins and community plugins gradually improve support for Isolated Projects.
 By using the latest versions you reduce the risks of dealing with problems that have already been fixed.
@@ -414,7 +416,7 @@ By using the latest versions you reduce the risks of dealing with problems that 
 * Use the latest tooling, such as the latest versions of Android Studio and IntelliJ IDEA
 +
 The IDE support for Isolated Projects is already in a good state for 2025.3 and later releases.
-However, newer IDE versions can bring better performance as well as a better user experience, when going through the migration.
+However, newer IDE versions can bring better performance as well as a better user experience when adopting Isolated Projects.
 
 * Make your build <<configuration_cache_enabling.adoc#config_cache:adoption,compatible with Configuration Cache>>
 +
