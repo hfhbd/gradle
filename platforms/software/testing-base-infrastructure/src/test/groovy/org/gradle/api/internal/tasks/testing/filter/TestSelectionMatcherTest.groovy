@@ -264,14 +264,15 @@ class TestSelectionMatcherTest extends Specification {
 
         where:
         includes           | excludes           | className         | methodName       | match
-        []                 | []                 | "FooTest"         | "aaa"            | true
         []                 | ["FooTest"]        | "FooTest"         | "aaa"            | true
-        ["FooTest"]        | []                 | "FooTest"         | "aaa"            | true
         ["FooTest"]        | ["FooTest"]        | "FooTest"         | "aaa"            | true
-        ["FooTest"]        | []                 | "BarTest"         | "aaa"            | false
+        ["FooTest"]        | ["FooTest"]        | "FooTest"         | null             | true
+        ["FooTest.aaa"]    | ["FooTest"]        | "FooTest"         | "aaa"            | true
+        ["FooTest.aaa"]    | ["FooTest"]        | "FooTest"         | "bbb"            | false
+        ["FooTest"]        | ["FooTest.aaa"]    | "FooTest"         | "aaa"            | true
     }
 
-    def "matchesIncludeTest combines build-script and command-line includes"() {
+    def "matchesIncludeTest returns the AND of build-script and command-line includes"() {
         expect:
         matcher(buildScript, [], commandLine).matchesIncludeTest(className, null) == match
 
@@ -285,21 +286,32 @@ class TestSelectionMatcherTest extends Specification {
         ["FooTest"]        | ["BarTest"]       | "BarTest"         | false
     }
 
+    def "matchesExcludeTest correctly matches on exclude patterns"() {
+        expect:
+        matcher([], excludes, []).matchesExcludeTest(className, methodName) == match
+
+        where:
+        excludes                   | className                        | methodName         | match
+        []                         | "FooTest"                        | null               | false
+        ["FooTest"]                | "FooTest"                        | null               | true
+        ["FooTest"]                | "BarTest"                        | null               | false
+        ["FooTest.doThing"]        | "FooTest"                        | "doThing"          | true
+        ["FooTest.doThing"]        | "FooTest"                        | "doOther"          | false
+    }
+
     def "matchesExcludeTest ignores include patterns"() {
         expect:
         matcher(includes, excludes, []).matchesExcludeTest(className, methodName) == match
 
         where:
         includes           | excludes                   | className                        | methodName         | match
-        []                 | []                         | "FooTest"                        | null               | false
-        []                 | ["FooTest"]                | "FooTest"                        | null               | true
         ["BarTest"]        | ["FooTest"]                | "FooTest"                        | null               | true
-        []                 | ["FooTest"]                | "BarTest"                        | null               | false
+        ["FooTest"]        | ["FooTest"]                | "FooTest"                        | null               | true
         ["BarTest"]        | ["FooTest"]                | "BarTest"                        | null               | false
-        []                 | ["FooTest.doThing"]        | "FooTest"                        | "doThing"          | true
         ["BarTest"]        | ["FooTest.doThing"]        | "FooTest"                        | "doThing"          | true
-        []                 | ["FooTest.doThing"]        | "FooTest"                        | "doOther"          | false
         ["BarTest"]        | ["FooTest.doThing"]        | "FooTest"                        | "doOther"          | false
+        ["FooTest"]        | ["FooTest.doThing"]        | "FooTest"                        | "doThing"          | true
+        ["FooTest.doThing"]| ["FooTest.doThing"]        | "FooTest"                        | "doThing"          | true
     }
 
     @Issue("https://github.com/gradle/gradle/issues/37539")
