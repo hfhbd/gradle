@@ -26,23 +26,6 @@ import java.util.Collections;
 /**
  * Entry point for matching test descriptors against include and exclude patterns.
  *
- * <p>Provides the following queries:
- * <ul>
- *   <li>{@link #mayIncludeClass(String)} — may a class be included (permissive scan-time check)?</li>
- *   <li>{@link #matchesTest(String, String)} — does a (class, method) pair match includes and not
- *       match excludes? Equivalent to {@code matchesIncludeTest && !matchesExcludeTest}.</li>
- *   <li>{@link #matchesIncludeTest(String, String)} — does a (class, method) match the include
- *       patterns alone? Empty include sets are treated as vacuously true.</li>
- *   <li>{@link #matchesExcludeTest(String, String)} — does a (class, method) match any exclude
- *       pattern? Uses a fuzzy heuristic at the class level (no method) so callers that iterate
- *       into individual methods can still find exact exclude matches.</li>
- *   <li>{@link #matchesExcludeClass(String)} — exact variant: only returns true when the class
- *       name is directly matched by an exclude pattern's class component. Unlike the fuzzy
- *       {@code matchesExcludeTest}, pattern {@code Parent} does <em>not</em> match nested class
- *       {@code Parent$Nested} here.</li>
- *   <li>{@link #matchesFile(java.io.File)} — does a resource-based test file match?</li>
- * </ul>
- *
  * <p>For example, class 'org.gradle.Test' can't be matched by pattern 'org.apache.Test', so
  * {@link #mayIncludeClass(String)} will return false when given 'org.gradle.Test'.
  *
@@ -91,7 +74,7 @@ public class TestSelectionMatcher {
     }
 
     /**
-     * Returns true if the given class and method matches the include patterns (build-script and command-line).
+     * Returns true if the given class and method matches the include patterns.
      * Exclude patterns are <strong>not</strong> consulted.
      *
      * @see ClassTestSelectionMatcher#matchesIncludeTest(String, String)

@@ -49,10 +49,9 @@ import static org.apache.commons.lang3.StringUtils.substringAfterLast;
  * <ul>
  *   <li>A pattern that starts with an upper-case letter matches the simple class name.</li>
  *   <li>Otherwise, it matches the fully qualified class name.</li>
- *   <li>{@link #matchesExcludeTest(String, String)} applies a fuzzy {@code mayMatchClass}
- *       heuristic at the class level (when method name is null), so callers that iterate
- *       into individual methods can still find exact exclude matches without giving up the
- *       entire class prematurely.</li>
+ *   <li>{@link #matchesExcludeTest(String, String)} applies a heuristic at the class level when
+ *       method name is null, so callers that have multiple ways to match against method names
+ *       don't prematurly "accept" the test when one of the ways does not match any excludes.</li>
  *   <li>{@link #matchesExcludeClass(String)} does <em>not</em> apply the fuzzy heuristic —
  *       pattern {@code Parent} matches {@code Parent} but not {@code Parent$Nested}.</li>
  * </ul>
@@ -97,6 +96,11 @@ class ClassTestSelectionMatcher {
 
     /**
      * Returns true if the given (className, methodName) pair matches any exclude pattern.
+     *
+     * When methodName is null, this may still return true, even if the className matches any
+     * exclude patterns that include a method name.  This is to allow callers that have multiple
+     * ways to match method names to avoid "accepting" the test when one of the ways does not
+     * match any excludes.
      *
      * <p>An empty exclude set returns false. Include patterns are not consulted.</p>
      */
