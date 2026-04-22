@@ -306,9 +306,9 @@ abstract class UndeclaredFileAccess extends BuildInputRead {
     }
 
     static UndeclaredFileAccess pathText(String filePath) {
+        // Java & Groovy don't have an equivalent method which doesn't take an explicit encoding parameters, so we'll skip testing for those languages.
+        // Providing an explicit parameter is tested separately, no point in doing it twice.
         kotlinOnlyPathAccess(filePath, "Paths.get(\"$filePath\").readText()")
-        // makes no sense to test the Java & Groovy versions, because there the Charset parameter needs to be provided
-        // so would be the same test as in the "pathTextWithEncoding" below
     }
 
     static UndeclaredFileAccess pathTextWithEncoding(String filePath) {
