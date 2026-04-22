@@ -503,12 +503,12 @@ Use the report to pinpoint the incompatible pieces of build logic and plugins.
 An incompatible plugin can prevent you from getting the performance benefits of Isolated Projects.
 It is best to report the incompatibilities as soon as possible so the plugin maintainers can address them, while you make your own build logic compatible.
 
-3. Follow the <<sec:adoption_strategies,build-logic refactoring strategies>> to refactor your build logic and make it compatible.
+3. Follow the <<sec:migration_strategies,build-logic refactoring strategies>> to refactor your build logic and make it compatible.
 +
 Remember that Isolated Projects violations only detect concrete instances of the problem, e.g. one specific project touching some mutable state of another.
 It might not be enough to replace one API call with another to address the problem.
 
-[[sec:adoption_strategies]]
+[[sec:migration_strategies]]
 === Build-logic refactoring strategies
 
 [[sec:convention_plugins]]
