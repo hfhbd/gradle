@@ -305,7 +305,7 @@ class TestSelectionMatcherTest extends Specification {
     @Issue("https://github.com/gradle/gradle/issues/37539")
     def "matchesExcludeClass is exact and does not treat parent pattern as matching nested class"() {
         expect:
-        matcher([], [excludePattern], []).matchesExcludeClass(className) == match
+        matcher([], [excludePattern], []).matchesExcludeClassExactly(className) == match
 
         where:
         excludePattern                                    | className                                         | match

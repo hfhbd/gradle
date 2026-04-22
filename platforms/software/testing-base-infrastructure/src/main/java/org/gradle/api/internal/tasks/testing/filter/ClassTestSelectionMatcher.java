@@ -41,7 +41,7 @@ import static org.apache.commons.lang3.StringUtils.substringAfterLast;
  *       {@link #matchesExcludeTest(String, String)}. What most callers want for a leaf test.</li>
  *   <li><strong>Separated include / exclude queries</strong>
  *       ({@link #matchesIncludeTest(String, String)} / {@link #matchesExcludeTest(String, String)}
- *       / {@link #matchesExcludeClass(String)}) — lets callers reason about include and exclude
+ *       / {@link #matchesExcludeClassExactly(String)}) — lets callers reason about include and exclude
  *       semantics independently.</li>
  * </ul>
  *
@@ -52,7 +52,7 @@ import static org.apache.commons.lang3.StringUtils.substringAfterLast;
  *   <li>{@link #matchesExcludeTest(String, String)} applies a heuristic at the class level when
  *       method name is null, so callers that have multiple ways to match against method names
  *       don't prematurly "accept" the test when one of the ways does not match any excludes.</li>
- *   <li>{@link #matchesExcludeClass(String)} does <em>not</em> apply the fuzzy heuristic —
+ *   <li>{@link #matchesExcludeClassExactly(String)} does <em>not</em> apply the fuzzy heuristic —
  *       pattern {@code Parent} matches {@code Parent} but not {@code Parent$Nested}.</li>
  * </ul>
  */
@@ -157,7 +157,7 @@ class ClassTestSelectionMatcher {
      * the fuzzy {@code mayMatchClass} heuristic: pattern {@code Parent} does not match
      * class {@code Parent$Nested} here.</p>
      */
-    public boolean matchesExcludeClass(String className) {
+    public boolean matchesExcludeClassExactly(String className) {
         for (ClassTestPattern pattern : buildScriptExcludePatterns) {
             if (pattern.matchesClass(className)) {
                 return true;

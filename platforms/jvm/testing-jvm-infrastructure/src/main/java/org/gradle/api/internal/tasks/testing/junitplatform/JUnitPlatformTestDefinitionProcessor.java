@@ -175,7 +175,7 @@ public final class JUnitPlatformTestDefinitionProcessor extends AbstractJUnitTes
             // Conservative: any declared class (even non-test inner classes) is treated as a
             // potential nested test class, so we keep the selector to let JUnit Platform discover
             // nested tests. The post-discovery filter handles any extra class that slips through.
-            return matcher().matchesExcludeClass(klass.getName()) && klass.getDeclaredClasses().length == 0;
+            return matcher().matchesExcludeClassExactly(klass.getName()) && klass.getDeclaredClasses().length == 0;
         }
 
         private TestSelectionMatcher matcher() {

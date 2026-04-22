@@ -73,7 +73,7 @@ public final class ClassMethodNameFilter implements PostDiscoveryFilter {
         while (current != null) {
             Optional<String> enclosingClassName = className(current);
             if (enclosingClassName.isPresent()) {
-                return !matcher.matchesExcludeClass(enclosingClassName.get());
+                return !matcher.matchesExcludeClassExactly(enclosingClassName.get());
             }
             current = current.getParent().orElse(null);
         }
@@ -82,7 +82,7 @@ public final class ClassMethodNameFilter implements PostDiscoveryFilter {
 
     private boolean shouldRun(TestDescriptor descriptor, boolean checkingParent, ClassSource classSource) {
         String className = classSource.getClassName();
-        if (matcher.matchesExcludeClass(className)) {
+        if (matcher.matchesExcludeClassExactly(className)) {
             // This class exactly matches an exclude pattern.
             // Return immediately to prevent children from re-including the container. Ancestors that are
             // themselves included by pattern (e.g. a test suite) are handled by classMatch.

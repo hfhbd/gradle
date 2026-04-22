@@ -97,10 +97,10 @@ public class TestSelectionMatcher {
      * Unlike {@link #matchesExcludeTest(String, String)}, this does <em>not</em> apply the fuzzy
      * {@code mayMatchClass} heuristic.
      *
-     * @see ClassTestSelectionMatcher#matchesExcludeClass(String)
+     * @see ClassTestSelectionMatcher#matchesExcludeClassExactly(String)
      */
-    public boolean matchesExcludeClass(String className) {
-        return classTestSelectionMatcher.matchesExcludeClass(className);
+    public boolean matchesExcludeClassExactly(String className) {
+        return classTestSelectionMatcher.matchesExcludeClassExactly(className);
     }
 
     /**
