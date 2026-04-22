@@ -83,8 +83,8 @@ public final class ClassMethodNameFilter implements PostDiscoveryFilter {
     private boolean shouldRun(TestDescriptor descriptor, boolean checkingParent, ClassSource classSource) {
         String className = classSource.getClassName();
         if (matcher.matchesExcludeClass(className)) {
-            // This class exactly matches an exclude pattern (not merely a fuzzy may-match).
-            // Don't let children-recursion re-include the container. Ancestors that are
+            // This class exactly matches an exclude pattern.
+            // Return immediately to prevent children from re-including the container. Ancestors that are
             // themselves included by pattern (e.g. a test suite) are handled by classMatch.
             return false;
         }

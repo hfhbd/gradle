@@ -37,13 +37,12 @@ import static org.apache.commons.lang3.StringUtils.substringAfterLast;
  *       class possibly contribute tests that match the includes? Used to prune scanning; false
  *       positives are acceptable, false negatives are not.</li>
  *   <li><strong>Combined test-level check</strong> ({@link #matchesTest(String, String)}) — the
- *       AND of {@link #matchesIncludeTest(String, String)} and the negation of
+ *       result of {@link #matchesIncludeTest(String, String)} ANDed with the negation of
  *       {@link #matchesExcludeTest(String, String)}. What most callers want for a leaf test.</li>
  *   <li><strong>Separated include / exclude queries</strong>
  *       ({@link #matchesIncludeTest(String, String)} / {@link #matchesExcludeTest(String, String)}
  *       / {@link #matchesExcludeClass(String)}) — lets callers reason about include and exclude
- *       semantics independently. Needed by walkers that must distinguish "excluded at this
- *       descriptor" from "include matched via a non-excluded ancestor".</li>
+ *       semantics independently.</li>
  * </ul>
  *
  * <p>Pattern interpretation:
@@ -77,8 +76,8 @@ class ClassTestSelectionMatcher {
     }
 
     /**
-     * Returns true if the given (className, methodName) pair matches the include patterns and is not excluded by the
-     * exclude patterns.
+     * {@return true if the given (className, methodName) pair matches the include patterns and is not excluded by the
+     * exclude patterns}
      */
     public boolean matchesTest(String className, @Nullable String methodName) {
         return matchesIncludeTest(className, methodName) && !matchesExcludeTest(className, methodName);
@@ -152,8 +151,7 @@ class ClassTestSelectionMatcher {
      *
      * <p>Unlike {@link #matchesExcludeTest(String, String)}, this does <em>not</em> consult
      * the fuzzy {@code mayMatchClass} heuristic: pattern {@code Parent} does not match
-     * class {@code Parent$Nested} here. Used by callers that need a definitive
-     * "is this class excluded?" answer rather than a "might this class match?" hint.</p>
+     * class {@code Parent$Nested} here.</p>
      */
     public boolean matchesExcludeClass(String className) {
         for (ClassTestPattern pattern : buildScriptExcludePatterns) {
