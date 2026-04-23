@@ -160,21 +160,24 @@ fun buildScriptModelsInHierarchy(
 
     val outputModels = mutableMapOf<File, KotlinDslScriptModel>()
 
-    fun collect(models: IsolatedScriptsModel) {
+    fun collect(models: IsolatedScriptsModel, parentSourcePath: ClassPath) {
         for (childScriptModel in models.models) {
-            outputModels[childScriptModel.scriptFile] = buildOutputModel(base, childScriptModel)
+            outputModels[childScriptModel.scriptFile] = buildOutputModel(base, childScriptModel, parentSourcePath)
         }
     }
 
-    fun visit(projectState: ProjectState) {
+    fun visitChildren(projectState: ProjectState, parentSourcePath: ClassPath) {
         val children = projectState.childProjects.toList()
         val childrenModels = intermediateModelProvider.getIsolatedModels(projectState, children)
-        childrenModels.forEach { collect(it) }
-        children.forEach { visit(it) }
+        childrenModels.zip(children).forEach { (model, child) ->
+            collect(model, parentSourcePath)
+            visitChildren(child, parentSourcePath + model.buildscriptSourcePath)
+        }
     }
 
-    collect(isolatedScriptsModelFor(rootProject))
-    visit(rootProject.owner)
+    val rootModel = isolatedScriptsModelFor(rootProject)
+    collect(rootModel, ClassPath.EMPTY)
+    visitChildren(rootProject.owner, rootModel.buildscriptSourcePath)
 
     return outputModels
 }
@@ -186,10 +189,10 @@ fun IntermediateToolingModelProvider.getIsolatedModels(requester: ProjectState, 
 
 
 private
-fun buildOutputModel(base: ScriptModelBase, model: IntermediateScriptModel): StandardKotlinDslScriptModel {
+fun buildOutputModel(base: ScriptModelBase, model: IntermediateScriptModel, parentSourcePath: ClassPath): StandardKotlinDslScriptModel {
     val classPath = model.localClassPath
     val gradleKotlinDslJar = classPath.filter(::isGradleKotlinDslJar)
-    val sourcePath = gradleKotlinDslJar + base.scriptPaths.src + model.localSourcePath
+    val sourcePath = gradleKotlinDslJar + base.scriptPaths.src + parentSourcePath + model.localSourcePath
     val implicitImports = base.implicitImports + model.localImplicitImports
     return buildOutputModel(model.scriptFile, classPath, sourcePath, implicitImports, base.classPathModeExceptions)
 }
@@ -279,7 +282,8 @@ data class IntermediateScriptModel(
 
 internal
 data class IsolatedScriptsModel(
-    val models: List<IntermediateScriptModel>
+    val models: List<IntermediateScriptModel>,
+    val buildscriptSourcePath: ClassPath
 )
 
 
@@ -297,11 +301,15 @@ object IsolatedScriptsModelBuilder : ToolingModelBuilder {
 
 private
 fun isolatedScriptsModelFor(project: ProjectInternal): IsolatedScriptsModel {
+    val buildScriptModel = buildScriptModelFor(project)
     val models = mutableListOf<IntermediateScriptModel>().apply {
-        addNotNull(buildScriptModelFor(project))
+        addNotNull(buildScriptModel)
         addAll(precompiledScriptModelsFor(project))
     }
-    return IsolatedScriptsModel(models)
+    val buildscriptSourcePath =
+        if (buildScriptModel != null) sourcePathFor(listOf(project.buildscript))
+        else ClassPath.EMPTY
+    return IsolatedScriptsModel(models, buildscriptSourcePath)
 }
 
 

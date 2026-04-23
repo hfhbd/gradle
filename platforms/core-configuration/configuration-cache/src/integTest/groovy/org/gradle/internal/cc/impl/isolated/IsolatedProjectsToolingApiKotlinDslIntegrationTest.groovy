@@ -260,6 +260,43 @@ class IsolatedProjectsToolingApiKotlinDslIntegrationTest extends AbstractIsolate
         fixture.assertModelLoaded()
     }
 
+    def "can fetch KotlinDslScripts model for build with third party buildscript dependency"() {
+        withSettings("""
+            rootProject.name = "root"
+            include("a")
+            include("a:b")
+        """)
+        withBuildScript()
+
+        // We exercise source path of the hierarchy.
+        // :a declares a buildscript dependency which sources must be visible in :a:b
+        withBuildScriptIn("a", """
+            buildscript {
+                $repositoriesBlock
+                dependencies { classpath("commons-io:commons-io:2.18.0") }
+            }
+        """)
+        withBuildScriptIn("a/b")
+
+        when:
+        def originalModel = fetchModel(KotlinDslScriptsModel)
+
+        then:
+        fixture.assertNoConfigurationCache()
+
+        when:
+        withIsolatedProjects()
+        def model = fetchModel(KotlinDslScriptsModel)
+
+        then:
+        fixture.assertModelStored {
+            modelsCreated(":", KotlinDslScriptsModel)
+            modelsCreated(":a", [isolatedScriptsModel])
+            modelsCreated(":a:b", [isolatedScriptsModel])
+        }
+        checkKotlinDslScriptsModel(model, originalModel)
+    }
+
     static void checkKotlinDslScriptsModel(actual, expected) {
         assert expected instanceof KotlinDslScriptsModel
         assert actual instanceof KotlinDslScriptsModel
