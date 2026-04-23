@@ -100,7 +100,7 @@ class TaskbarProgressResetFunctionalTest extends AbstractIntegrationSpec {
 
     @Issue("https://github.com/gradle/gradle/issues/37611")
     @SuppressWarnings("IntegrationTestFixtures")
-    @Requires(value = IntegTestPreconditions.NotEmbeddedExecutor,
+    @Requires(value = TestExecutionPreconditions.NotEmbeddedExecutor,
         reason = "OSC taskbar progress sequences are only emitted by the forked client JVM")
     def "does not emit OSC 9;4 sequences when --console=plain"() {
         given:
@@ -118,7 +118,7 @@ class TaskbarProgressResetFunctionalTest extends AbstractIntegrationSpec {
 
     @Issue("https://github.com/gradle/gradle/issues/37611")
     @SuppressWarnings("IntegrationTestFixtures")
-    @Requires(value = IntegTestPreconditions.NotEmbeddedExecutor,
+    @Requires(value = TestExecutionPreconditions.NotEmbeddedExecutor,
         reason = "OSC taskbar progress sequences are only emitted by the forked client JVM")
     def "does not emit OSC 9;4 sequences when console is Auto and stdout is not a terminal"() {
         given:
