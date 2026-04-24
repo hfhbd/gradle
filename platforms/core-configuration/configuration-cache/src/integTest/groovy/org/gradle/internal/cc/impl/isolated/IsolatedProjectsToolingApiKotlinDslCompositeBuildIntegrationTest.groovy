@@ -22,8 +22,6 @@ import org.gradle.kotlin.dsl.tooling.fixtures.KotlinDslModelChecker
 import org.gradle.tooling.model.kotlin.dsl.KotlinDslScriptModel
 import org.gradle.tooling.model.kotlin.dsl.KotlinDslScriptsModel
 
-import static org.gradle.integtests.tooling.fixture.ToolingApiModelChecker.checkModel
-
 class IsolatedProjectsToolingApiKotlinDslCompositeBuildIntegrationTest extends AbstractIsolatedProjectsToolingApiIntegrationTest implements KotlinDslTestProjectInitiation {
 
     def isolatedScriptsModel = "org.gradle.kotlin.dsl.tooling.builders.internal.IsolatedScriptsModel"
@@ -242,7 +240,7 @@ class IsolatedProjectsToolingApiKotlinDslCompositeBuildIntegrationTest extends A
         assert actual.size() == expected.size()
         assert actual.keySet() == expected.keySet()
         actual.each { file, actualModel ->
-            KotlinDslModelChecker.checkKotlinDslScriptModel(actualModel, expected [ file])
+            KotlinDslModelChecker.checkKotlinDslScriptModel(actualModel, expected[file])
         }
     }
 }

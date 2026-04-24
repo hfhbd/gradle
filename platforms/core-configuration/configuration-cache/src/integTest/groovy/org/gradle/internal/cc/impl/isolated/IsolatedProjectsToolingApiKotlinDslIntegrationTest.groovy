@@ -18,8 +18,6 @@ package org.gradle.internal.cc.impl.isolated
 
 import org.gradle.integtests.fixtures.build.KotlinDslTestProjectInitiation
 import org.gradle.kotlin.dsl.tooling.fixtures.KotlinDslModelChecker
-import org.gradle.tooling.model.kotlin.dsl.EditorReport
-import org.gradle.tooling.model.kotlin.dsl.KotlinDslScriptModel
 import org.gradle.tooling.model.kotlin.dsl.KotlinDslScriptsModel
 
 import static org.gradle.integtests.tooling.fixture.ToolingApiModelChecker.checkModel
