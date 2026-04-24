@@ -21,6 +21,7 @@ import org.gradle.api.internal.GradleInternal
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.internal.project.ProjectState
 import org.gradle.internal.classpath.ClassPath
+import org.gradle.internal.classpath.DefaultClassPath
 import org.gradle.kotlin.dsl.accessors.AccessorsClassPath
 import org.gradle.kotlin.dsl.provider.ClassPathModeExceptionCollector
 import org.gradle.kotlin.dsl.provider.KotlinScriptClassPathProvider
@@ -43,12 +44,16 @@ import org.gradle.kotlin.dsl.tooling.builders.discoverBuildScript
 import org.gradle.kotlin.dsl.tooling.builders.discoverInitScripts
 import org.gradle.kotlin.dsl.tooling.builders.discoverPrecompiledScriptPluginScripts
 import org.gradle.kotlin.dsl.tooling.builders.discoverSettingScript
+import org.gradle.kotlin.dsl.tooling.builders.implicitAccessorsImports
+import org.gradle.kotlin.dsl.tooling.builders.implicitPluginSpecBuildersImports
+import org.gradle.kotlin.dsl.tooling.builders.precompiledScriptPluginsMetadataDir
 import org.gradle.kotlin.dsl.tooling.builders.resolveCorrelationIdParameter
 import org.gradle.kotlin.dsl.tooling.builders.runtimeFailuresLocatedIn
 import org.gradle.kotlin.dsl.tooling.builders.scriptCompilationClassPath
 import org.gradle.kotlin.dsl.tooling.builders.scriptHandlerFactoryOf
 import org.gradle.kotlin.dsl.tooling.builders.settings
 import org.gradle.kotlin.dsl.tooling.builders.sourcePathFor
+import org.gradle.kotlin.dsl.tooling.builders.sourceSets
 import org.gradle.tooling.model.kotlin.dsl.KotlinDslScriptModel
 import org.gradle.tooling.model.kotlin.dsl.KotlinDslScriptsModel
 import org.gradle.tooling.provider.model.ToolingModelBuilder
@@ -192,7 +197,8 @@ private
 fun buildOutputModel(base: ScriptModelBase, model: IntermediateScriptModel, parentSourcePath: ClassPath): StandardKotlinDslScriptModel {
     val classPath = model.localClassPath
     val gradleKotlinDslJar = classPath.filter(::isGradleKotlinDslJar)
-    val sourcePath = gradleKotlinDslJar + base.scriptPaths.src + parentSourcePath + model.localSourcePath
+    val effectiveParentSourcePath = if (model.includeParentSourcePath) parentSourcePath else ClassPath.EMPTY
+    val sourcePath = gradleKotlinDslJar + base.scriptPaths.src + effectiveParentSourcePath + model.localSourcePath
     val implicitImports = base.implicitImports + model.localImplicitImports
     return buildOutputModel(model.scriptFile, classPath, sourcePath, implicitImports, base.classPathModeExceptions)
 }
@@ -277,6 +283,7 @@ data class IntermediateScriptModel(
     val localClassPath: ClassPath,
     val localSourcePath: ClassPath,
     val localImplicitImports: List<String> = emptyList(),
+    val includeParentSourcePath: Boolean = true,
 )
 
 
@@ -337,12 +344,28 @@ fun buildScriptModelFor(project: ProjectInternal): IntermediateScriptModel? {
 
 private
 fun precompiledScriptModelsFor(project: ProjectInternal): List<IntermediateScriptModel> {
-    return project.discoverPrecompiledScriptPluginScripts().map {
-        // TODO:isolated support precompiled scripts
-        IntermediateScriptModel(it, ClassPath.EMPTY, ClassPath.EMPTY, emptyList())
+    val scripts = project.discoverPrecompiledScriptPluginScripts()
+    if (scripts.isEmpty()) return emptyList()
+
+    val sourceSets = project.sourceSets ?: return emptyList()
+    val metadataDir = project.precompiledScriptPluginsMetadataDir
+
+    val classPathBySourceSet = mutableMapOf<String, ClassPath>()
+    val pluginSpecImports = metadataDir.implicitPluginSpecBuildersImports
+
+    return scripts.mapNotNull { scriptFile ->
+        val sourceSet = sourceSets.find { scriptFile in it.allSource } ?: return@mapNotNull null
+        val classPath = classPathBySourceSet.getOrPut(sourceSet.name) { DefaultClassPath.of(sourceSet.compileClasspath) }
+        val accessorImports = metadataDir.implicitAccessorsImports(scriptFile)
+        IntermediateScriptModel(
+            scriptFile,
+            classPath,
+            ClassPath.EMPTY,
+            accessorImports + pluginSpecImports,
+            includeParentSourcePath = false
+        )
     }
 }
-
 
 private
 fun buildOutputModel(scriptFile: File, classPath: ClassPath, sourcePath: ClassPath, implicitImports: List<String>, exceptions: List<Exception>) =

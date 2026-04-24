@@ -67,6 +67,7 @@ data class KotlinBuildScriptModelParameter(
     val correlationId: String?
 )
 
+internal typealias MetadataDir = File
 
 internal
 object KotlinBuildScriptModelBuilder : ToolingModelBuilder {
@@ -172,10 +173,23 @@ fun Project.findSourceSetOf(file: File): EnclosingSourceSet? =
     }
 
 
-private
+internal
 val Project.sourceSets
     get() = extensions.findByType(typeOf<SourceSetContainer>())
 
+internal
+val MetadataDir.implicitPluginSpecBuildersImports: List<String>
+    get() = implicitImportsFrom(
+        resolve("plugin-spec-builders").resolve(kotlinDslPluginSpecBuildersImplicitImports)
+    ) + implicitImportsFrom(
+        // Gradle <= 8.12 was using this other name with a dash but this was incompatible with moving to kotlin-scripting-host API
+        // Keeping it for compatibility with previous Gradle versions
+        resolve("plugin-spec-builders").resolve("implicit-imports")
+    )
+
+internal
+fun MetadataDir.implicitAccessorsImports(scriptFile: File): List<String> =
+    implicitImportsFrom(resolve("accessors").resolve(hashOf(scriptFile)))
 
 private
 fun precompiledScriptPluginModelBuilder(
@@ -189,22 +203,14 @@ fun precompiledScriptPluginModelBuilder(
     enclosingScriptProjectDir = enclosingSourceSet.project.projectDir,
     additionalImports = {
         enclosingSourceSet.project.precompiledScriptPluginsMetadataDir.run {
-            implicitImportsFrom(
-                resolve("accessors").resolve(hashOf(scriptFile))
-            ) + implicitImportsFrom(
-                resolve("plugin-spec-builders").resolve(kotlinDslPluginSpecBuildersImplicitImports)
-            ) + implicitImportsFrom(
-                // Gradle <= 8.12 was using this other name with a dash but this was incompatible with moving to kotlin-scripting-host API
-                // Keeping it for compatibility with previous Gradle versions
-                resolve("plugin-spec-builders").resolve("implicit-imports")
-            )
+            implicitAccessorsImports(scriptFile) + implicitPluginSpecBuildersImports
         }
     }
 )
 
 
-private
-val Project.precompiledScriptPluginsMetadataDir: File
+internal
+val Project.precompiledScriptPluginsMetadataDir: MetadataDir
     get() = layout.buildDirectory.dir("kotlin-dsl/precompiled-script-plugins-metadata").get().asFile
 
 
