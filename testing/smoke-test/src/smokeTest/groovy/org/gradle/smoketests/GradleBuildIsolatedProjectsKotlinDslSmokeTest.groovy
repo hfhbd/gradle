@@ -17,67 +17,53 @@
 package org.gradle.smoketests
 
 import org.gradle.integtests.fixtures.executer.IntegrationTestBuildContext
+import org.gradle.kotlin.dsl.tooling.fixtures.FetchKotlinDslScriptsModelForAllBuilds
+import org.gradle.kotlin.dsl.tooling.fixtures.KotlinDslModelChecker
 import org.gradle.tooling.GradleConnector
 import org.gradle.tooling.ProjectConnection
 import org.gradle.tooling.model.kotlin.dsl.KotlinDslScriptModel
-import org.gradle.tooling.model.kotlin.dsl.KotlinDslScriptsModel
-import org.gradle.util.internal.ToBeImplemented
 
 class GradleBuildIsolatedProjectsKotlinDslSmokeTest extends AbstractGradleceptionSmokeTest {
 
-    @ToBeImplemented
-    def "KotlinDslScriptsModel for IP and non-IP mode are structurally equal"() {
+    def "KotlinDslScriptsModel for all builds for IP and non-IP mode are structurally equal"() {
         when:
         def runner = runner()
-        def originalModel = fetchKotlinDslScriptsModel(runner)
+        def originalModel = fetchBuildTreeScriptModels(runner)
 
         then:
         originalModel != null
 
         when:
-        def isolatedModel = fetchKotlinDslScriptsModel(runner, '-Dorg.gradle.unsafe.isolated-projects=true')
+        def isolatedModel = fetchBuildTreeScriptModels(runner, '-Dorg.gradle.unsafe.isolated-projects=true')
 
         then:
         isolatedModel != null
-        // TODO:isolated remove negation when reach models parity
-        // See https://github.com/gradle/gradle/issues/37637
-        !kotlinDslScriptsModelsAreEqual(isolatedModel, originalModel)
+        checkBuildTreeScriptModels(isolatedModel, originalModel)
     }
 
-    private KotlinDslScriptsModel fetchKotlinDslScriptsModel(SmokeTestGradleRunner runner, String... extraArgs) {
+    private Map<File, KotlinDslScriptModel> fetchBuildTreeScriptModels(SmokeTestGradleRunner runner, String... extraArgs) {
         try (ProjectConnection connection = GradleConnector.newConnector()
             .useGradleUserHomeDir(IntegrationTestBuildContext.INSTANCE.gradleUserHomeDir)
             .useInstallation(IntegrationTestBuildContext.INSTANCE.gradleHomeDir)
             .forProjectDirectory(testProjectDir)
             .connect()) {
-            def modelBuilder = connection.model(KotlinDslScriptsModel)
+            def actionBuilder = connection.action(new FetchKotlinDslScriptsModelForAllBuilds())
                 .addArguments(runner.arguments)
                 .addJvmArguments(runner.jvmArguments)
                 .setStandardOutput(System.out)
                 .setStandardError(System.err)
             if (extraArgs) {
-                modelBuilder.addArguments(extraArgs as List)
+                actionBuilder.addArguments(extraArgs as List)
             }
-            return modelBuilder.get()
+            return actionBuilder.run()
         }
     }
 
-    static boolean kotlinDslScriptsModelsAreEqual(KotlinDslScriptsModel actual, KotlinDslScriptsModel expected) {
-        Map<File, KotlinDslScriptModel> actualModels = actual.scriptModels
-        Map<File, KotlinDslScriptModel> expectedModels = expected.scriptModels
-        if (actualModels.keySet() != expectedModels.keySet()) return false
-        actualModels.every { File file, KotlinDslScriptModel actualScript ->
-            KotlinDslScriptModel expectedScript = expectedModels[file]
-            kotlinDslScriptModelsAreEqual(actualScript, expectedScript)
+    static void checkBuildTreeScriptModels(Map<File, KotlinDslScriptModel> actual, Map<File, KotlinDslScriptModel> expected) {
+        assert actual.size() == expected.size()
+        assert actual.keySet() == expected.keySet()
+        actual.each { file, actualModel ->
+            KotlinDslModelChecker.checkKotlinDslScriptModel(actualModel, expected[file])
         }
-    }
-
-    static boolean kotlinDslScriptModelsAreEqual(KotlinDslScriptModel actual, KotlinDslScriptModel expected) {
-        actual.classPath == expected.classPath &&
-            actual.sourcePath == expected.sourcePath &&
-            actual.implicitImports == expected.implicitImports &&
-            // TODO:isolated support editor reports
-            // actual.editorReports == expected.editorReports &&
-            actual.exceptions == expected.exceptions
     }
 }
