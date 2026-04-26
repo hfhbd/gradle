@@ -106,7 +106,7 @@ class SettingsBuilder {
                     });"""
         }.join("\n")
 
-        pluginBuilder.file("src/main/java/${packageName.replace('.', '/')}/${pluginClassName}.java") << """
+        pluginBuilder.file("src/main/java/${packageName.replace('.', '/')}/${pluginClassName}.java") << SourceFormatter.format("""
                 package ${packageName};
 
                 import org.gradle.api.DefaultTask;
@@ -122,7 +122,7 @@ class SettingsBuilder {
                         ${defaultsCode}
                     }
                 }
-            """
+            """)
     }
 
     private void buildKotlin(GradlePluginBuilder pluginBuilder) {
@@ -137,7 +137,7 @@ class SettingsBuilder {
                     }"""
         }.join("\n")
 
-        pluginBuilder.file("src/main/kotlin/${packageName.replace('.', '/')}/${pluginClassName}.kt") << """
+        pluginBuilder.file("src/main/kotlin/${packageName.replace('.', '/')}/${pluginClassName}.kt") << SourceFormatter.format("""
             package ${packageName}
 
             import org.gradle.api.Plugin
@@ -150,7 +150,7 @@ class SettingsBuilder {
                     ${defaultsCode}
                 }
             }
-        """
+        """)
     }
 
     private static String generateDefaultConvention(String propertyPath, Object value, Language language = Language.JAVA) {

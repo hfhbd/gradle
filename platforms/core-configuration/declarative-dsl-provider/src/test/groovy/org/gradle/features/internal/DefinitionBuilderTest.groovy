@@ -673,7 +673,7 @@ class DefinitionBuilderTest extends Specification {
         def content = new File(tempDir, "src/main/java/org/gradle/test/TestProjectTypeDefinition.java").text
 
         then:
-        content.contains("@Incubating\n                Property<String> getId();")
+        content.contains("@Incubating\n    Property<String> getId();")
     }
 
     def "emits multiple annotations on getter preserving declared order"() {
@@ -750,7 +750,7 @@ class DefinitionBuilderTest extends Specification {
         def content = new File(tempDir, "src/main/java/org/gradle/test/TestProjectTypeDefinition.java").text
 
         then:
-        content.contains("@Incubating\n                public abstract NamedDomainObjectContainer<Source> getSources();")
+        content.contains("@Incubating\n    public abstract NamedDomainObjectContainer<Source> getSources();")
     }
 
     def "emits annotations on NDOC getter in abstract class shape"() {
@@ -769,7 +769,7 @@ class DefinitionBuilderTest extends Specification {
         def content = new File(tempDir, "src/main/java/org/gradle/test/TestProjectTypeDefinition.java").text
 
         then:
-        content.contains("@Incubating\n                public abstract NamedDomainObjectContainer<Source> getSources();")
+        content.contains("@Incubating\n    public abstract NamedDomainObjectContainer<Source> getSources();")
     }
 
     def "emits annotations on abstract class shape property getter"() {
@@ -787,7 +787,7 @@ class DefinitionBuilderTest extends Specification {
         def content = new File(tempDir, "src/main/java/org/gradle/test/TestProjectTypeDefinition.java").text
 
         then:
-        content.contains("@Incubating\n                public abstract Property<String> getId();")
+        content.contains("@Incubating\n    public abstract Property<String> getId();")
     }
 
     def "emits annotations on abstract javaBean getter but not setter"() {
@@ -804,7 +804,7 @@ class DefinitionBuilderTest extends Specification {
         def content = new File(tempDir, "src/main/java/org/gradle/test/FeatureDefinition.java").text
 
         then:
-        content.contains("@Incubating\n                Directory getDir();")
+        content.contains("@Incubating\n    Directory getDir();")
         def setterLine = content.readLines().find { it.contains("setDir(") }
         setterLine != null
         !setterLine.contains("@Incubating")

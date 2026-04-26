@@ -98,9 +98,9 @@ abstract class AbstractPluginBuilder {
             )
         }
         if (language == Language.KOTLIN) {
-            pluginBuilder.file("src/main/kotlin/${packageName.replace('.', '/')}/${pluginClassName}.kt") << renderKotlin()
+            pluginBuilder.file("src/main/kotlin/${packageName.replace('.', '/')}/${pluginClassName}.kt") << SourceFormatter.format(renderKotlin())
         } else {
-            pluginBuilder.file("src/main/java/${packageName.replace('.', '/')}/${pluginClassName}.java") << renderJava()
+            pluginBuilder.file("src/main/java/${packageName.replace('.', '/')}/${pluginClassName}.java") << SourceFormatter.format(renderJava())
         }
     }
 

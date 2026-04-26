@@ -265,16 +265,16 @@ class DefinitionBuilder implements HasProperties, HasNestedTypes, HasInjectedSer
      */
     void build(PluginBuilder pluginBuilder) {
         validateShapes()
-        pluginBuilder.file("src/main/java/${packageName.replace('.', '/')}/${className}.java").text = getPublicTypeClassContent()
+        pluginBuilder.file("src/main/java/${packageName.replace('.', '/')}/${className}.java").text = SourceFormatter.format(getPublicTypeClassContent())
         if (implementationClassName) {
-            pluginBuilder.file("src/main/java/${packageName.replace('.', '/')}/${implementationClassName}.java").text = getImplementationTypeClassContent()
+            pluginBuilder.file("src/main/java/${packageName.replace('.', '/')}/${implementationClassName}.java").text = SourceFormatter.format(getImplementationTypeClassContent())
         }
         if (parentDefinition) {
             def parentClassName = "Parent${className}"
-            pluginBuilder.file("src/main/java/${packageName.replace('.', '/')}/${parentClassName}.java").text = getParentClassContent(parentClassName)
+            pluginBuilder.file("src/main/java/${packageName.replace('.', '/')}/${parentClassName}.java").text = SourceFormatter.format(getParentClassContent(parentClassName))
         }
         if (dependenciesDeclaration) {
-            pluginBuilder.file("src/main/java/${packageName.replace('.', '/')}/${dependenciesDeclaration.interfaceName}.java").text = getDependenciesInterfaceContent()
+            pluginBuilder.file("src/main/java/${packageName.replace('.', '/')}/${dependenciesDeclaration.interfaceName}.java").text = SourceFormatter.format(getDependenciesInterfaceContent())
         }
     }
 

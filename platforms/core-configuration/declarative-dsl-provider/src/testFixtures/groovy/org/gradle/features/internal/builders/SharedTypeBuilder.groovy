@@ -42,9 +42,9 @@ class SharedTypeBuilder {
 
     void build(PluginBuilder pluginBuilder) {
         def path = "src/main/java/${packageName.replace('.', '/')}/${declaration.typeName}.java"
-        pluginBuilder.file(path).text = declaration.sharedRefData().sharedShape == TypeShape.ABSTRACT_CLASS
+        pluginBuilder.file(path).text = SourceFormatter.format(declaration.sharedRefData().sharedShape == TypeShape.ABSTRACT_CLASS
             ? generateAbstractClassContent()
-            : generateInterfaceContent()
+            : generateInterfaceContent())
     }
 
     private String generateInterfaceContent() {
