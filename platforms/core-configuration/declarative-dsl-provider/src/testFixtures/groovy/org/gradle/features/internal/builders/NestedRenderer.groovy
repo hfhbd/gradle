@@ -88,7 +88,7 @@ class NestedRenderer {
         }
 
         def propertyGetters = nested.properties.collect { property ->
-            "${JavaSources.renderAnnotations(property.allAnnotations, '                ')}public abstract ${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
+            "${JavaSources.renderAnnotations(property.allAnnotations)}public abstract ${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
         }.join("\n")
 
         def services = JavaSources.generateInjectedServiceDeclarations(nested.injectedServices, false)
@@ -100,13 +100,13 @@ class NestedRenderer {
         def nestedBodies = renderNestedBodies(nested.nestedTypes, TypeShape.INTERFACE)
 
         return """
-            public interface ${nested.typeName} ${extendsClause} {
-                ${services}
-                ${propertyGetters}
-                ${nestedAccessors}
-                ${nestedBodies}
-            }
-        """
+public interface ${nested.typeName} ${extendsClause} {
+${services}
+${propertyGetters}
+${nestedAccessors}
+${nestedBodies}
+}
+"""
     }
 
     /**
@@ -122,7 +122,7 @@ class NestedRenderer {
         def services = JavaSources.generateInjectedServiceDeclarations(nested.injectedServices, true)
 
         def propertyGetters = nested.properties.collect { property ->
-            "${JavaSources.renderAnnotations(property.allAnnotations, '                ')}public abstract ${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
+            "${JavaSources.renderAnnotations(property.allAnnotations)}public abstract ${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
         }.join("\n")
 
         def addingMethods = JavaSources.generateAddingMethods(nested.properties)
@@ -134,20 +134,20 @@ class NestedRenderer {
         def nestedBodies = renderNestedBodies(nested.nestedTypes, TypeShape.ABSTRACT_CLASS)
 
         return """
-            public abstract static class ${nested.typeName} ${implementsClause} {
-                public ${nested.typeName}() { }
+public abstract static class ${nested.typeName} ${implementsClause} {
+public ${nested.typeName}() { }
 
-                ${services}
+${services}
 
-                ${propertyGetters}
+${propertyGetters}
 
-                ${addingMethods}
+${addingMethods}
 
-                ${nestedAccessors}
+${nestedAccessors}
 
-                ${nestedBodies}
-            }
-        """
+${nestedBodies}
+}
+"""
     }
 
     /**
@@ -160,27 +160,27 @@ class NestedRenderer {
             ? "extends ${Definition.class.simpleName}<${nested.typeName}.${nested.buildModel.className}>, Named"
             : ""
         def propertyGetters = nested.properties.collect { property ->
-            "${JavaSources.renderAnnotations(property.allAnnotations, '                ')}public abstract ${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
+            "${JavaSources.renderAnnotations(property.allAnnotations)}public abstract ${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
         }.join("\n")
         def subNestedBodies = renderNestedBodies(nested.nestedTypes, TypeShape.INTERFACE)
         def bmIface = ""
         if (nested.buildModel) {
             def buildModelPropertyGetters = nested.buildModel.properties.collect { property ->
-                "${JavaSources.renderAnnotations(property.allAnnotations, '                    ')}${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
+                "${JavaSources.renderAnnotations(property.allAnnotations)}${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
             }.join("\n")
             bmIface = """
-                public interface ${nested.buildModel.className} extends BuildModel {
-                    ${buildModelPropertyGetters}
-                }
-                """
+public interface ${nested.buildModel.className} extends BuildModel {
+${buildModelPropertyGetters}
+}
+"""
         }
         return """
-            public interface ${nested.typeName} ${extendsClause} {
-                ${propertyGetters}
-                ${subNestedBodies}
-                ${bmIface}
-            }
-            """
+public interface ${nested.typeName} ${extendsClause} {
+${propertyGetters}
+${subNestedBodies}
+${bmIface}
+}
+"""
     }
 
     /**
@@ -195,11 +195,11 @@ class NestedRenderer {
             return ""
         }
         if (sub.kind == NestedKind.NDOC) {
-            return "${JavaSources.renderAnnotations(sub.allAnnotations, '                ')}public abstract NamedDomainObjectContainer<${sub.typeName}> get${JavaSources.capitalize(sub.name)}();"
+            return "${JavaSources.renderAnnotations(sub.allAnnotations)}public abstract NamedDomainObjectContainer<${sub.typeName}> get${JavaSources.capitalize(sub.name)}();"
         }
         def prefix = inAbstractClass ? "public abstract " : ""
-        return """${JavaSources.renderAnnotations(sub.allAnnotations, '                ')}@Nested
-                ${prefix}${sub.typeName} get${JavaSources.capitalize(sub.name)}();"""
+        return """${JavaSources.renderAnnotations(sub.allAnnotations)}@Nested
+${prefix}${sub.typeName} get${JavaSources.capitalize(sub.name)}();"""
     }
 
     static String generateNestedBuildModelInterface(PropertyTypeDeclaration nestedType) {
@@ -207,18 +207,18 @@ class NestedRenderer {
             return ""
         }
         def buildModelPropertyGetters = nestedType.buildModel.properties.collect { property ->
-            "${JavaSources.renderAnnotations(property.allAnnotations, '                ')}${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
+            "${JavaSources.renderAnnotations(property.allAnnotations)}${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
         }.join("\n")
         return """
-            public interface ${nestedType.buildModel.className} extends BuildModel {
-                ${buildModelPropertyGetters}
-            }
-        """
+public interface ${nestedType.buildModel.className} extends BuildModel {
+${buildModelPropertyGetters}
+}
+"""
     }
 
     static String generateNdocElementClass(PropertyTypeDeclaration nestedType) {
         def propertyGetters = nestedType.properties.collect { property ->
-            "${JavaSources.renderAnnotations(property.allAnnotations, '                ')}public abstract ${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
+            "${JavaSources.renderAnnotations(property.allAnnotations)}public abstract ${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
         }.join("\n")
 
         // NDOC element is itself an abstract static class; sub accessors use the abstract-class form.
@@ -231,30 +231,30 @@ class NestedRenderer {
         def nestedInterfaces = renderNestedBodies(nestedType.nestedTypes, TypeShape.INTERFACE)
 
         return """
-            public abstract static class ${nestedType.typeName} implements Named {
-                private String name;
+public abstract static class ${nestedType.typeName} implements Named {
+private String name;
 
-                public ${nestedType.typeName}(String name) {
-                    this.name = name;
-                }
+public ${nestedType.typeName}(String name) {
+this.name = name;
+}
 
-                @Override
-                public String getName() {
-                    return name;
-                }
+@Override
+public String getName() {
+return name;
+}
 
-                ${propertyGetters}
+${propertyGetters}
 
-                ${nestedAccessors}
+${nestedAccessors}
 
-                ${nestedInterfaces}
+${nestedInterfaces}
 
-                @Override
-                public String toString() {
-                    return "${nestedType.typeName}(name = " + name${nestedType.properties.collect { property -> " + \", ${property.name} = \" + get${JavaSources.capitalize(property.name)}().get()" }.join('')} + ")";
-                }
-            }
-        """
+@Override
+public String toString() {
+return "${nestedType.typeName}(name = " + name${nestedType.properties.collect { property -> " + \", ${property.name} = \" + get${JavaSources.capitalize(property.name)}().get()" }.join('')} + ")";
+}
+}
+"""
     }
 
     static String generateUndiscoverableInterface(PropertyTypeDeclaration nestedType) {
@@ -265,7 +265,7 @@ class NestedRenderer {
         def services = JavaSources.generateInjectedServiceDeclarations(nestedType.injectedServices, false)
 
         def propertyGetters = nestedType.properties.collect { property ->
-            "${JavaSources.renderAnnotations(property.allAnnotations, '                ')}public abstract ${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
+            "${JavaSources.renderAnnotations(property.allAnnotations)}public abstract ${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
         }.join("\n")
 
         // Undiscoverable is itself an interface; sub accessors use interface-member form.
@@ -278,27 +278,27 @@ class NestedRenderer {
         def bmIface = ""
         if (nestedType.buildModel) {
             def buildModelPropertyGetters = nestedType.buildModel.properties.collect { property ->
-                "${JavaSources.renderAnnotations(property.allAnnotations, '                    ')}${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
+                "${JavaSources.renderAnnotations(property.allAnnotations)}${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
             }.join("\n")
             bmIface = """
-                public interface ${nestedType.buildModel.className} extends BuildModel {
-                    ${buildModelPropertyGetters}
-                }
-            """
+public interface ${nestedType.buildModel.className} extends BuildModel {
+${buildModelPropertyGetters}
+}
+"""
         }
 
         return """
-            public interface ${nestedType.typeName} ${extendsClause} {
-                ${services}
+public interface ${nestedType.typeName} ${extendsClause} {
+${services}
 
-                ${propertyGetters}
+${propertyGetters}
 
-                ${nestedAccessors}
+${nestedAccessors}
 
-                ${nestedInterfaces}
+${nestedInterfaces}
 
-                ${bmIface}
-            }
-        """
+${bmIface}
+}
+"""
     }
 }

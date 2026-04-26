@@ -40,16 +40,16 @@ class JavaSources {
 
     /**
      * Renders user-supplied annotation source fragments as a prefix to be inserted immediately
-     * before a getter. For an empty list, returns the empty string so existing output is
-     * byte-identical. For a non-empty list, returns each annotation joined by a newline + the
-     * supplied indent, with a trailing newline + indent so the caller's next token (the getter
-     * keyword) sits on a fresh, correctly-indented line.
+     * before a getter. For an empty list, returns the empty string so {@link SourceFormatter}'s
+     * blank-line collapse handles the empty substitution scar without any other change. For a
+     * non-empty list, returns each annotation followed by a newline so {@link SourceFormatter}
+     * can re-indent each one to the call site's column.
      */
-    static String renderAnnotations(List<String> annotations, String indent) {
+    static String renderAnnotations(List<String> annotations) {
         if (annotations.isEmpty()) {
             return ""
         }
-        return annotations.collect { "${it}\n${indent}" }.join("")
+        return annotations.collect { "${it}\n" }.join("")
     }
 
     static String getPropertyReturnType(PropertyDeclaration property) {
@@ -99,10 +99,10 @@ class JavaSources {
         return services.collect { service ->
             if (isAbstract) {
                 """@Inject
-                protected abstract ${service.type.name} get${capitalize(service.name)}();"""
+protected abstract ${service.type.name} get${capitalize(service.name)}();"""
             } else {
                 """@Inject
-                ${service.type.name} get${capitalize(service.name)}();"""
+${service.type.name} get${capitalize(service.name)}();"""
             }
         }.join("\n")
     }
@@ -111,11 +111,11 @@ class JavaSources {
         def lines = []
         props.findAll { it.kind == PropertyKind.LIST_PROPERTY }.each { property ->
             lines << """
-                @${Adding.class.simpleName}
-                public void addTo${capitalize(property.name)}(${property.type.simpleName} value) {
-                    get${capitalize(property.name)}().add(value);
-                }
-            """
+@${Adding.class.simpleName}
+public void addTo${capitalize(property.name)}(${property.type.simpleName} value) {
+get${capitalize(property.name)}().add(value);
+}
+"""
         }
         return lines.join("\n")
     }

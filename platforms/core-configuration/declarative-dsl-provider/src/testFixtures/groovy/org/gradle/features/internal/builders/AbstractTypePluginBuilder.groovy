@@ -45,9 +45,9 @@ abstract class AbstractTypePluginBuilder extends AbstractPluginBuilder {
             return generateCustomServices(applyActionDeclaration.injectedServices, false)
         }
         return """
-                    @javax.inject.Inject
-                    abstract protected ${TaskRegistrar.class.name} getTaskRegistrar();
-        """
+@javax.inject.Inject
+abstract protected ${TaskRegistrar.class.name} getTaskRegistrar();
+"""
     }
 
     /** Renders inner classes that implement NDOC build-model interfaces declared on the primary definition. */
@@ -57,10 +57,10 @@ abstract class AbstractTypePluginBuilder extends AbstractPluginBuilder {
                 "public abstract ${AbstractTypePluginBuilder.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
             }.join("\n")
             """
-                public static abstract class ${implementation.implClassName} implements ${primaryDefinition.className}.${implementation.interfaceName} {
-                    ${propertyDeclarations}
-                }
-            """
+public static abstract class ${implementation.implClassName} implements ${primaryDefinition.className}.${implementation.interfaceName} {
+${propertyDeclarations}
+}
+"""
         }.join("\n")
     }
 

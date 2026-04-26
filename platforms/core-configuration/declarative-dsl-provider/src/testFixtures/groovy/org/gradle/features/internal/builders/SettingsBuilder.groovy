@@ -102,8 +102,8 @@ class SettingsBuilder {
                 generateDefaultConvention(propertyName, propertyValue, Language.JAVA)
             }.join("\n")
             """settings.getDefaults().add("${defaultDeclaration.typeName}", ${defaultDeclaration.definitionClassName}.class, definition -> {
-                        ${conventions}
-                    });"""
+${conventions}
+});"""
         }.join("\n")
 
         pluginBuilder.file("src/main/java/${packageName.replace('.', '/')}/${pluginClassName}.java") << SourceFormatter.format("""
@@ -133,8 +133,8 @@ class SettingsBuilder {
                 generateDefaultConvention(propertyName, propertyValue, Language.KOTLIN)
             }.join("\n")
             """settings.defaults.add("${defaultDeclaration.typeName}", ${defaultDeclaration.definitionClassName}::class.java) { definition ->
-                        ${conventions}
-                    }"""
+${conventions}
+}"""
         }.join("\n")
 
         pluginBuilder.file("src/main/kotlin/${packageName.replace('.', '/')}/${pluginClassName}.kt") << SourceFormatter.format("""

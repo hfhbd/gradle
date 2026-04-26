@@ -55,17 +55,17 @@ class SharedTypeBuilder {
         def services = JavaSources.generateInjectedServiceDeclarations(declaration.injectedServices, false)
 
         def propertyGetters = declaration.properties.collect { property ->
-            "${JavaSources.renderAnnotations(property.allAnnotations, '                ')}" +
+            "${JavaSources.renderAnnotations(property.allAnnotations)}" +
                 "${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
         }.join("\n")
 
         def nestedAccessors = declaration.nestedTypes.collect { subNested ->
             if (subNested.kind == NestedKind.NDOC) {
-                "${JavaSources.renderAnnotations(subNested.allAnnotations, '                ')}" +
+                "${JavaSources.renderAnnotations(subNested.allAnnotations)}" +
                     "NamedDomainObjectContainer<${subNested.typeName}> get${JavaSources.capitalize(subNested.name)}();"
             } else {
-                """${JavaSources.renderAnnotations(subNested.allAnnotations, '                ')}@Nested
-                ${subNested.typeName} get${JavaSources.capitalize(subNested.name)}();"""
+                """${JavaSources.renderAnnotations(subNested.allAnnotations)}@Nested
+${subNested.typeName} get${JavaSources.capitalize(subNested.name)}();"""
             }
         }.join("\n\n")
 
@@ -120,35 +120,35 @@ class SharedTypeBuilder {
         if (!nonNdocSubs.isEmpty()) {
             def inits = nonNdocSubs.collect { sub ->
                 "this.${sub.name} = objects.newInstance(${sub.typeName}.class);"
-            }.join("\n                    ")
+            }.join("\n")
             constructor = """
-                @Inject
-                public ${declaration.typeName}(ObjectFactory objects) {
-                    ${inits}
-                }
-            """
+@Inject
+public ${declaration.typeName}(ObjectFactory objects) {
+${inits}
+}
+"""
         } else {
             constructor = """
-                @Inject
-                public ${declaration.typeName}() {}
-            """
+@Inject
+public ${declaration.typeName}() {}
+"""
         }
 
         def services = JavaSources.generateInjectedServiceDeclarations(declaration.injectedServices, true)
 
         def propertyGetters = declaration.properties.collect { property ->
-            "${JavaSources.renderAnnotations(property.allAnnotations, '                ')}" +
+            "${JavaSources.renderAnnotations(property.allAnnotations)}" +
                 "public abstract ${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
         }.join("\n")
 
         def nestedGetters = declaration.nestedTypes.collect { sub ->
             if (sub.kind == NestedKind.NDOC) {
-                "${JavaSources.renderAnnotations(sub.allAnnotations, '                ')}" +
+                "${JavaSources.renderAnnotations(sub.allAnnotations)}" +
                     "public abstract NamedDomainObjectContainer<${sub.typeName}> get${JavaSources.capitalize(sub.name)}();"
             } else {
-                """${JavaSources.renderAnnotations(sub.allAnnotations, '                ')}public ${sub.typeName} get${JavaSources.capitalize(sub.name)}() {
-                    return ${sub.name};
-                }"""
+                """${JavaSources.renderAnnotations(sub.allAnnotations)}public ${sub.typeName} get${JavaSources.capitalize(sub.name)}() {
+return ${sub.name};
+}"""
             }
         }.join("\n\n")
 
@@ -198,13 +198,13 @@ class SharedTypeBuilder {
             return ""
         }
         def buildModelPropertyGetters = declaration.buildModel.properties.collect { property ->
-            "${JavaSources.renderAnnotations(property.allAnnotations, '                ')}" +
+            "${JavaSources.renderAnnotations(property.allAnnotations)}" +
                 "${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
         }.join("\n")
         return """
-            public interface ${declaration.buildModel.className} extends BuildModel {
-                ${buildModelPropertyGetters}
-            }
-        """
+public interface ${declaration.buildModel.className} extends BuildModel {
+${buildModelPropertyGetters}
+}
+"""
     }
 }

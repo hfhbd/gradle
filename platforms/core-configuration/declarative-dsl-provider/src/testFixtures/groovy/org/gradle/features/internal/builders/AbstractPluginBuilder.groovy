@@ -128,42 +128,42 @@ abstract class AbstractPluginBuilder {
         services.each { service ->
             if (service.name == "project") {
                 lines << """
-                    @javax.inject.Inject
-                    abstract protected Project getProject(); // Unsafe Service
+@javax.inject.Inject
+abstract protected Project getProject(); // Unsafe Service
 
-                    protected org.gradle.api.tasks.TaskContainer getTaskRegistrar() {
-                        return getProject().getTasks();
-                    }"""
+protected org.gradle.api.tasks.TaskContainer getTaskRegistrar() {
+return getProject().getTasks();
+}"""
                 if (isFeature) {
                     lines << """
-                    @javax.inject.Inject
-                    abstract protected ${ProjectFeatureLayout.class.name} getProjectFeatureLayout();
+@javax.inject.Inject
+abstract protected ${ProjectFeatureLayout.class.name} getProjectFeatureLayout();
 
-                    @javax.inject.Inject
-                    abstract protected ${ProviderFactory.class.name} getProviderFactory();"""
+@javax.inject.Inject
+abstract protected ${ProviderFactory.class.name} getProviderFactory();"""
                 }
             } else if (service.name == "unknown") {
                 lines << """
-                    interface UnknownService extends ${TaskRegistrar.class.name} { }
+interface UnknownService extends ${TaskRegistrar.class.name} { }
 
-                    protected ${TaskRegistrar.class.name} getTaskRegistrar() {
-                        return getUnknownService();
-                    }
+protected ${TaskRegistrar.class.name} getTaskRegistrar() {
+return getUnknownService();
+}
 
-                    @javax.inject.Inject
-                    abstract protected UnknownService getUnknownService();"""
+@javax.inject.Inject
+abstract protected UnknownService getUnknownService();"""
                 if (isFeature) {
                     lines << """
-                    @javax.inject.Inject
-                    abstract protected ${ProjectFeatureLayout.class.name} getProjectFeatureLayout();
+@javax.inject.Inject
+abstract protected ${ProjectFeatureLayout.class.name} getProjectFeatureLayout();
 
-                    @javax.inject.Inject
-                    abstract protected ${ProviderFactory.class.name} getProviderFactory();"""
+@javax.inject.Inject
+abstract protected ${ProviderFactory.class.name} getProviderFactory();"""
                 }
             } else {
                 lines << """
-                    @javax.inject.Inject
-                    abstract protected ${service.type.name} get${JavaSources.capitalize(service.name)}();"""
+@javax.inject.Inject
+abstract protected ${service.type.name} get${JavaSources.capitalize(service.name)}();"""
             }
         }
         return lines.join("\n")

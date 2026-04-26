@@ -59,15 +59,15 @@ abstract class AbstractFeaturePluginBuilder extends AbstractPluginBuilder {
             return generateCustomServices(applyActionDeclaration.injectedServices, true)
         }
         return """
-                    @javax.inject.Inject
-                    abstract protected ${TaskRegistrar.class.name} getTaskRegistrar();
+@javax.inject.Inject
+abstract protected ${TaskRegistrar.class.name} getTaskRegistrar();
 
-                    @javax.inject.Inject
-                    abstract protected ${ProjectFeatureLayout.class.name} getProjectFeatureLayout();
+@javax.inject.Inject
+abstract protected ${ProjectFeatureLayout.class.name} getProjectFeatureLayout();
 
-                    @javax.inject.Inject
-                    abstract protected ${ProviderFactory.class.name} getProviderFactory();
-        """
+@javax.inject.Inject
+abstract protected ${ProviderFactory.class.name} getProviderFactory();
+"""
     }
 
     /** Returns the build model mapping code for the current language. */

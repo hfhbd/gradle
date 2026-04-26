@@ -44,25 +44,25 @@ class MultiTypePluginBuilder extends AbstractTypePluginBuilder {
         def applyActionClasses = allBindings.collect { binding ->
             def bindingDefinition = binding.definition
             """
-                static abstract class ${bindingDefinition.className}ApplyAction implements ${ProjectTypeApplyAction.class.name}<${bindingDefinition.className}, ${bindingDefinition.fullyQualifiedBuildModelClassName}> {
-                    @javax.inject.Inject public ${bindingDefinition.className}ApplyAction() { }
+static abstract class ${bindingDefinition.className}ApplyAction implements ${ProjectTypeApplyAction.class.name}<${bindingDefinition.className}, ${bindingDefinition.fullyQualifiedBuildModelClassName}> {
+@javax.inject.Inject public ${bindingDefinition.className}ApplyAction() { }
 
-                    @javax.inject.Inject
-                    abstract protected ${TaskRegistrar.class.name} getTaskRegistrar();
+@javax.inject.Inject
+abstract protected ${TaskRegistrar.class.name} getTaskRegistrar();
 
-                    @Override
-                    public void apply(${ProjectFeatureApplicationContext.class.name} context, ${bindingDefinition.className} definition, ${bindingDefinition.fullyQualifiedBuildModelClassName} model) {
-                        System.out.println("Binding " + ${bindingDefinition.className}.class.getSimpleName());
-                        ${bindingDefinition.getBuildModelMapping(language)}
-                        getTaskRegistrar().register("print${bindingDefinition.className}Configuration", DefaultTask.class, task -> {
-                            task.doLast("print restricted extension content", t -> {
-                                ${bindingDefinition.displayDefinitionPropertyValues(language)}
-                                ${bindingDefinition.displayModelPropertyValues(language)}
-                            });
-                        });
-                    }
-                }
-            """
+@Override
+public void apply(${ProjectFeatureApplicationContext.class.name} context, ${bindingDefinition.className} definition, ${bindingDefinition.fullyQualifiedBuildModelClassName} model) {
+System.out.println("Binding " + ${bindingDefinition.className}.class.getSimpleName());
+${bindingDefinition.getBuildModelMapping(language)}
+getTaskRegistrar().register("print${bindingDefinition.className}Configuration", DefaultTask.class, task -> {
+task.doLast("print restricted extension content", t -> {
+${bindingDefinition.displayDefinitionPropertyValues(language)}
+${bindingDefinition.displayModelPropertyValues(language)}
+});
+});
+}
+}
+"""
         }.join("\n")
 
         return """

@@ -153,17 +153,17 @@ class SingleTypePluginBuilder extends AbstractTypePluginBuilder {
             return generateEagerReadApplyBody()
         }
         return """
-                        ${buildModelMappingForLanguage()}
+${buildModelMappingForLanguage()}
 
-                        getTaskRegistrar().register("print${primaryDefinition.className}Configuration", DefaultTask.class, task -> {
-                            task.doLast("print restricted extension content", t -> {
-                                ${displayDefinitionValuesForLanguage()}
-                                ${displayModelValuesForLanguage()}
-                            });
-                        });
+getTaskRegistrar().register("print${primaryDefinition.className}Configuration", DefaultTask.class, task -> {
+task.doLast("print restricted extension content", t -> {
+${displayDefinitionValuesForLanguage()}
+${displayModelValuesForLanguage()}
+});
+});
 
-                        ${customApplyActionCode}
-        """
+${customApplyActionCode}
+"""
     }
 
     private String generateEagerReadApplyBody() {
@@ -183,18 +183,18 @@ class SingleTypePluginBuilder extends AbstractTypePluginBuilder {
         }
 
         return """
-                        // Eagerly read values at apply time.
-                        // These reads throw MissingValueException if the definition
-                        // hasn't been configured yet - that is what this fixture tests against.
-                        ${eagerReads.join("\n")}
+// Eagerly read values at apply time.
+// These reads throw MissingValueException if the definition
+// hasn't been configured yet - that is what this fixture tests against.
+${eagerReads.join("\n")}
 
-                        ${buildModelMappingForLanguage()}
+${buildModelMappingForLanguage()}
 
-                        getTaskRegistrar().register("printApplyTimeValues", DefaultTask.class, task -> {
-                            task.doLast("print", t -> {
-                                ${printStatements.join("\n")}
-                            });
-                        });
-        """
+getTaskRegistrar().register("printApplyTimeValues", DefaultTask.class, task -> {
+task.doLast("print", t -> {
+${printStatements.join("\n")}
+});
+});
+"""
     }
 }

@@ -486,11 +486,11 @@ class DefinitionBuilder implements HasProperties, HasNestedTypes, HasInjectedSer
             return mappings.join("\n")
         }
         def containerAccessor = language.propertyAccessor("definition", nestedType.name)
-        def body = mappings.join("\n    ")
+        def body = mappings.join("\n")
         if (language == Language.KOTLIN) {
-            return "${containerAccessor}.configureEach { ${elementExpression} ->\n    ${body}\n}"
+            return "${containerAccessor}.configureEach { ${elementExpression} ->\n${body}\n}"
         }
-        return "${containerAccessor}.configureEach(${elementExpression} -> {\n    ${body}\n});"
+        return "${containerAccessor}.configureEach(${elementExpression} -> {\n${body}\n});"
     }
 
     /**
@@ -708,26 +708,26 @@ class DefinitionBuilder implements HasProperties, HasNestedTypes, HasInjectedSer
             if (property.javaBeanData().style == JavaBeanStyle.CONCRETE) {
                 return """private ${property.type.simpleName} ${property.name};
 
-                ${JavaSources.renderAnnotations(property.allAnnotations, '                ')}public ${property.type.simpleName} ${getterName}() {
-                    return ${property.name};
-                }
+${JavaSources.renderAnnotations(property.allAnnotations)}public ${property.type.simpleName} ${getterName}() {
+return ${property.name};
+}
 
-                public void set${JavaSources.capitalize(property.name)}(${property.type.simpleName} value) {
-                    this.${property.name} = value;
-                }"""
+public void set${JavaSources.capitalize(property.name)}(${property.type.simpleName} value) {
+this.${property.name} = value;
+}"""
             }
             def setter = isAbstract ? "public abstract void set${JavaSources.capitalize(property.name)}(${property.type.simpleName} value);" : "void set${JavaSources.capitalize(property.name)}(${property.type.simpleName} value);"
-            return """${JavaSources.renderAnnotations(property.allAnnotations, '                ')}${prefix}${property.type.simpleName} ${getterName}();
-                ${setter}"""
+            return """${JavaSources.renderAnnotations(property.allAnnotations)}${prefix}${property.type.simpleName} ${getterName}();
+${setter}"""
         }
 
         if (JavaSources.needsBackingProperty(property)) {
-            return """${JavaSources.renderAnnotations(property.allAnnotations, '                ')}public ${returnType} ${getterName}() {
-                    return ${property.name};
-                }"""
+            return """${JavaSources.renderAnnotations(property.allAnnotations)}public ${returnType} ${getterName}() {
+return ${property.name};
+}"""
         }
 
-        return "${JavaSources.renderAnnotations(property.allAnnotations, '                ')}${prefix}${returnType} ${getterName}();"
+        return "${JavaSources.renderAnnotations(property.allAnnotations)}${prefix}${returnType} ${getterName}();"
     }
 
     private String generateNestedTypeDeclarations(boolean isAbstract) {
@@ -736,15 +736,15 @@ class DefinitionBuilder implements HasProperties, HasNestedTypes, HasInjectedSer
             if (nestedType.kind == NestedKind.NDOC) {
                 if (nestedType.ndocData().outProjected) {
                     // Private getter + public out-projected getter
-                    lines << "${JavaSources.renderAnnotations(nestedType.allAnnotations, '                ')}abstract NamedDomainObjectContainer<${nestedType.typeName}> get${JavaSources.capitalize(nestedType.name)}();"
+                    lines << "${JavaSources.renderAnnotations(nestedType.allAnnotations)}abstract NamedDomainObjectContainer<${nestedType.typeName}> get${JavaSources.capitalize(nestedType.name)}();"
                     lines << "public NamedDomainObjectContainer<? extends ${nestedType.typeName}> getOut${JavaSources.capitalize(nestedType.name)}() { return get${JavaSources.capitalize(nestedType.name)}(); };"
                 } else {
-                    lines << "${JavaSources.renderAnnotations(nestedType.allAnnotations, '                ')}public abstract NamedDomainObjectContainer<${nestedType.typeName}> get${JavaSources.capitalize(nestedType.name)}();"
+                    lines << "${JavaSources.renderAnnotations(nestedType.allAnnotations)}public abstract NamedDomainObjectContainer<${nestedType.typeName}> get${JavaSources.capitalize(nestedType.name)}();"
                 }
             } else {
                 def prefix = isAbstract ? "public abstract " : ""
-                lines << """${JavaSources.renderAnnotations(nestedType.allAnnotations, '                ')}@Nested
-                ${prefix}${nestedType.typeName} get${JavaSources.capitalize(nestedType.name)}();"""
+                lines << """${JavaSources.renderAnnotations(nestedType.allAnnotations)}@Nested
+${prefix}${nestedType.typeName} get${JavaSources.capitalize(nestedType.name)}();"""
             }
         }
         return lines.join("\n\n")
@@ -755,27 +755,27 @@ class DefinitionBuilder implements HasProperties, HasNestedTypes, HasInjectedSer
             return ""
         }
         def buildModelPropertyGetters = buildModel.properties.collect { property ->
-            "${JavaSources.renderAnnotations(property.allAnnotations, '                ')}${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
+            "${JavaSources.renderAnnotations(property.allAnnotations)}${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
         }.join("\n")
 
         def implInterface = ""
         if (buildModel.implementationClassName) {
             def implPropertyGetters = buildModel.properties.collect { property ->
-                "${JavaSources.renderAnnotations(property.allAnnotations, '                    ')}${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
+                "${JavaSources.renderAnnotations(property.allAnnotations)}${JavaSources.getPropertyReturnType(property)} get${JavaSources.capitalize(property.name)}();"
             }.join("\n")
             implInterface = """
-                public interface ${buildModel.implementationClassName} extends ${buildModel.className} {
-                    ${implPropertyGetters}
-                }
-            """
+public interface ${buildModel.implementationClassName} extends ${buildModel.className} {
+${implPropertyGetters}
+}
+"""
         }
 
         return """
-            public interface ${buildModel.className} extends BuildModel {
-                ${buildModelPropertyGetters}
-            }
-            ${implInterface}
-        """
+public interface ${buildModel.className} extends BuildModel {
+${buildModelPropertyGetters}
+}
+${implInterface}
+"""
     }
 
     private String generateAbstractClassFields() {
@@ -809,19 +809,19 @@ class DefinitionBuilder implements HasProperties, HasNestedTypes, HasInjectedSer
                 inits << "this.${it.name} = ${JavaSources.propertyFieldInitializer(it)};"
             }
             return """
-                @Inject
-                public ${effectiveClassName}(${params}) {
-                    ${inits.join("\n")}
-                }
-            """
+@Inject
+public ${effectiveClassName}(${params}) {
+${inits.join("\n")}
+}
+"""
         }
         def hasConcreteJavaBeans = properties.any { it.kind == PropertyKind.JAVA_BEAN && it.javaBeanData().style == JavaBeanStyle.CONCRETE }
         if (hasConcreteJavaBeans) {
             return """
-                @Inject
-                public ${effectiveClassName}() {
-                }
-            """
+@Inject
+public ${effectiveClassName}() {
+}
+"""
         }
         return ""
     }
@@ -831,20 +831,20 @@ class DefinitionBuilder implements HasProperties, HasNestedTypes, HasInjectedSer
         nestedTypes.each { nestedType ->
             if (nestedType.kind == NestedKind.NDOC) {
                 if (nestedType.ndocData().outProjected) {
-                    lines << "${JavaSources.renderAnnotations(nestedType.allAnnotations, '                ')}abstract NamedDomainObjectContainer<${nestedType.typeName}> get${JavaSources.capitalize(nestedType.name)}();"
+                    lines << "${JavaSources.renderAnnotations(nestedType.allAnnotations)}abstract NamedDomainObjectContainer<${nestedType.typeName}> get${JavaSources.capitalize(nestedType.name)}();"
                     lines << "public NamedDomainObjectContainer<? extends ${nestedType.typeName}> getOut${JavaSources.capitalize(nestedType.name)}() { return get${JavaSources.capitalize(nestedType.name)}(); };"
                 } else {
-                    lines << "${JavaSources.renderAnnotations(nestedType.allAnnotations, '                ')}public abstract NamedDomainObjectContainer<${nestedType.typeName}> get${JavaSources.capitalize(nestedType.name)}();"
+                    lines << "${JavaSources.renderAnnotations(nestedType.allAnnotations)}public abstract NamedDomainObjectContainer<${nestedType.typeName}> get${JavaSources.capitalize(nestedType.name)}();"
                 }
             } else if (nestedType.kind == NestedKind.UNDISCOVERABLE) {
                 // The Action-taking method is the sole DCL schema entry point for undiscoverable
                 // types: there is intentionally no public getter, so the declarative engine can
                 // only navigate into the inner object through this method.
                 lines << """
-                public void ${nestedType.name}(Action<? super ${nestedType.typeName}> action) {
-                    action.execute(${nestedType.name});
-                }
-                """
+public void ${nestedType.name}(Action<? super ${nestedType.typeName}> action) {
+action.execute(${nestedType.name});
+}
+"""
             } else if (needsBackingField(nestedType)) {
                 // Field-backed concrete getter: used for shared-ref (always) and for
                 // effectively-ABSTRACT_CLASS regular nested types. Carries the optional
@@ -853,17 +853,17 @@ class DefinitionBuilder implements HasProperties, HasNestedTypes, HasInjectedSer
                     ? "is${JavaSources.capitalize(nestedType.name)}Configured = true; // TODO: get rid of the side effect in the getter"
                     : ""
                 lines << """
-                ${JavaSources.renderAnnotations(nestedType.allAnnotations, '                ')}public ${nestedType.typeName} get${JavaSources.capitalize(nestedType.name)}() {
-                    ${sideEffect}
-                    return ${nestedType.name};
-                }
-                """
+${JavaSources.renderAnnotations(nestedType.allAnnotations)}public ${nestedType.typeName} get${JavaSources.capitalize(nestedType.name)}() {
+${sideEffect}
+return ${nestedType.name};
+}
+"""
             } else {
                 // Effectively-INTERFACE regular nested under an abstract-class outer:
                 // no field, Gradle's ObjectFactory synthesizes the instance for the @Nested
                 // abstract getter. Cannot carry side effects, enforced at build() time.
-                lines << """${JavaSources.renderAnnotations(nestedType.allAnnotations, '                ')}@Nested
-                public abstract ${nestedType.typeName} get${JavaSources.capitalize(nestedType.name)}();"""
+                lines << """${JavaSources.renderAnnotations(nestedType.allAnnotations)}@Nested
+public abstract ${nestedType.typeName} get${JavaSources.capitalize(nestedType.name)}();"""
             }
         }
         return lines.join("\n")
@@ -877,15 +877,15 @@ class DefinitionBuilder implements HasProperties, HasNestedTypes, HasInjectedSer
             "DependencyCollector get${JavaSources.capitalize(name)}();"
         }.join("\n\n")
         return """
-            package ${packageName};
+package ${packageName};
 
-            import org.gradle.api.artifacts.dsl.Dependencies;
-            import org.gradle.api.artifacts.dsl.DependencyCollector;
+import org.gradle.api.artifacts.dsl.Dependencies;
+import org.gradle.api.artifacts.dsl.DependencyCollector;
 
-            public interface ${dependenciesDeclaration.interfaceName} extends Dependencies {
-                ${collectorGetters}
-            }
-        """
+public interface ${dependenciesDeclaration.interfaceName} extends Dependencies {
+${collectorGetters}
+}
+"""
     }
 
     private String generateDependenciesMembers() {
@@ -893,22 +893,22 @@ class DefinitionBuilder implements HasProperties, HasNestedTypes, HasInjectedSer
             return ""
         }
         return """
-            @Nested
-            public abstract ${dependenciesDeclaration.interfaceName} getDependencies();
+@Nested
+public abstract ${dependenciesDeclaration.interfaceName} getDependencies();
 
-            @${HiddenInDefinition.class.simpleName}
-            public void dependencies(Action<? super ${dependenciesDeclaration.interfaceName}> action) {
-                action.execute(getDependencies());
-            }
+@${HiddenInDefinition.class.simpleName}
+public void dependencies(Action<? super ${dependenciesDeclaration.interfaceName}> action) {
+action.execute(getDependencies());
+}
 
-            public String printDependencies(org.gradle.api.artifacts.dsl.DependencyCollector collector) {
-                return collector.getDependencies().get().stream().map(Object::toString).collect(java.util.stream.Collectors.joining(", "));
-            }
+public String printDependencies(org.gradle.api.artifacts.dsl.DependencyCollector collector) {
+return collector.getDependencies().get().stream().map(Object::toString).collect(java.util.stream.Collectors.joining(", "));
+}
 
-            public String printList(java.util.List<?> list) {
-                return list.stream().map(Object::toString).collect(java.util.stream.Collectors.joining(", "));
-            }
-        """
+public String printList(java.util.List<?> list) {
+return list.stream().map(Object::toString).collect(java.util.stream.Collectors.joining(", "));
+}
+"""
     }
 
     private String generateAbstractClassMethods() {
@@ -924,10 +924,10 @@ class DefinitionBuilder implements HasProperties, HasNestedTypes, HasInjectedSer
                 NestedRenderer.effectiveShapeOf(nested, this.shape) == TypeShape.ABSTRACT_CLASS
         }.each { nestedType ->
             lines << """
-                public String maybe${JavaSources.capitalize(nestedType.name)}Configured() {
-                    return is${JavaSources.capitalize(nestedType.name)}Configured ? "(${nestedType.name} is configured)" : "";
-                }
-            """
+public String maybe${JavaSources.capitalize(nestedType.name)}Configured() {
+return is${JavaSources.capitalize(nestedType.name)}Configured ? "(${nestedType.name} is configured)" : "";
+}
+"""
         }
         return lines.join("\n")
     }
@@ -940,22 +940,22 @@ class DefinitionBuilder implements HasProperties, HasNestedTypes, HasInjectedSer
         def fields = nestedFields.collect { "private final ${it.typeName} ${it.name};" }.join("\n")
         def inits = nestedFields.collect { "this.${it.name} = objects.newInstance(${it.typeName}.class);" }.join("\n")
         def getters = nestedFields.collect {
-            """${JavaSources.renderAnnotations(it.allAnnotations, '                ')}@Override
-                public ${it.typeName} get${JavaSources.capitalize(it.name)}() {
-                    return ${it.name};
-                }"""
+            """${JavaSources.renderAnnotations(it.allAnnotations)}@Override
+public ${it.typeName} get${JavaSources.capitalize(it.name)}() {
+return ${it.name};
+}"""
         }.join("\n\n")
 
         return """
-            ${fields}
+${fields}
 
-            @Inject
-            public ${implementationClassName}(ObjectFactory objects) {
-                ${inits}
-            }
+@Inject
+public ${implementationClassName}(ObjectFactory objects) {
+${inits}
+}
 
-            ${getters}
-        """
+${getters}
+"""
     }
 
     private String generatePropertyMapping(PropertyDeclaration buildModelProperty, PropertyDeclaration definitionProperty, Language language) {

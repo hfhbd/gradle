@@ -42,12 +42,12 @@ class MultiTargetFeaturePluginBuilder extends AbstractFeaturePluginBuilder {
         def bindCalls = allTargets.withIndex().collect { target, idx ->
             def simpleTarget = target.tokenize('.').last()
             """builder.${bindingMethodName}(
-                            "${name}",
-                            ${primaryDefinition.className}.class,
-                            ${target}.class,
-                            ${pluginClassName}.${simpleTarget}ApplyAction.class
-                        )${modifiers};"""
-        }.join("\n                        ")
+"${name}",
+${primaryDefinition.className}.class,
+${target}.class,
+${pluginClassName}.${simpleTarget}ApplyAction.class
+)${modifiers};"""
+        }.join("\n")
 
         def concreteActions = allTargets.withIndex().collect { target, idx ->
             def simpleTarget = target.tokenize('.').last()
@@ -55,11 +55,11 @@ class MultiTargetFeaturePluginBuilder extends AbstractFeaturePluginBuilder {
                 ? "${Definition.class.name}<${target}>"
                 : target
             """
-                static abstract class ${simpleTarget}ApplyAction extends BaseApplyAction<${parentType}> {
-                    @javax.inject.Inject public ${simpleTarget}ApplyAction() { }
-                    @Override protected String getTaskName() { return "print${primaryDefinition.className}${idx + 1}Configuration"; }
-                }
-            """
+static abstract class ${simpleTarget}ApplyAction extends BaseApplyAction<${parentType}> {
+@javax.inject.Inject public ${simpleTarget}ApplyAction() { }
+@Override protected String getTaskName() { return "print${primaryDefinition.className}${idx + 1}Configuration"; }
+}
+"""
         }.join("\n")
 
         return """
