@@ -18,6 +18,7 @@ package org.gradle.api.provider
 
 import org.gradle.integtests.fixtures.AbstractIntegrationSpec
 import org.gradle.integtests.fixtures.UnsupportedWithConfigurationCache
+import org.gradle.integtests.fixtures.executer.GradleContextualExecuter
 import spock.lang.Issue
 
 class MapPropertyIntegrationTest extends AbstractIntegrationSpec {
@@ -810,5 +811,47 @@ task thing {
         "entry provider"  | 'getting("42")'                       | false       | [":bar", ":baz", ":foo"] | "Entry is bar"
         "keySet provider" | 'keySet().map { it.sort().join(",")}' | true        | [":foo"]                 | "Entry is 1,42"
         "keySet provider" | 'keySet().map { it.sort().join(",")}' | false       | [":bar", ":baz", ":foo"] | "Entry is 1,42"
+    }
+
+    def "map property has separate identity per task with CC only"() {
+        given:
+        buildFile.delete()
+        buildKotlinFile '''
+            tasks {
+                val sharedMapProp = objects.mapProperty<String, String>()
+                register("foo") {
+                    val mapProp = objects.mapProperty<String, String>()
+                    doFirst {
+                        mapProp.put("k1", "A")
+                        sharedMapProp.put("k1", "A")
+                    }
+                    doLast {
+                        mapProp.put("k2", "B")
+                        sharedMapProp.put("k2", "B")
+                        println("mapProp = ${mapProp.get()}")
+                        println("FOO: sharedMapProp = ${sharedMapProp.get()}")
+                    }
+                }
+                register("bar") {
+                    dependsOn("foo")
+                    doFirst {
+                        sharedMapProp.put("k3", "C")
+                        println("BAR: sharedMapProp = ${sharedMapProp.get()}")
+                    }
+                }
+            }
+        '''
+
+        when:
+        succeeds("bar")
+
+        then:
+        outputContains("mapProp = {k1=A, k2=B}")
+        outputContains("FOO: sharedMapProp = {k1=A, k2=B}")
+        if (GradleContextualExecuter.configCache) {
+            outputContains("BAR: sharedMapProp = {k3=C}")
+        } else {
+            outputContains("BAR: sharedMapProp = {k1=A, k2=B, k3=C}")
+        }
     }
 }
