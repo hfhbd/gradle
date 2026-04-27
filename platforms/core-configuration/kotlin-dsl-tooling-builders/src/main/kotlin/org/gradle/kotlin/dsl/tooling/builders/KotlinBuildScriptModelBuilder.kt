@@ -43,13 +43,11 @@ import org.gradle.kotlin.dsl.execution.EvalOption
 import org.gradle.kotlin.dsl.provider.ClassPathModeExceptionCollector
 import org.gradle.kotlin.dsl.provider.KotlinScriptClassPathProvider
 import org.gradle.kotlin.dsl.provider.KotlinScriptEvaluator
-import org.gradle.kotlin.dsl.provider.PrecompiledScriptsEnvironment.EnvironmentProperties.kotlinDslPluginSpecBuildersImplicitImports
 import org.gradle.kotlin.dsl.provider.runCatching
 import org.gradle.kotlin.dsl.resolver.EditorReports
 import org.gradle.kotlin.dsl.resolver.SourceDistributionResolver
 import org.gradle.kotlin.dsl.resolver.SourcePathProvider
 import org.gradle.kotlin.dsl.support.ImplicitImports
-import org.gradle.kotlin.dsl.support.KotlinScriptHashing
 import org.gradle.kotlin.dsl.support.KotlinScriptType
 import org.gradle.kotlin.dsl.support.kotlinScriptTypeFor
 import org.gradle.kotlin.dsl.support.serviceOf
@@ -66,8 +64,6 @@ data class KotlinBuildScriptModelParameter(
     val scriptFile: File?,
     val correlationId: String?
 )
-
-internal typealias MetadataDir = File
 
 internal
 object KotlinBuildScriptModelBuilder : ToolingModelBuilder {
@@ -177,20 +173,6 @@ internal
 val Project.sourceSets
     get() = extensions.findByType(typeOf<SourceSetContainer>())
 
-internal
-val MetadataDir.implicitPluginSpecBuildersImports: List<String>
-    get() = implicitImportsFrom(
-        resolve("plugin-spec-builders").resolve(kotlinDslPluginSpecBuildersImplicitImports)
-    ) + implicitImportsFrom(
-        // Gradle <= 8.12 was using this other name with a dash but this was incompatible with moving to kotlin-scripting-host API
-        // Keeping it for compatibility with previous Gradle versions
-        resolve("plugin-spec-builders").resolve("implicit-imports")
-    )
-
-internal
-fun MetadataDir.implicitAccessorsImports(scriptFile: File): List<String> =
-    implicitImportsFrom(resolve("accessors").resolve(hashOf(scriptFile)))
-
 private
 fun precompiledScriptPluginModelBuilder(
     scriptFile: File,
@@ -202,27 +184,11 @@ fun precompiledScriptPluginModelBuilder(
     scriptClassPath = DefaultClassPath.of(enclosingSourceSet.sourceSet.compileClasspath),
     enclosingScriptProjectDir = enclosingSourceSet.project.projectDir,
     additionalImports = {
-        enclosingSourceSet.project.precompiledScriptPluginsMetadataDir.run {
+        PrecompiledScriptPluginsMetadataDir.of(enclosingSourceSet.project).run {
             implicitAccessorsImports(scriptFile) + implicitPluginSpecBuildersImports
         }
     }
 )
-
-
-internal
-val Project.precompiledScriptPluginsMetadataDir: MetadataDir
-    get() = layout.buildDirectory.dir("kotlin-dsl/precompiled-script-plugins-metadata").get().asFile
-
-
-private
-fun implicitImportsFrom(file: File): List<String> =
-    file.takeIf { it.isFile }?.readLines() ?: emptyList()
-
-
-private
-fun hashOf(scriptFile: File) =
-    KotlinScriptHashing.hashOf(scriptFile.readText())
-
 
 private
 fun projectScriptModelBuilder(
