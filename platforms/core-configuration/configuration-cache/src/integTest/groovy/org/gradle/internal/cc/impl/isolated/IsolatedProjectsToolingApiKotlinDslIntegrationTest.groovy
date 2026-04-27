@@ -17,10 +17,9 @@
 package org.gradle.internal.cc.impl.isolated
 
 import org.gradle.integtests.fixtures.build.KotlinDslTestProjectInitiation
-import org.gradle.kotlin.dsl.tooling.fixtures.KotlinDslModelChecker
 import org.gradle.tooling.model.kotlin.dsl.KotlinDslScriptsModel
 
-import static org.gradle.integtests.tooling.fixture.ToolingApiModelChecker.checkModel
+import static org.gradle.kotlin.dsl.tooling.fixtures.KotlinDslModelChecker.checkKotlinDslScriptsModel
 
 class IsolatedProjectsToolingApiKotlinDslIntegrationTest extends AbstractIsolatedProjectsToolingApiIntegrationTest implements KotlinDslTestProjectInitiation {
 
@@ -94,14 +93,5 @@ class IsolatedProjectsToolingApiKotlinDslIntegrationTest extends AbstractIsolate
             modelsCreated(":a:b", [isolatedScriptsModel])
         }
         checkKotlinDslScriptsModel(model, originalModel)
-    }
-
-    static void checkKotlinDslScriptsModel(actual, expected) {
-        assert expected instanceof KotlinDslScriptsModel
-        assert actual instanceof KotlinDslScriptsModel
-
-        checkModel(actual, expected, [
-            [{ it.scriptModels }, { a, e -> KotlinDslModelChecker.checkKotlinDslScriptModel(a, e) }]
-        ])
     }
 }

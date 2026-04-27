@@ -19,10 +19,25 @@ package org.gradle.kotlin.dsl.tooling.fixtures
 
 import org.gradle.tooling.model.kotlin.dsl.EditorReport
 import org.gradle.tooling.model.kotlin.dsl.KotlinDslScriptModel
+import org.gradle.tooling.model.kotlin.dsl.KotlinDslScriptsModel
+import spock.lang.Issue
 
 import static org.gradle.integtests.tooling.fixture.ToolingApiModelChecker.checkModel
 
 class KotlinDslModelChecker {
+
+    static void checkBuildTreeScriptsModels(Map<String, KotlinDslScriptsModel> actual, Map<String, KotlinDslScriptsModel> expected) {
+        assert actual.keySet() == expected.keySet()
+        actual.each { build, actualModel ->
+            checkKotlinDslScriptsModel(actualModel, expected[build])
+        }
+    }
+
+    static void checkKotlinDslScriptsModel(KotlinDslScriptsModel actual, KotlinDslScriptsModel expected) {
+        checkModel(actual, expected, [
+            [{ it.scriptModels }, { a, e -> checkKotlinDslScriptModel(a, e) }]
+        ])
+    }
 
     static void checkKotlinDslScriptModel(KotlinDslScriptModel actual, KotlinDslScriptModel expected) {
         checkModel(actual, expected, [
@@ -50,8 +65,9 @@ class KotlinDslModelChecker {
     }
 
     // replaces `kotlin-dsl/accessors/*hash*/` with `kotlin-dsl/accessors/<hash>`
+    @Issue("https://github.com/gradle/gradle/issues/37719")
     private static List<File> withNormalizedAccessorHash(List<File> paths) {
-        final String accessorPathPrefix= "kotlin-dsl" + File.separator + "accessors" + File.separator
+        final String accessorPathPrefix = "kotlin-dsl" + File.separator + "accessors" + File.separator
         paths.collect { File f ->
             int idx = f.path.indexOf(accessorPathPrefix)
             if (idx < 0) {

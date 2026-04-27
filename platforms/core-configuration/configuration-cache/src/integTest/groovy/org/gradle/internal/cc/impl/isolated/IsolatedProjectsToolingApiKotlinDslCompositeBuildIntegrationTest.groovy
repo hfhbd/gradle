@@ -18,9 +18,9 @@ package org.gradle.internal.cc.impl.isolated
 
 import org.gradle.integtests.fixtures.build.KotlinDslTestProjectInitiation
 import org.gradle.kotlin.dsl.tooling.fixtures.FetchKotlinDslScriptsModelForAllBuilds
-import org.gradle.kotlin.dsl.tooling.fixtures.KotlinDslModelChecker
-import org.gradle.tooling.model.kotlin.dsl.KotlinDslScriptModel
 import org.gradle.tooling.model.kotlin.dsl.KotlinDslScriptsModel
+
+import static org.gradle.kotlin.dsl.tooling.fixtures.KotlinDslModelChecker.checkBuildTreeScriptsModels
 
 class IsolatedProjectsToolingApiKotlinDslCompositeBuildIntegrationTest extends AbstractIsolatedProjectsToolingApiIntegrationTest implements KotlinDslTestProjectInitiation {
 
@@ -69,7 +69,7 @@ class IsolatedProjectsToolingApiKotlinDslCompositeBuildIntegrationTest extends A
             modelsCreated(":a", [isolatedScriptsModel])
             modelsCreated(":$buildLogicLocation", KotlinDslScriptsModel)
         }
-        checkBuildTreeScriptModels(ipModel, originalModel)
+        checkBuildTreeScriptsModels(ipModel, originalModel)
 
         when:
         withIsolatedProjects()
@@ -163,7 +163,7 @@ class IsolatedProjectsToolingApiKotlinDslCompositeBuildIntegrationTest extends A
             modelsCreated(":build-logic", KotlinDslScriptsModel)
             modelsCreated(":included", KotlinDslScriptsModel)
         }
-        checkBuildTreeScriptModels(ipModel, originalModel)
+        checkBuildTreeScriptsModels(ipModel, originalModel)
 
         when:
         withIsolatedProjects()
@@ -217,7 +217,7 @@ class IsolatedProjectsToolingApiKotlinDslCompositeBuildIntegrationTest extends A
             modelsCreated(":a", [isolatedScriptsModel])
             modelsCreated(":$buildLogicLocation", KotlinDslScriptsModel)
         }
-        checkBuildTreeScriptModels(ipModel, originalModel)
+        checkBuildTreeScriptsModels(ipModel, originalModel)
 
         when:
         withIsolatedProjects()
@@ -232,15 +232,7 @@ class IsolatedProjectsToolingApiKotlinDslCompositeBuildIntegrationTest extends A
         "build-logic"      | """pluginManagement { includeBuild("build-logic") }"""
     }
 
-    Map<File, KotlinDslScriptModel> fetchBuildTreeScriptModels() {
+    Map<String , KotlinDslScriptsModel> fetchBuildTreeScriptModels() {
         return runBuildAction(new FetchKotlinDslScriptsModelForAllBuilds())
-    }
-
-    static void checkBuildTreeScriptModels(Map<File, KotlinDslScriptModel> actual, Map<File, KotlinDslScriptModel> expected) {
-        assert actual.size() == expected.size()
-        assert actual.keySet() == expected.keySet()
-        actual.each { file, actualModel ->
-            KotlinDslModelChecker.checkKotlinDslScriptModel(actualModel, expected[file])
-        }
     }
 }

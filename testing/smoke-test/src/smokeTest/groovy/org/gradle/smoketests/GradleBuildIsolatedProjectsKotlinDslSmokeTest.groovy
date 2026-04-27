@@ -18,30 +18,31 @@ package org.gradle.smoketests
 
 import org.gradle.integtests.fixtures.executer.IntegrationTestBuildContext
 import org.gradle.kotlin.dsl.tooling.fixtures.FetchKotlinDslScriptsModelForAllBuilds
-import org.gradle.kotlin.dsl.tooling.fixtures.KotlinDslModelChecker
 import org.gradle.tooling.GradleConnector
 import org.gradle.tooling.ProjectConnection
-import org.gradle.tooling.model.kotlin.dsl.KotlinDslScriptModel
+import org.gradle.tooling.model.kotlin.dsl.KotlinDslScriptsModel
+
+import static org.gradle.kotlin.dsl.tooling.fixtures.KotlinDslModelChecker.checkBuildTreeScriptsModels
 
 class GradleBuildIsolatedProjectsKotlinDslSmokeTest extends AbstractGradleceptionSmokeTest {
 
     def "KotlinDslScriptsModel for all builds for IP and non-IP mode are structurally equal"() {
         when:
         def runner = runner()
-        def originalModel = fetchBuildTreeScriptModels(runner)
+        def originalModel = fetchBuildTreeScriptsModels(runner)
 
         then:
         originalModel != null
 
         when:
-        def isolatedModel = fetchBuildTreeScriptModels(runner, '-Dorg.gradle.unsafe.isolated-projects=true')
+        def isolatedModel = fetchBuildTreeScriptsModels(runner, '-Dorg.gradle.unsafe.isolated-projects=true')
 
         then:
         isolatedModel != null
-        checkBuildTreeScriptModels(isolatedModel, originalModel)
+        checkBuildTreeScriptsModels(isolatedModel, originalModel)
     }
 
-    private Map<File, KotlinDslScriptModel> fetchBuildTreeScriptModels(SmokeTestGradleRunner runner, String... extraArgs) {
+    private Map<String, KotlinDslScriptsModel> fetchBuildTreeScriptsModels(SmokeTestGradleRunner runner, String... extraArgs) {
         try (ProjectConnection connection = GradleConnector.newConnector()
             .useGradleUserHomeDir(IntegrationTestBuildContext.INSTANCE.gradleUserHomeDir)
             .useInstallation(IntegrationTestBuildContext.INSTANCE.gradleHomeDir)
@@ -56,14 +57,6 @@ class GradleBuildIsolatedProjectsKotlinDslSmokeTest extends AbstractGradleceptio
                 actionBuilder.addArguments(extraArgs as List)
             }
             return actionBuilder.run()
-        }
-    }
-
-    static void checkBuildTreeScriptModels(Map<File, KotlinDslScriptModel> actual, Map<File, KotlinDslScriptModel> expected) {
-        assert actual.size() == expected.size()
-        assert actual.keySet() == expected.keySet()
-        actual.each { file, actualModel ->
-            KotlinDslModelChecker.checkKotlinDslScriptModel(actualModel, expected[file])
         }
     }
 }
