@@ -170,14 +170,31 @@ class TestScenarioBuilder {
             types.add(DefinitionAndPluginBuilder.forProjectType("testProjectType"))
         }
 
-        // Propagate top-level language
+        // Validate that every feature with a binding-shaped plugin has a binding target.
+        // Without this, the generated Java contains "null.class" and fails to compile
+        // far downstream of the DSL declaration.
+        features.each { feature ->
+            if (feature.plugin.type != PluginType.WITH_BINDINGS) {
+                return
+            }
+            def bindings = feature.plugin.bindings
+            if (bindings.isEmpty() || bindings[0].bindingTypeClassName == null) {
+                throw new IllegalStateException(
+                    "projectFeature('${feature.name}') has no binding target. " +
+                    "Call bindsFeatureTo(<projectType>) (or bindsFeatureTo(<className>)) inside the plugin { } block."
+                )
+            }
+        }
+
+        // Propagate the scenario's top-level language to any component that didn't set one explicitly.
+        // null = inherit; non-null = explicit, leave alone.
         [*types, *features].each { comp ->
-            if (comp.plugin.language == Language.JAVA) {
+            if (comp.plugin.language == null) {
                 comp.plugin.language = language
             }
         }
         standalonePlugins.each { plugin ->
-            if (plugin.language == Language.JAVA) {
+            if (plugin.language == null) {
                 plugin.language = language
             }
         }

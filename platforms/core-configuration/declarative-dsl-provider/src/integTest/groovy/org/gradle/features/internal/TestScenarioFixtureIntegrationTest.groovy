@@ -34,10 +34,10 @@ import org.gradle.test.preconditions.JdkVersionTestPreconditions
 @Requires(JdkVersionTestPreconditions.Jdk23OrEarlier) // Kotlin does not support JDK 24 yet
 class TestScenarioFixtureIntegrationTest extends AbstractIntegrationSpec implements TestScenarioFixture {
 
-    def "simple project type compiles (#language)"() {
+    def "simple project type compiles (#lang)"() {
         given:
         testScenario {
-            delegate.language(sourceLanguage)
+            language sourceLanguage
             projectType("testProjectType") {
                 definition {
                     buildModel("ModelType") { property "id", String }
@@ -56,13 +56,13 @@ class TestScenarioFixtureIntegrationTest extends AbstractIntegrationSpec impleme
 
         where:
         sourceLanguage << [Language.JAVA, Language.KOTLIN]
-        language = sourceLanguage.name().toLowerCase()
+        lang = sourceLanguage.name().toLowerCase()
     }
 
-    def "abstract class definition compiles (#language)"() {
+    def "abstract class definition compiles (#lang)"() {
         given:
         testScenario {
-            delegate.language(sourceLanguage)
+            language sourceLanguage
             projectType("testProjectType") {
                 definition {
                     shape TypeShape.ABSTRACT_CLASS
@@ -85,13 +85,13 @@ class TestScenarioFixtureIntegrationTest extends AbstractIntegrationSpec impleme
 
         where:
         sourceLanguage << [Language.JAVA, Language.KOTLIN]
-        language = sourceLanguage.name().toLowerCase()
+        lang = sourceLanguage.name().toLowerCase()
     }
 
-    def "definition with multiple properties compiles (#language)"() {
+    def "definition with multiple properties compiles (#lang)"() {
         given:
         testScenario {
-            delegate.language(sourceLanguage)
+            language sourceLanguage
             projectType("testProjectType") {
                 definition {
                     buildModel("ModelType") {
@@ -113,13 +113,13 @@ class TestScenarioFixtureIntegrationTest extends AbstractIntegrationSpec impleme
 
         where:
         sourceLanguage << [Language.JAVA, Language.KOTLIN]
-        language = sourceLanguage.name().toLowerCase()
+        lang = sourceLanguage.name().toLowerCase()
     }
 
-    def "separate implementation type compiles (#language)"() {
+    def "separate implementation type compiles (#lang)"() {
         given:
         testScenario {
-            delegate.language(sourceLanguage)
+            language sourceLanguage
             projectType("testProjectType") {
                 definition {
                     buildModel("ModelType") { property "id", String }
@@ -140,13 +140,13 @@ class TestScenarioFixtureIntegrationTest extends AbstractIntegrationSpec impleme
 
         where:
         sourceLanguage << [Language.JAVA, Language.KOTLIN]
-        language = sourceLanguage.name().toLowerCase()
+        lang = sourceLanguage.name().toLowerCase()
     }
 
-    def "project type + feature compiles (#language)"() {
+    def "project type + feature compiles (#lang)"() {
         given:
         def pluginBuilder = testScenario {
-            delegate.language(sourceLanguage)
+            language sourceLanguage
             def type = projectType("testProjectType") {
                 definition {
                     buildModel("ModelType") { property "id", String }
@@ -178,13 +178,13 @@ class TestScenarioFixtureIntegrationTest extends AbstractIntegrationSpec impleme
 
         where:
         sourceLanguage << [Language.JAVA, Language.KOTLIN]
-        language = sourceLanguage.name().toLowerCase()
+        lang = sourceLanguage.name().toLowerCase()
     }
 
-    def "feature binding to build model compiles (#language)"() {
+    def "feature binding to build model compiles (#lang)"() {
         given:
         def pluginBuilder = testScenario {
-            delegate.language(sourceLanguage)
+            language sourceLanguage
             def type = projectType("testProjectType") {
                 definition {
                     buildModel("ModelType") { property "id", String }
@@ -214,13 +214,13 @@ class TestScenarioFixtureIntegrationTest extends AbstractIntegrationSpec impleme
 
         where:
         sourceLanguage << [Language.JAVA, Language.KOTLIN]
-        language = sourceLanguage.name().toLowerCase()
+        lang = sourceLanguage.name().toLowerCase()
     }
 
-    def "multiple project types compile (#language)"() {
+    def "multiple project types compile (#lang)"() {
         given:
         testScenario {
-            delegate.language(sourceLanguage)
+            language sourceLanguage
             projectType("testProjectType") {
                 definition {
                     buildModel("ModelType") { property "id", String }
@@ -247,13 +247,13 @@ class TestScenarioFixtureIntegrationTest extends AbstractIntegrationSpec impleme
 
         where:
         sourceLanguage << [Language.JAVA, Language.KOTLIN]
-        language = sourceLanguage.name().toLowerCase()
+        lang = sourceLanguage.name().toLowerCase()
     }
 
-    def "feature with no build model compiles (#language)"() {
+    def "feature with no build model compiles (#lang)"() {
         given:
         def pluginBuilder = testScenario {
-            delegate.language(sourceLanguage)
+            language sourceLanguage
             def type = projectType("testProjectType") {
                 definition {
                     buildModel("ModelType") { property "id", String }
@@ -284,7 +284,7 @@ class TestScenarioFixtureIntegrationTest extends AbstractIntegrationSpec impleme
 
         where:
         sourceLanguage << [Language.JAVA, Language.KOTLIN]
-        language = sourceLanguage.name().toLowerCase()
+        lang = sourceLanguage.name().toLowerCase()
     }
 
     def "NDOC containing definitions compiles"() {
@@ -319,10 +319,10 @@ class TestScenarioFixtureIntegrationTest extends AbstractIntegrationSpec impleme
         pluginClassFile("TestProjectTypeImplPlugin", Language.JAVA).exists()
     }
 
-    def "parent definition compiles (#language)"() {
+    def "parent definition compiles (#lang)"() {
         given:
         testScenario {
-            delegate.language(sourceLanguage)
+            language sourceLanguage
             projectType("testProjectType") {
                 definition {
                     buildModel("ModelType") { property "id", String }
@@ -342,7 +342,7 @@ class TestScenarioFixtureIntegrationTest extends AbstractIntegrationSpec impleme
 
         where:
         sourceLanguage << [Language.JAVA, Language.KOTLIN]
-        language = sourceLanguage.name().toLowerCase()
+        lang = sourceLanguage.name().toLowerCase()
     }
 
     def "eager value reads compiles"() {
@@ -372,10 +372,10 @@ class TestScenarioFixtureIntegrationTest extends AbstractIntegrationSpec impleme
         pluginClassFile("TestProjectTypeImplPlugin", Language.JAVA).exists()
     }
 
-    def "settings defaults compiles (#language)"() {
+    def "settings defaults compiles (#lang)"() {
         given:
         testScenario {
-            delegate.language(sourceLanguage)
+            language sourceLanguage
             def type = projectType("testProjectType") {
                 definition {
                     buildModel("ModelType") { property "id", String }
@@ -398,13 +398,13 @@ class TestScenarioFixtureIntegrationTest extends AbstractIntegrationSpec impleme
 
         where:
         sourceLanguage << [Language.JAVA, Language.KOTLIN]
-        language = sourceLanguage.name().toLowerCase()
+        lang = sourceLanguage.name().toLowerCase()
     }
 
-    def "shared type referenced by a definition compiles (#language)"() {
+    def "shared type referenced by a definition compiles (#lang)"() {
         given:
         testScenario {
-            delegate.language(sourceLanguage)
+            language sourceLanguage
             def srcSet = sharedType("SourceSet") {
                 property "name", String
             }
@@ -433,7 +433,7 @@ class TestScenarioFixtureIntegrationTest extends AbstractIntegrationSpec impleme
 
         where:
         sourceLanguage << [Language.JAVA, Language.KOTLIN]
-        language = sourceLanguage.name().toLowerCase()
+        lang = sourceLanguage.name().toLowerCase()
     }
 
     def "shared type referenced by abstract-class definition compiles"() {
@@ -604,6 +604,34 @@ class TestScenarioFixtureIntegrationTest extends AbstractIntegrationSpec impleme
         then:
         def e = thrown(IllegalStateException)
         e.message.contains("initializeWith")
+    }
+
+    def "generated plugin runs declarative configuration end-to-end"() {
+        given:
+        testScenario {
+            projectType("testProjectType") {
+                definition {
+                    buildModel("ModelType") {
+                        property "id", String
+                    }
+                    property "id", String
+                }
+            }
+        }.prepareToExecute()
+        file("gradle.properties") << "org.gradle.kotlin.dsl.dcl=true\n"
+        file("settings.gradle.dcl") << pluginsFromIncludedBuild
+        file("build.gradle.dcl") << """
+            testProjectType {
+                id = "from-dsl"
+            }
+        """
+
+        when:
+        succeeds("printTestProjectTypeDefinitionConfiguration")
+
+        then:
+        outputContains("definition id = from-dsl")
+        outputContains("model id = from-dsl")
     }
 
     private void includePluginBuild() {

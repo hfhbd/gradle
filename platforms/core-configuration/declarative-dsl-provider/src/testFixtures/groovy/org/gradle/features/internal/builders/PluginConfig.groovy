@@ -25,6 +25,20 @@ import org.gradle.test.fixtures.plugin.PluginBuilder as GradlePluginBuilder
  * the concrete builder is instantiated once at {@link #resolve()} time (called from
  * {@link DefinitionAndPluginBuilder#build} or {@link TestScenarioBuilder#build}).
  *
+ * <h2>Why this is not a subclass of {@link AbstractPluginBuilder}</h2>
+ *
+ * <p>The shape-discriminating choice (single-type vs. multi-type vs. reified vs. feature vs.
+ * multi-target-feature vs. no-build-model vs. standalone) depends on state that is only known
+ * once the user's DSL closure has finished executing — e.g. the count of bindings registered
+ * via {@code bindsType()} / {@code bindsFeatureTo()}. A concrete {@code AbstractPluginBuilder}
+ * subclass cannot be chosen up-front, so {@code PluginConfig} acts as a staging record that
+ * mirrors the common builder state, then dispatches to the correct subclass in
+ * {@link #resolve()}. The mirrored fields below intentionally duplicate
+ * {@link AbstractPluginBuilder}; the duplication is the cost of late binding.</p>
+ *
+ * <p>When adding a new common field, update both classes <em>and</em> the copy in
+ * {@link #resolve()}.</p>
+ *
  * <h2>DSL opt-outs and modifiers (cheat-sheet)</h2>
  *
  * <p>The plugin DSL exposes several one-line toggles that affect how the generated plugin is
@@ -80,8 +94,8 @@ class PluginConfig {
     /** The Java package for generated source files. */
     String packageName = "org.gradle.test"
 
-    /** The language to generate source code in. */
-    Language language = Language.JAVA
+    /** The language to generate source code in. {@code null} means inherit from the scenario's top-level setting. */
+    Language language = null
 
     /** The emission shape of this plugin. See {@link PluginType}. */
     PluginType type = PluginType.WITH_BINDINGS
@@ -131,7 +145,7 @@ class PluginConfig {
     /** Overrides the generated plugin class name. */
     void pluginClassName(String className) { this.pluginClassName = className }
 
-    /** Sets the source code language (Java or Kotlin). */
+    /** Sets the source code language explicitly (Java or Kotlin). Pass {@code null} to inherit from the scenario top-level. */
     void language(Language language) { this.language = language }
 
     /** Sets the plugin emission shape. See {@link PluginType}. */
@@ -228,7 +242,8 @@ class PluginConfig {
 
     /**
      * Selects the concrete {@link AbstractPluginBuilder} subclass that will render this plugin
-     * and copies the collected DSL state onto it.
+     * and copies the collected DSL state onto it. Mirrored fields kept in sync by hand —
+     * see the class-level Javadoc for why this is not subclassed.
      */
     AbstractPluginBuilder resolve() {
         AbstractPluginBuilder b
@@ -241,7 +256,7 @@ class PluginConfig {
         }
         b.pluginClassName = pluginClassName
         b.packageName = packageName
-        b.language = language
+        b.language = language ?: Language.JAVA
         b.type = type
         b.bindingModifiers = bindingModifiers
         b.applyActionDeclaration = applyActionDeclaration

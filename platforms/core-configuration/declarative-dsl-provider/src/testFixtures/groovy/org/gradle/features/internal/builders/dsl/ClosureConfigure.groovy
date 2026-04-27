@@ -35,11 +35,9 @@ package org.gradle.features.internal.builders.dsl
 final class ClosureConfigure {
     private ClosureConfigure() {}
 
-    // TODO: research §24 — consider switching to DELEGATE_ONLY for strict scopes once
-    // we've audited closures that rely on outer-scope name resolution.
     static <T> T configure(T target, Closure config) {
         config.delegate = target
-        config.resolveStrategy = Closure.DELEGATE_FIRST
+        config.resolveStrategy = Closure.DELEGATE_ONLY
         config.call()
         return target
     }

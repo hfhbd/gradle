@@ -849,8 +849,10 @@ action.execute(${nestedType.name});
                 // Field-backed concrete getter: used for shared-ref (always) and for
                 // effectively-ABSTRACT_CLASS regular nested types. Carries the optional
                 // configure-invocations side effect.
+                // TODO: design debt — the side effect lives in a getter rather than in the
+                // configure path. Track separately; do not propagate the TODO into generated source.
                 def sideEffect = showsConfigureInvocations && nestedType.kind == NestedKind.PLAIN
-                    ? "is${JavaSources.capitalize(nestedType.name)}Configured = true; // TODO: get rid of the side effect in the getter"
+                    ? "is${JavaSources.capitalize(nestedType.name)}Configured = true;"
                     : ""
                 lines << """
 ${JavaSources.renderAnnotations(nestedType.allAnnotations)}public ${nestedType.typeName} get${JavaSources.capitalize(nestedType.name)}() {

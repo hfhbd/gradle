@@ -303,4 +303,53 @@ class TestScenarioBuilderTest extends Specification {
         new File(tempDir, "src/main/java/org/gradle/test/TestProjectTypeImplPlugin.java").exists()
         new File(tempDir, "src/main/java/org/gradle/test/FeatureDefinition.java").exists()
     }
+
+    def "feature without bindsFeatureTo fails fast"() {
+        given:
+        def scenario = new TestScenarioBuilder()
+        scenario.projectType("testProjectType") {}
+        scenario.projectFeature("orphan") {
+            // No plugin { bindsFeatureTo(...) }
+        }
+
+        when:
+        scenario.build(tempDir)
+
+        then:
+        def e = thrown(IllegalStateException)
+        e.message.contains("projectFeature('orphan')")
+        e.message.contains("bindsFeatureTo")
+    }
+
+    def "feature with NO_PLUGIN does not require bindsFeatureTo"() {
+        given:
+        def scenario = new TestScenarioBuilder()
+        scenario.projectType("testProjectType") {}
+        scenario.projectFeature("definitionOnly") {
+            plugin { type NO_PLUGIN }
+        }
+
+        when:
+        scenario.build(tempDir)
+
+        then:
+        noExceptionThrown()
+    }
+
+    def "explicit per-component language overrides top-level language"() {
+        given:
+        def scenario = new TestScenarioBuilder()
+        scenario.language(Language.KOTLIN)
+        scenario.projectType("kotlinType") {}
+        scenario.projectType("javaType") {
+            plugin { language Language.JAVA }
+        }
+
+        when:
+        scenario.build(tempDir)
+
+        then:
+        new File(tempDir, "src/main/kotlin/org/gradle/test/KotlinTypeImplPlugin.kt").exists()
+        new File(tempDir, "src/main/java/org/gradle/test/JavaTypeImplPlugin.java").exists()
+    }
 }
