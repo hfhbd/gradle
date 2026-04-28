@@ -61,19 +61,13 @@ public interface RepositoryHandler extends ArtifactRepositoryContainer {
      *     <td>Specifies a list of rootDirs where to look for dependencies. These are evaluated as per {@link org.gradle.api.Project#files(Object...)}</td></tr>
      * </table>
      *
-     * <p>Examples:</p>
-     * <pre class='autoTested'>
-     * repositories {
-     *     flatDir name: 'libs', dirs: "$projectDir/libs"
-     *     flatDir dirs: ["$projectDir/libs1", "$projectDir/libs2"]
-     * }
-     * </pre>
-     *
      * @param args The arguments used to configure the repository.
      * @return the added resolver
      * @throws org.gradle.api.InvalidUserDataException In the case neither rootDir nor rootDirs is specified of if both
      * are specified.
+     * @deprecated This method is scheduled to be removed in Gradle 10. Use {@link #flatDir(Action)} instead.
      */
+    @Deprecated
     @HiddenInDefinition
     FlatDirectoryArtifactRepository flatDir(Map<String, ?> args);
 
@@ -135,19 +129,11 @@ public interface RepositoryHandler extends ArtifactRepositoryContainer {
      * </td></tr>
      * </table>
      *
-     * <p>Note: passing {@code artifactUrls} as a key in this map is deprecated and scheduled to be removed in Gradle 10,
-     * since it delegates to {@link MavenArtifactRepository#setArtifactUrls(Iterable)}.
-     *
-     * <p>Examples:</p>
-     * <pre class='autoTested'>
-     * repositories {
-     *     mavenCentral name: "nonDefaultName"
-     * }
-     * </pre>
-     *
      * @param args Configuration map for the Maven Central repository.
      * @return the added repository
+     * @deprecated This method is scheduled to be removed in Gradle 10. Use {@link #mavenCentral(Action)} instead.
      */
+    @Deprecated
     @HiddenInDefinition
     MavenArtifactRepository mavenCentral(Map<String, ?> args);
 
@@ -164,7 +150,7 @@ public interface RepositoryHandler extends ArtifactRepositoryContainer {
      * </pre>
      *
      * @return the added resolver
-     * @see #mavenCentral(java.util.Map)
+     * @see #mavenCentral(Action)
      */
     @Adding
     MavenArtifactRepository mavenCentral();
