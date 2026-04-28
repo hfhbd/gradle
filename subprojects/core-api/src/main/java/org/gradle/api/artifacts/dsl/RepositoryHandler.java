@@ -122,7 +122,7 @@ public interface RepositoryHandler extends ArtifactRepositoryContainer {
      * Adds a repository which looks in the Maven central repository for dependencies. The URL used to access this repository is
      * {@value org.gradle.api.artifacts.ArtifactRepositoryContainer#MAVEN_CENTRAL_URL}.
      *
-     * <p>The following parameter are accepted as keys for the map:
+     * <p>The following parameter is accepted as a key for the map:
      *
      * <table>
      * <caption>Shows property keys and associated values</caption>
@@ -133,21 +133,19 @@ public interface RepositoryHandler extends ArtifactRepositoryContainer {
      * {@value org.gradle.api.artifacts.ArtifactRepositoryContainer#DEFAULT_MAVEN_CENTRAL_REPO_NAME} is used as the name. A name
      * must be unique amongst a repository group.
      * </td></tr>
-     * <tr><td><code>artifactUrls</code></td>
-     *     <td>A single jar repository or a collection of jar repositories containing additional artifacts not found in the Maven central repository.
-     * But be aware that the POM must exist in Maven central.
-     * The provided values are evaluated as per {@link org.gradle.api.Project#uri(Object)}.</td></tr>
      * </table>
+     *
+     * <p>Note: passing {@code artifactUrls} as a key in this map is deprecated and scheduled to be removed in Gradle 10,
+     * since it delegates to {@link MavenArtifactRepository#setArtifactUrls(Iterable)}.
      *
      * <p>Examples:</p>
      * <pre class='autoTested'>
      * repositories {
-     *     mavenCentral artifactUrls: ["http://www.mycompany.com/artifacts1", "http://www.mycompany.com/artifacts2"]
-     *     mavenCentral name: "nonDefaultName", artifactUrls: ["http://www.mycompany.com/artifacts1"]
+     *     mavenCentral name: "nonDefaultName"
      * }
      * </pre>
      *
-     * @param args A list of urls of repositories to look for artifacts only.
+     * @param args Configuration map for the Maven Central repository.
      * @return the added repository
      */
     @HiddenInDefinition
