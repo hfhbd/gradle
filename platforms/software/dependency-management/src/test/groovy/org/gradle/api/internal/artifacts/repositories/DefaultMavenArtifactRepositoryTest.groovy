@@ -38,6 +38,7 @@ import org.gradle.internal.resource.ExternalResourceRepository
 import org.gradle.internal.resource.cached.DefaultExternalResourceFileStore
 import org.gradle.internal.resource.local.FileResourceRepository
 import org.gradle.internal.resource.local.LocallyAvailableResourceFinder
+import org.gradle.test.fixtures.ExpectDeprecation
 import org.gradle.util.SnapshotTestUtil
 import org.gradle.util.TestUtil
 import spock.lang.Specification
@@ -97,6 +98,7 @@ class DefaultMavenArtifactRepositoryTest extends Specification {
         repo.root == uri
     }
 
+    @ExpectDeprecation("The MavenArtifactRepository.artifactUrls(Object...) method has been deprecated.")
     def "creates repository with additional artifact URLs"() {
         given:
         def uri = new URI("https://localhost:9090/repo")
@@ -291,6 +293,7 @@ class DefaultMavenArtifactRepositoryTest extends Specification {
         different.descriptor.id == repo.descriptor.id
     }
 
+    @ExpectDeprecation("The MavenArtifactRepository.artifactUrls(Object...) method has been deprecated.")
     def "repositories have the same id when artifact urls and other configuration is the same"() {
         def repo = newRepo()
         def same = newRepo()

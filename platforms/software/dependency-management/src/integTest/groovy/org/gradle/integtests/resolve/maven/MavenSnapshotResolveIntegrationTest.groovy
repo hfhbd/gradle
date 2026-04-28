@@ -164,6 +164,7 @@ task retrieve(type: Sync) {
         repo2ProjectB.artifact.expectGet()
 
         and: "We resolve dependencies"
+        executer.expectDocumentedDeprecationWarning("The MavenArtifactRepository.artifactUrls(Object...) method has been deprecated. This is scheduled to be removed in Gradle 10. Consult the upgrading guide for further information: https://docs.gradle.org/current/userguide/upgrading_version_9.html#deprecated_maven_artifact_urls")
         runRetrieveTask()
 
         then: "Snapshots are downloaded"
@@ -173,6 +174,7 @@ task retrieve(type: Sync) {
 
         when: "We resolve with snapshots cached: no server requests"
         server.resetExpectations()
+        executer.expectDocumentedDeprecationWarning("The MavenArtifactRepository.artifactUrls(Object...) method has been deprecated. This is scheduled to be removed in Gradle 10. Consult the upgrading guide for further information: https://docs.gradle.org/current/userguide/upgrading_version_9.html#deprecated_maven_artifact_urls")
         def result = run('retrieve')
 
         then: "Everything is up to date"
