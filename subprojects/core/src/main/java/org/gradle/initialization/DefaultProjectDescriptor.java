@@ -23,7 +23,6 @@ import org.gradle.api.problems.ProblemReporter;
 import org.gradle.internal.Cast;
 import org.gradle.internal.FileUtils;
 import org.gradle.internal.file.PathToFileResolver;
-import org.gradle.internal.initialization.BuildLogicFiles;
 import org.gradle.internal.scripts.DefaultScriptFileResolver;
 import org.gradle.internal.scripts.ScriptFileResolver;
 import org.gradle.internal.scripts.ScriptFileUtil;
@@ -39,9 +38,6 @@ import java.util.Set;
 public class DefaultProjectDescriptor implements ProjectDescriptorInternal {
     public static final String INVALID_NAME_IN_INCLUDE_HINT = "Set the 'rootProject.name' or adjust the 'include' statement (see "
         + new DocumentationRegistry().getDslRefForProperty(Settings.class, "include(java.lang.String[])") + " for more details).";
-
-    @Deprecated // Do not immediately remove, since it's an old API that could have been used despite being internal
-    public static final String BUILD_SCRIPT_BASENAME = BuildLogicFiles.BUILD_FILE_BASENAME;
 
     private String name;
     private boolean nameExplicitlySet; // project name explicitly specified in the build script (as opposed to derived from the containing folder)
