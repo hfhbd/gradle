@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -93,7 +94,7 @@ public class DefaultProjectStateRegistry implements ProjectStateRegistry, Closea
         Path buildPath = buildState.getIdentityPath();
         ProjectIdentity identity = projectIdentityFor(buildPath, descriptor);
 
-        ArrayList<ProjectIdentity> children = new ArrayList<>();
+        List<ProjectIdentity> children = new ArrayList<>();
         for (ProjectDescriptorInternal childDescriptor : descriptor.children()) {
             ProjectIdentity childIdentity = registerAllProjectsRecursively(buildState, projectRegistry, identity, childDescriptor);
             children.add(childIdentity);
@@ -112,6 +113,14 @@ public class DefaultProjectStateRegistry implements ProjectStateRegistry, Closea
         addProject(buildState, projectRegistry, immutableDescriptor);
 
         return identity;
+    }
+
+    private static ProjectIdentity projectIdentityFor(Path buildPath, ProjectDescriptorInternal descriptor) {
+        if (descriptor.path().equals(Path.ROOT)) {
+            return ProjectIdentity.forRootProject(buildPath, descriptor.getName());
+        } else {
+            return ProjectIdentity.forSubproject(buildPath, descriptor.path());
+        }
     }
 
     private DefaultBuildProjectRegistry getBuildProjectRegistry(BuildState owner) {
@@ -154,14 +163,6 @@ public class DefaultProjectStateRegistry implements ProjectStateRegistry, Closea
         projectsById.put(projectState.getComponentIdentifier(), projectState);
         projectRegistry.add(descriptor.getIdentity().getProjectPath(), projectState);
         return projectState;
-    }
-
-    private static ProjectIdentity projectIdentityFor(Path buildPath, ProjectDescriptorInternal descriptor) {
-        if (descriptor.path().equals(Path.ROOT)) {
-            return ProjectIdentity.forRootProject(buildPath, descriptor.getName());
-        } else {
-            return ProjectIdentity.forSubproject(buildPath, descriptor.path());
-        }
     }
 
     @Override
