@@ -104,7 +104,7 @@ public class DefaultProjectStateRegistry implements ProjectStateRegistry, Closea
         // TODO:isolated avoid preserving a reference to the original mutable descriptor
         // We avoid getting the build file early here, because otherwise it will be registered as a build-scoped configuration input,
         // which makes the project invalidation less-fine grained. See `ProjectScopedScriptResolution.resolveScriptsForProject(...)`
-        Supplier<File> buildFileSupplier = Lazy.unsafe().of(descriptor::getBuildFile);
+        Supplier<File> buildFileSupplier = Lazy.locking().of(descriptor::getBuildFile);
         ImmutableProjectDescriptor immutableDescriptor = new DefaultImmutableProjectDescriptor(
             identity, descriptor.getProjectDir(), buildFileSupplier, parentIdentity, children
         );
