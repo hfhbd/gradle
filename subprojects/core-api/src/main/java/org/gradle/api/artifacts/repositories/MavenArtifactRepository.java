@@ -64,7 +64,7 @@ public interface MavenArtifactRepository extends ArtifactRepository, UrlArtifact
      * Returns the additional URLs to use to find artifact files. Note that these URLs are not used to find POM files.
      *
      * @return The additional URLs. Returns an empty list if there are no such URLs.
-     * @deprecated Maven repositories with separate locations for POMs and artifacts are a Gradle-only feature with no equivalent in Maven. This method is scheduled to be removed in Gradle 10. Declare a separate Maven repository for the additional artifact location instead.
+     * @deprecated Maven repositories with separate locations for POMs and artifacts are a Gradle-only feature with no equivalent in Maven. This method is scheduled to be removed in Gradle 10.
      */
     @Deprecated
     @HiddenInDefinition
@@ -77,7 +77,7 @@ public interface MavenArtifactRepository extends ArtifactRepository, UrlArtifact
      * relative to the project directory.
      *
      * @param urls The URLs to add.
-     * @deprecated Maven repositories with separate locations for POMs and artifacts are a Gradle-only feature with no equivalent in Maven. This method is scheduled to be removed in Gradle 10. Declare a separate Maven repository for the additional artifact location instead.
+     * @deprecated Maven repositories with separate locations for POMs and artifacts are a Gradle-only feature with no equivalent in Maven. This method is scheduled to be removed in Gradle 10.
      */
     @Deprecated
     @HiddenInDefinition
@@ -88,7 +88,7 @@ public interface MavenArtifactRepository extends ArtifactRepository, UrlArtifact
      *
      * @param urls The URLs.
      * @since 4.0
-     * @deprecated Maven repositories with separate locations for POMs and artifacts are a Gradle-only feature with no equivalent in Maven. This method is scheduled to be removed in Gradle 10. Declare a separate Maven repository for the additional artifact location instead.
+     * @deprecated Maven repositories with separate locations for POMs and artifacts are a Gradle-only feature with no equivalent in Maven. This method is scheduled to be removed in Gradle 10.
      */
     @Deprecated
     @HiddenInDefinition
@@ -101,7 +101,7 @@ public interface MavenArtifactRepository extends ArtifactRepository, UrlArtifact
      * relative to the project directory.
      *
      * @param urls The URLs.
-     * @deprecated Maven repositories with separate locations for POMs and artifacts are a Gradle-only feature with no equivalent in Maven. This method is scheduled to be removed in Gradle 10. Declare a separate Maven repository for the additional artifact location instead.
+     * @deprecated Maven repositories with separate locations for POMs and artifacts are a Gradle-only feature with no equivalent in Maven. This method is scheduled to be removed in Gradle 10.
      */
     @Deprecated
     @HiddenInDefinition
