@@ -126,6 +126,54 @@ class DefaultMavenArtifactRepositoryTest extends Specification {
         repo.artifactPatterns.any { it.startsWith uri2.toString() }
     }
 
+    @ExpectDeprecation("The MavenArtifactRepository.setArtifactUrls(Set) method has been deprecated.")
+    def "setArtifactUrls(Set) replaces additional artifact URLs"() {
+        given:
+        def uri = new URI("https://localhost:9090/repo")
+        def uri1 = new URI("https://localhost:9090/repo1")
+        _ * resolver.resolveUri('repo-dir') >> uri
+        _ * resolver.resolveUri(uri1) >> uri1
+        transportFactory.createTransport('https', 'repo', _, _) >> transport()
+
+        and:
+        repository.name = 'repo'
+        repository.url = 'repo-dir'
+        repository.setArtifactUrls([uri1] as Set)
+
+        when:
+        def repo = repository.createResolver()
+
+        then:
+        repo instanceof MavenResolver
+        repo.artifactPatterns.size() == 2
+        repo.artifactPatterns.any { it.startsWith uri.toString() }
+        repo.artifactPatterns.any { it.startsWith uri1.toString() }
+    }
+
+    @ExpectDeprecation("The MavenArtifactRepository.setArtifactUrls(Iterable) method has been deprecated.")
+    def "setArtifactUrls(Iterable) replaces additional artifact URLs"() {
+        given:
+        def uri = new URI("https://localhost:9090/repo")
+        def uri1 = new URI("https://localhost:9090/repo1")
+        _ * resolver.resolveUri('repo-dir') >> uri
+        _ * resolver.resolveUri('repo1') >> uri1
+        transportFactory.createTransport('https', 'repo', _, _) >> transport()
+
+        and:
+        repository.name = 'repo'
+        repository.url = 'repo-dir'
+        repository.setArtifactUrls(['repo1'])
+
+        when:
+        def repo = repository.createResolver()
+
+        then:
+        repo instanceof MavenResolver
+        repo.artifactPatterns.size() == 2
+        repo.artifactPatterns.any { it.startsWith uri.toString() }
+        repo.artifactPatterns.any { it.startsWith uri1.toString() }
+    }
+
     def "creates s3 repository"() {
         given:
         def uri = new URI("s3://localhost:9090/repo")
