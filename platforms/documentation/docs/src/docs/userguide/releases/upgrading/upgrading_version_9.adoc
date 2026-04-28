@@ -74,8 +74,8 @@ For `flatDir`:
 ----
 repositories {
     flatDir {
-        name = 'libs'
-        dirs "$projectDir/libs1", "$projectDir/libs2"
+        name = "libs"
+        dirs "libs1", "libs2"
     }
 }
 ----
@@ -88,7 +88,7 @@ repositories {
 repositories {
     flatDir {
         name = "libs"
-        dirs("$projectDir/libs1", "$projectDir/libs2")
+        dirs("libs1", "libs2")
     }
 }
 ----
@@ -105,7 +105,7 @@ For `mavenCentral`:
 ----
 repositories {
     mavenCentral {
-        name = 'nonDefaultName'
+        name = "nonDefaultName"
     }
 }
 ----
